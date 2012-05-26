@@ -25,6 +25,11 @@ cj = cookielib.LWPCookieJar()
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
 urllib2.install_opener(opener)
 
+# -------------------------------------------
+#              PLANS SCRAPEY-I
+# get it? like "api" except... oh, never mind
+# -------------------------------------------
+
 def plans_login(username, password):
     """ log into plans """
     login_info = {'username': username,
@@ -110,8 +115,12 @@ def update_plan(newtext, md5):
                         'submit': 'Change Plan' }
     req = urllib2.Request(editurl)
     handle = urllib2.urlopen(req, urlencode(edit_info))
+    soup = BeautifulSoup(handle.read())
+    info = soup.find('div', {'class': 'infomessage'})
+    print info
 
-#update_plan(new_plan, md5)
+# do the plan update!
+update_plan(edited, md5)
 
 #save cookie
 #cj_filename = "plans.python.cookie"
