@@ -1,4 +1,8 @@
 #!/opt/local/bin/python
+"""\
+Edit your plan in $EDITOR.
+
+"""
 
 import urllib2
 from urllib import urlencode
