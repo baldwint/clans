@@ -45,14 +45,26 @@ def get_edit_text():
     soup = BeautifulSoup(handle.read())
     plan = soup.find('textarea')
     if plan is None:
-        # we must not be logged in
-        raise Exception
-    # parse out plan md5
-    md5tag = soup.find('input', {'name': 'edit_text_md5'})
-    md5 = md5tag.attrMap['value']
-    return plan.text, md5
+        raise PlansError("Couldn't get edit text, are we logged in?")
+    if plus_hash:
+        # parse out plan md5
+        md5tag = soup.find('input', {'name': 'edit_text_md5'})
+        md5 = md5tag.attrMap['value']
+        return plan.text, md5
+    else:
+        return plan.text
 
-plan_text, md5 = get_edit_text()
+#plans_login('baldwint', 'not_my_password')
+#cj = plans_login('2008alums', 'wrong_password')
+cj = plans_login('2008alums', 'alum_password')
+plan_text, md5 = get_edit_text(plus_hash=True)
+
+print md5
+print hashlib.md5(plan_text.encode('utf8')).hexdigest()
+#print plan_text.encode('utf8')
+
+bakfile = 'plan.bak.txt'
+writefile = 'fresh.txt'
 
 # save existing plan
 fp = open(bakfile, 'w')
@@ -71,7 +83,7 @@ def update_plan(newtext, md5):
     req = urllib2.Request(editurl)
     handle = urllib2.urlopen(req, urlencode(edit_info))
 
-update_plan(new_plan, md5)
+#update_plan(new_plan, md5)
 
 #save cookie
 #cj_filename = "plans.python.cookie"
