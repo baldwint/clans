@@ -25,42 +25,53 @@ cj = cookielib.LWPCookieJar()
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
 urllib2.install_opener(opener)
 
-# log into plans
-req = urllib2.Request(loginurl)
-handle = urllib2.urlopen(req, urlencode(login_info))
+def plans_login(username, password):
+    """ log into plans """
+    login_info = {'username': username,
+                  'password': password,
+                    'submit': 'Login' }
+    req = urllib2.Request(loginurl)
+    handle = urllib2.urlopen(req, urlencode(login_info))
 
-# grab edit page
-req = urllib2.Request(editurl)
-handle = urllib2.urlopen(req)
+#plans_login('baldwint', 'not_my_password')
+plans_login('2008alums', 'alum_password')
 
-#parse out existing plan
-from BeautifulSoup import BeautifulSoup
-soup = BeautifulSoup(handle.read())
-plan = soup.find('textarea')
+def get_edit_text():
+    """ retrieve contents of the edit plan field, plus md5 """
+    # grab edit page
+    req = urllib2.Request(editurl)
+    handle = urllib2.urlopen(req)
+    # parse out existing plan
+    soup = BeautifulSoup(handle.read())
+    plan = soup.find('textarea')
+    if plan is None:
+        # we must not be logged in
+        raise Exception
+    # parse out plan md5
+    md5tag = soup.find('input', {'name': 'edit_text_md5'})
+    md5 = md5tag.attrMap['value']
+    return plan.text, md5
 
-# parse out plan md5
-md5tag = soup.find('input', {'name': 'edit_text_md5'})
-md5 = md5tag.attrMap['value']
+plan_text, md5 = get_edit_text()
 
 # save existing plan
 fp = open(bakfile, 'w')
-fp.write(plan.text.encode('utf8'))
+fp.write(plan_text.encode('utf8'))
 fp.close
 
 # load up new plan
 fp = open(writefile, 'r')
-edit_info = {
-    'plan': fp.read(),
-    'edit_text_md5': md5,
-    'submit': 'Change Plan'
-}
+new_plan = fp.read()
 fp.close()
 
-# update plan
-req = urllib2.Request(editurl)
-handle = urllib2.urlopen(req, urlencode(edit_info))
+def update_plan(newtext, md5):
+    edit_info = {         'plan': newtext,
+                 'edit_text_md5': md5,
+                        'submit': 'Change Plan' }
+    req = urllib2.Request(editurl)
+    handle = urllib2.urlopen(req, urlencode(edit_info))
 
-print handle.read()
+update_plan(new_plan, md5)
 
 #save cookie
 #cj_filename = "plans.python.cookie"
