@@ -64,12 +64,40 @@ print hashlib.md5(plan_text.encode('utf8')).hexdigest()
 #print plan_text.encode('utf8')
 
 bakfile = 'plan.bak.txt'
+editfile = 'plan.edited.txt'
 writefile = 'fresh.txt'
 
 # save existing plan
 fp = open(bakfile, 'w')
 fp.write(plan_text.encode('utf8'))
 fp.close
+
+# open plan for editing.
+# cribbed from the mercurial source code, in ui.py.
+fd, name = tempfile.mkstemp(suffix='.plan', text=True)
+
+try:
+    # populate the temp file with original text.
+    f = os.fdopen(fd, 'w')
+    f.write(plan_text.encode('utf8'))
+    f.close()
+
+    # open in $EDITOR
+    editor = os.environ.get('EDITOR', 'pico')
+    subprocess.call([editor, name])
+
+    # retrieve edited text
+    f = open(name)
+    t = f.read()
+    f.close()
+
+    # ok, now save edited file
+    fp = open(editfile, 'w')
+    fp.write(t)
+    fp.close()
+
+finally:
+    os.unlink(name)
 
 # load up new plan
 fp = open(writefile, 'r')
