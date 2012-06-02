@@ -162,11 +162,14 @@ if __name__ == '__main__':
             except ConfigParser.NoSectionError:
                 return ConfigParser.ConfigParser.get(self, 'DEFAULT', option)
 
+    # read config file
     defaults = {'username': ''}
-
     config = PlansConfigParser(defaults)
-    config.read(['config.ini',])
-
+    config.read(
+        ['config.ini', # in current directory
+         os.path.expanduser('~/.update_plan.ini')]
+    )
+                
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('-u', '--username', dest='username',
               help='GrinnellPlans username, no brackets.')
@@ -176,6 +179,9 @@ if __name__ == '__main__':
                         nargs='?', default=False,
               help="""Backup existing plan to file before editing.
                         To print to stdout, omit filename.""")
+    parser.add_argument('--logout', dest='logout',
+                        action='store_true', default=False,
+              help='Log out after editing.')
     args = parser.parse_args()
 
     username = args.username or config.get('login', 'username')
@@ -231,7 +237,10 @@ if __name__ == '__main__':
     else:
         print >> sys.stderr, 'plan unchanged, aborting update'
 
-    # save cookie
-    cj.save()
+    if args.logout:
+        os.unlink(cj.filename)
+    else:
+        # save cookie
+        cj.save()
 
 
