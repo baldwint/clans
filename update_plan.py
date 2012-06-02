@@ -104,7 +104,7 @@ class PlansConnection(object):
         handle = self.opener.open(req, urlencode(edit_info))
         soup = BeautifulSoup(handle.read())
         info = soup.find('div', {'class': 'infomessage'})
-        print info
+        print >> sys.stderr, info
 
 # ----------
 # UI HELPERS
@@ -147,6 +147,7 @@ if __name__ == '__main__':
     import ConfigParser
     from argparse import ArgumentParser
     import getpass
+    import sys
 
     class PlansConfigParser(ConfigParser.ConfigParser):
         """
@@ -171,6 +172,10 @@ if __name__ == '__main__':
               help='GrinnellPlans username, no brackets.')
     parser.add_argument('-p', '--password', dest='password',
               help='GrinnellPlans password. Omit for secure entry.')
+    parser.add_argument('-b', '--backup', dest='backup_file',
+                        nargs='?', default=False,
+              help="""Backup existing plan to file before editing.
+                        To print to stdout, omit filename.""")
     args = parser.parse_args()
 
     username = args.username or config.get('login', 'username')
@@ -198,13 +203,19 @@ if __name__ == '__main__':
     #print md5
     #print hashlib.md5(plan_text.encode('utf8')).hexdigest()
 
-    bakfile = 'plan.bak.txt'
     editfile = 'plan.edited.txt'
 
-    # save existing plan
-    fp = open(bakfile, 'w')
-    fp.write(plan_text.encode('utf8'))
-    fp.close()
+    if args.backup_file is False:
+        pass
+    elif args.backup_file is None:
+        # print existing plan to stdout and exit
+        print >> sys.stdout, plan_text.encode('utf8')
+        sys.exit()
+    elif args.backup_file:
+        # save existing plan to file
+        fp = open(args.backup_file, 'w')
+        fp.write(plan_text.encode('utf8'))
+        fp.close()
 
     # open for external editing
     edited = edit(plan_text.encode('utf8'), suffix='.plan')
@@ -218,7 +229,7 @@ if __name__ == '__main__':
     if edited != plan_text.encode('utf8'):
         pc.set_edit_text(edited, md5)
     else:
-        print 'plan unchanged, aborting'
+        print >> sys.stderr, 'plan unchanged, aborting update'
 
     # save cookie
     cj.save()
