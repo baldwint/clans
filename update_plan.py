@@ -176,9 +176,12 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--password', dest='password',
               help='GrinnellPlans password. Omit for secure entry.')
     parser.add_argument('-b', '--backup', dest='backup_file',
-                        nargs='?', default=False,
+                        nargs='?', default=False, metavar='FILE',
               help="""Backup existing plan to file before editing.
                         To print to stdout, omit filename.""")
+    parser.add_argument('-s', '--save', dest='save_edit',
+                        default=False, metavar='FILE',
+              help='Save a local copy of edited plan before submitting.')
     parser.add_argument('--logout', dest='logout',
                         action='store_true', default=False,
               help='Log out after editing.')
@@ -209,8 +212,6 @@ if __name__ == '__main__':
     #print md5
     #print hashlib.md5(plan_text.encode('utf8')).hexdigest()
 
-    editfile = 'plan.edited.txt'
-
     if args.backup_file is False:
         pass
     elif args.backup_file is None:
@@ -226,13 +227,13 @@ if __name__ == '__main__':
     # open for external editing
     edited = edit(plan_text.encode('utf8'), suffix='.plan')
 
-    # ok, now save edited file
-    fp = open(editfile, 'w')
-    fp.write(edited)
-    fp.close()
-
-    # do the plan update!
     if edited != plan_text.encode('utf8'):
+        if args.save_edit:
+            # save edited file
+            fp = open(args.save_edit, 'w')
+            fp.write(edited)
+            fp.close()
+        # do the plan update!
         pc.set_edit_text(edited, md5)
     else:
         print >> sys.stderr, 'plan unchanged, aborting update'
