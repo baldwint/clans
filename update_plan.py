@@ -145,7 +145,7 @@ def edit(text, **kwargs):
 
 if __name__ == '__main__':
     import ConfigParser
-    from optparse import OptionParser
+    from argparse import ArgumentParser
     import getpass
 
     class PlansConfigParser(ConfigParser.ConfigParser):
@@ -166,14 +166,14 @@ if __name__ == '__main__':
     config = PlansConfigParser(defaults)
     config.read(['config.ini',])
 
-    parser = OptionParser(description=__doc__)
-    parser.add_option('-u', '--username', dest='username',
+    parser = ArgumentParser(description=__doc__)
+    parser.add_argument('-u', '--username', dest='username',
               help='GrinnellPlans username, no brackets.')
-    parser.add_option('-p', '--password', dest='password',
+    parser.add_argument('-p', '--password', dest='password',
               help='GrinnellPlans password. Omit for secure entry.')
-    opts, args = parser.parse_args()
+    args = parser.parse_args()
 
-    username = opts.username or config.get('login', 'username')
+    username = args.username or config.get('login', 'username')
 
     cj = cookielib.LWPCookieJar('%s.cookie' % username)
     try:
@@ -181,14 +181,14 @@ if __name__ == '__main__':
                   #TODO: what if it exists, but is expired?
     except IOError:
         # no cookie saved for this user; log in.
-        if opts.password is None:
+        if args.password is None:
             # prompt for password if necessary
-            opts.password = getpass.getpass("[%s]'s password: " % username)
-            if '\x03' in opts.password:
+            args.password = getpass.getpass("[%s]'s password: " % username)
+            if '\x03' in args.password:
                 # http://bugs.python.org/issue11236 (2.6 only)
                 raise PlansError('aborted by user')
         pc = PlansConnection(cj)
-        pc.plans_login(username, opts.password)
+        pc.plans_login(username, args.password)
     else:
         pc = PlansConnection(cj)
 
