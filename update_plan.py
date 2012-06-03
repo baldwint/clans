@@ -11,7 +11,6 @@ import os
 import tempfile
 import subprocess
 from BeautifulSoup import BeautifulSoup
-import hashlib
 
 # configuration
 loginurl = "http://www.grinnellplans.com/index.php"
@@ -163,13 +162,14 @@ if __name__ == '__main__':
                 return ConfigParser.ConfigParser.get(self, 'DEFAULT', option)
 
     # read config file
-    defaults = {'username': ''}
-    config = PlansConfigParser(defaults)
+    #config = PlansConfigParser()
+    config = ConfigParser.ConfigParser()
     config.read(
-        ['config.ini', # in current directory
-         os.path.expanduser('~/.update_plan.ini')]
+        ['site.cfg', # in current directory
+         os.path.expanduser('~/.update_plan.cfg')]
     )
-                
+
+    # read command line arguments
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('-u', '--username', dest='username',
               help='GrinnellPlans username, no brackets.')
@@ -189,7 +189,9 @@ if __name__ == '__main__':
 
     username = args.username or config.get('login', 'username')
 
-    cj = cookielib.LWPCookieJar('%s.cookie' % username)
+    cj = cookielib.LWPCookieJar(
+        os.path.expanduser('~/.%s.plans.cookie' % username)
+    )
     try:
         cj.load() # this will fail with IOError if it does not exist
                   #TODO: what if it exists, but is expired?
@@ -209,6 +211,7 @@ if __name__ == '__main__':
     plan_text, md5 = pc.get_edit_text(plus_hash=True)
 
     #TODO: get these to match somehow
+    #import hashlib
     #print md5
     #print hashlib.md5(plan_text.encode('utf8')).hexdigest()
 
