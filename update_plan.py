@@ -15,15 +15,22 @@ class PlansError(Exception):
     pass
 
 class PlansPageParser(HTMLParser):
-    """
-    HTML parser for GrinnellPlans pages.
-
-    """
+    """HTML parser for GrinnellPlans pages."""
 
     def handle_starttag(self, tag, attrs):
         if tag == 'body':
+            for key, value in attrs:
+                if key == 'id': self.page_id = value
+        if tag == 'input':
+            # parse edit text md5 from input tag.
+            # in the current plans implementation,
+            # the syntax is < > and not < />
             attrs = dict(attrs)
-            self.last_page_id = attrs['id']
+            try:
+                if attrs['name'] == 'edit_text_md5':
+                    self.edit_text_md5 = attrs['value']
+            except KeyError:
+                pass
 
 # -------------------------------------------
 #              PLANS SCRAPEY-I
@@ -81,9 +88,9 @@ class PlansConnection(object):
                         'submit': 'Login' }
         html = self._get_page('index.php', post=login_info)
         # verify login by checking that body id="planspage_home"
-        self.parser.last_page_id = None
+        self.parser.page_id = None
         self.parser.feed(html)
-        if self.parser.last_page_id != 'planspage_home':
+        if self.parser.page_id != 'planspage_home':
             raise PlansError('Could not log in as [%s].' % username)
 
     def get_edit_text(self, plus_hash=False):
@@ -101,13 +108,15 @@ class PlansConnection(object):
         plan = soup.find('textarea')
         if plan is None:
             raise PlansError("Couldn't get edit text, are we logged in?")
+        else:
+            plan = plan.text.encode('utf8')
         if plus_hash:
             # parse out plan md5
-            md5tag = soup.find('input', {'name': 'edit_text_md5'})
-            md5 = md5tag.attrMap['value']
-            return plan.text.encode('utf8'), md5
+            self.parser.feed(html)
+            md5 = self.parser.edit_text_md5
+            return plan, md5
         else:
-            return plan.text.encode('utf8')
+            return plan
 
     def set_edit_text(self, newtext, md5):
         """
