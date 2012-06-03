@@ -92,9 +92,9 @@ class PlansConnection(object):
             # parse out plan md5
             md5tag = soup.find('input', {'name': 'edit_text_md5'})
             md5 = md5tag.attrMap['value']
-            return plan.text, md5
+            return plan.text.encode('utf8'), md5
         else:
-            return plan.text
+            return plan.text.encode('utf8')
 
     def set_edit_text(self, newtext, md5):
         """
@@ -119,7 +119,7 @@ class PlansConnection(object):
 # UI HELPERS
 # ----------
 
-def edit(text, **kwargs):
+def external_editor(text, **kwargs):
     """
     Open some text for editing by the user.
 
@@ -216,23 +216,23 @@ if __name__ == '__main__':
     #TODO: get these to match somehow
     #import hashlib
     #print md5
-    #print hashlib.md5(plan_text.encode('utf8')).hexdigest()
+    #print hashlib.md5(plan_text).hexdigest()
 
     if args.backup_file is False:
         pass
     elif args.backup_file is None:
         # print existing plan to stdout and exit
-        print >> sys.stdout, plan_text.encode('utf8')
+        print >> sys.stdout, plan_text
         sys.exit()
     elif args.backup_file:
         # save existing plan to file
         fp = open(args.backup_file, 'w')
-        fp.write(plan_text.encode('utf8'))
+        fp.write(plan_text)
         fp.close()
 
     # open for external editing
-    edited = edit(plan_text.encode('utf8'), suffix='.plan')
-    edit_was_made = edited != plan_text.encode('utf8')
+    edited = external_editor(plan_text, suffix='.plan')
+    edit_was_made = edited != plan_text
 
     if args.save_edit and edit_was_made:
         # save edited file
