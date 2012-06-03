@@ -8,10 +8,22 @@ import os
 import tempfile
 import subprocess
 from BeautifulSoup import BeautifulSoup
+from HTMLParser import HTMLParser
 
 class PlansError(Exception):
     """Exception raised when there is an error talking to plans."""
     pass
+
+class PlansPageParser(HTMLParser):
+    """
+    HTML parser for GrinnellPlans pages.
+
+    """
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'body':
+            attrs = dict(attrs)
+            self.last_page_id = attrs['id']
 
 # -------------------------------------------
 #              PLANS SCRAPEY-I
@@ -43,6 +55,7 @@ class PlansConnection(object):
             self.cookiejar = cookiejar
         proc = urllib2.HTTPCookieProcessor(self.cookiejar)
         self.opener = urllib2.build_opener(proc)
+        self.parser = PlansPageParser()
 
     def _get_page(self, name, get=None, post=None):
         """
@@ -68,9 +81,9 @@ class PlansConnection(object):
                         'submit': 'Login' }
         html = self._get_page('index.php', post=login_info)
         # verify login by checking that body id="planspage_home"
-        soup = BeautifulSoup(html)
-        homepage = soup.find('body', {'id': 'planspage_home'})
-        if homepage is None:
+        self.parser.last_page_id = None
+        self.parser.feed(html)
+        if self.parser.last_page_id != 'planspage_home':
             raise PlansError('Could not log in as [%s].' % username)
 
     def get_edit_text(self, plus_hash=False):
