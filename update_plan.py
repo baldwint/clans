@@ -209,9 +209,12 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--save', dest='save_edit',
                         default=False, metavar='FILE',
               help='Save a local copy of edited plan before submitting.')
+    parser.add_argument('--skip-update', dest='skip_update',
+                        action='store_true', default=False,
+              help="Don't update the plan or open it for editing.")
     parser.add_argument('--pretend', dest='pretend',
                         action='store_true', default=False,
-              help="Don't actually do the update.")
+              help="Open plan for editing, but don't actually do the update.")
     parser.add_argument('--logout', dest='logout',
                         action='store_true', default=False,
               help='Log out after editing.')
@@ -260,17 +263,20 @@ if __name__ == '__main__':
         fp.write(plan_text)
         fp.close()
 
-    # open for external editing
-    edited = external_editor(plan_text, suffix='.plan')
-    edit_was_made = edited != plan_text
+    if not args.skip_update:
+        # open for external editing
+        edited = external_editor(plan_text, suffix='.plan')
+        edit_was_made = edited != plan_text
 
-    if args.save_edit and edit_was_made:
+    if args.save_edit and not args.skip_update and edit_was_made:
         # save edited file
         fp = open(args.save_edit, 'w')
         fp.write(edited)
         fp.close()
 
-    if not edit_was_made:
+    if args.skip_update:
+        pass
+    elif not edit_was_made:
         print >> sys.stderr, 'plan unchanged, aborting update'
     elif args.pretend:
         print >> sys.stderr, "in 'pretend' mode, not really editing"
