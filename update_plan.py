@@ -185,8 +185,16 @@ if __name__ == '__main__':
     config.add_section('login')
     config.set('login', 'username', '')
 
+    # create config directory if it doesn't exist
+    config_dir = os.path.join(os.environ['HOME'], '.update_plan')
+    try:
+        # 0700 for secure-ish cookie storage.
+        os.mkdir(config_dir, 0700)
+    except OSError:
+        pass # already exists
+
     # read user's config file, if present
-    config.read(os.path.expanduser('~/.update_plan.cfg'))
+    config.read(os.path.join(config_dir, 'update_plan.cfg'))
 
     # define command line arguments
     parser = ArgumentParser(description=__doc__)
@@ -215,7 +223,7 @@ if __name__ == '__main__':
     username = args.username or config.get('login', 'username')
 
     cj = cookielib.LWPCookieJar(
-        os.path.expanduser('~/.%s.plans.cookie' % username)
+        os.path.join(config_dir, '%s.cookie' % username)
     )
     try:
         cj.load() # this will fail with IOError if it does not exist
