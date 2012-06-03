@@ -1,8 +1,5 @@
-#!/opt/local/bin/python
-"""\
-Edit your plan in $EDITOR.
-
-"""
+#!/usr/bin/env python
+"""Edit your plan in $EDITOR."""
 
 import urllib2
 from urllib import urlencode
@@ -12,12 +9,8 @@ import tempfile
 import subprocess
 from BeautifulSoup import BeautifulSoup
 
-# configuration
-loginurl = "http://www.grinnellplans.com/index.php"
-editurl = "http://www.grinnellplans.com/edit.php"
-
 class PlansError(Exception):
-    """ Raise this when something goes wrong. """
+    """Exception raised when there is an error talking to plans."""
     pass
 
 # -------------------------------------------
@@ -31,31 +24,50 @@ class PlansConnection(object):
 
     """
 
-    def __init__(self, cookiejar=None):
+    def __init__(self, cookiejar=None,
+                 base_url="http://www.grinnellplans.com"):
         """
         Create a new plans connection.
 
-        Optionally, provide a cookiejar to store credentials in.
+        Optional keyword arguments:
+
+        cookiejar -- an existing cookielib.CookieJar to store
+                     credentials in.
+        base_url --  URL at which to access plans, no trailing slash.
 
         """
+        self.base_url = base_url
         if cookiejar is None:
-            cookiejar = cookielib.LWPCookieJar()
-        proc = urllib2.HTTPCookieProcessor(cookiejar)
+            self.cookiejar = cookielib.LWPCookieJar()
+        else:
+            self.cookiejar = cookiejar
+        proc = urllib2.HTTPCookieProcessor(self.cookiejar)
         self.opener = urllib2.build_opener(proc)
+
+    def _get_page(self, name, get=None, post=None):
+        """
+        Retrieve an HTML page from plans.
+
+        """
+        url = '/'.join((self.base_url, name))
+        if get is not None:
+            url = '?'.join((url, urlencode(get)))
+        req = urllib2.Request(url)
+        if post is not None:
+            post = urlencode(post)
+        handle = self.opener.open(req, post)
+        return handle.read()
 
     def plans_login(self, username, password):
         """
         Log into plans.
         
         """
-        # log into plans
         login_info = {'username': username,
                       'password': password,
                         'submit': 'Login' }
-        req = urllib2.Request(loginurl)
-        handle = self.opener.open(req, urlencode(login_info))
+        html = self._get_page('index.php', post=login_info)
         # verify login by checking that body id="planspage_home"
-        html = handle.read()
         soup = BeautifulSoup(html)
         homepage = soup.find('body', {'id': 'planspage_home'})
         if homepage is None:
@@ -70,10 +82,9 @@ class PlansConnection(object):
 
         """
         # grab edit page
-        req = urllib2.Request(editurl)
-        handle = self.opener.open(req)
+        html = self._get_page('edit.php')
         # parse out existing plan
-        soup = BeautifulSoup(handle.read())
+        soup = BeautifulSoup(html)
         plan = soup.find('textarea')
         if plan is None:
             raise PlansError("Couldn't get edit text, are we logged in?")
@@ -99,9 +110,8 @@ class PlansConnection(object):
         edit_info = {         'plan': newtext,
                      'edit_text_md5': md5,
                             'submit': 'Change Plan' }
-        req = urllib2.Request(editurl)
-        handle = self.opener.open(req, urlencode(edit_info))
-        soup = BeautifulSoup(handle.read())
+        html = self._get_page('edit.php', post=edit_info)
+        soup = BeautifulSoup(html)
         info = soup.find('div', {'class': 'infomessage'})
         print >> sys.stderr, info
 
