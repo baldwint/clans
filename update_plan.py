@@ -148,28 +148,15 @@ if __name__ == '__main__':
     import getpass
     import sys
 
-    class PlansConfigParser(ConfigParser.ConfigParser):
-        """
-        Customized ConfigParser.
-
-        Better handling of missing sections.
-
-        """
-        def get(self, section, option):
-            try:
-                return ConfigParser.ConfigParser.get(self, section, option)
-            except ConfigParser.NoSectionError:
-                return ConfigParser.ConfigParser.get(self, 'DEFAULT', option)
-
-    # read config file
-    #config = PlansConfigParser()
+    # set config file defaults
     config = ConfigParser.ConfigParser()
-    config.read(
-        ['site.cfg', # in current directory
-         os.path.expanduser('~/.update_plan.cfg')]
-    )
+    config.add_section('login')
+    config.set('login', 'username', '')
 
-    # read command line arguments
+    # read user's config file, if present
+    config.read(os.path.expanduser('~/.update_plan.cfg'))
+
+    # define command line arguments
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('-u', '--username', dest='username',
               help='GrinnellPlans username, no brackets.')
@@ -185,8 +172,11 @@ if __name__ == '__main__':
     parser.add_argument('--logout', dest='logout',
                         action='store_true', default=False,
               help='Log out after editing.')
+
+    # get command line arguments
     args = parser.parse_args()
 
+    # let command line args override equivalent config file settings
     username = args.username or config.get('login', 'username')
 
     cj = cookielib.LWPCookieJar(
