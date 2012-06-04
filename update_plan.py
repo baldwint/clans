@@ -173,8 +173,7 @@ def external_editor(text, **kwargs):
     return t
 
 
-
-if __name__ == '__main__':
+def main():
     import ConfigParser
     from argparse import ArgumentParser
     import getpass
@@ -290,4 +289,5 @@ if __name__ == '__main__':
         # save cookie
         cj.save()
 
-
+if __name__ == '__main__':
+    main()
