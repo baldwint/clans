@@ -5,6 +5,7 @@ import urllib2
 from urllib import urlencode
 import cookielib
 import os
+import sys
 import tempfile
 import subprocess
 from BeautifulSoup import BeautifulSoup
@@ -177,7 +178,6 @@ def main():
     import ConfigParser
     from argparse import ArgumentParser
     import getpass
-    import sys
 
     # set config file defaults
     config = ConfigParser.ConfigParser()
