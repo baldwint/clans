@@ -3,11 +3,13 @@
 
 import urllib2
 from urllib import urlencode
+from urlparse import urlparse
 import cookielib
 import os
 import sys
 import tempfile
 import subprocess
+import json
 from BeautifulSoup import BeautifulSoup
 from HTMLParser import HTMLParser
 
@@ -20,6 +22,8 @@ class PlansPageParser(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         if tag == 'body':
+            # parse out id of body tag
+            # (can use to identify page)
             for key, value in attrs:
                 if key == 'id': self.page_id = value
         if tag == 'input':
@@ -77,22 +81,27 @@ class PlansConnection(object):
         if post is not None:
             post = urlencode(post)
         handle = self.opener.open(req, post)
-        return handle.read()
+        return handle
 
-    def plans_login(self, username, password):
+    def plans_login(self, username='', password=''):
         """
         Log into plans.
+
+        Returns True on success, False on failure. Leave username and
+        password blank to check an existing login.
         
         """
+        # the provided username and password ONLY get checked
+        # by the plans server if our cookie is expired. 
+        # hence, if we've logged in recently, this will return True even
+        # if un/pw are not provided or are otherwise bad. 
         login_info = {'username': username,
                       'password': password,
                         'submit': 'Login' }
-        html = self._get_page('index.php', post=login_info)
-        # verify login by checking that body id="planspage_home"
-        self.parser.page_id = None
-        self.parser.feed(html)
-        if self.parser.page_id != 'planspage_home':
-            raise PlansError('Could not log in as [%s].' % username)
+        response = self._get_page('index.php', post=login_info)
+        # if login is successful, we'll be redirected to home
+        return urlparse(response.geturl()).path == '/home.php'
+            #raise PlansError('Could not log in as [%s].' % username)
 
     def get_edit_text(self, plus_hash=False):
         """
@@ -103,7 +112,7 @@ class PlansConnection(object):
 
         """
         # grab edit page
-        html = self._get_page('edit.php')
+        html = self._get_page('edit.php').read()
         # parse out existing plan
         soup = BeautifulSoup(html)
         plan = soup.find('textarea')
@@ -133,10 +142,32 @@ class PlansConnection(object):
         edit_info = {         'plan': newtext,
                      'edit_text_md5': md5,
                             'submit': 'Change Plan' }
-        html = self._get_page('edit.php', post=edit_info)
+        html = self._get_page('edit.php', post=edit_info).read()
         soup = BeautifulSoup(html)
         info = soup.find('div', {'class': 'infomessage'})
         print >> sys.stderr, info
+
+    def get_autofinger(self):
+        """
+        Retrieve all levels of the autofinger (autoread) list.
+
+        Returns a dictionary where the keys are the group names
+        "Level 1", "Level 2", etc. and the values are a list of
+        usernames waiting to be read.
+
+        """
+        # this actually doesn't scrape; there's a function for it
+        # in the old JSON API. 
+        get = {'task': 'autofingerlist'}
+        response = self._get_page('api/1/index.php', get=get)
+        data = json.loads(response.read())
+        # the returned JSON is crufty; clean it up
+        autofinger = {}
+        for group in data['autofingerList']:
+            name = "Level %s" % group['level']
+            autofinger[name] = group['usernames']
+        return autofinger
+
 
 # ----------
 # UI HELPERS
@@ -177,7 +208,14 @@ def external_editor(text, **kwargs):
 def main():
     import ConfigParser
     from argparse import ArgumentParser
-    import getpass
+    import getpass as getpass_mod
+
+    def getpass(*args, **kwargs):
+        password = getpass_mod.getpass(*args, **kwargs)
+        if '\x03' in password:
+            # http://bugs.python.org/issue11236 (2.6 only)
+            raise KeyboardInterrupt('aborted by user')
+        return password
 
     # set config file defaults
     config = ConfigParser.ConfigParser()
@@ -197,9 +235,9 @@ def main():
 
     # define command line arguments
     parser = ArgumentParser(description=__doc__)
-    parser.add_argument('-u', '--username', dest='username',
+    parser.add_argument('-u', '--username', dest='username', default='',
               help='GrinnellPlans username, no brackets.')
-    parser.add_argument('-p', '--password', dest='password',
+    parser.add_argument('-p', '--password', dest='password', default='',
               help='GrinnellPlans password. Omit for secure entry.')
     parser.add_argument('-b', '--backup', dest='backup_file',
                         nargs='?', default=False, metavar='FILE',
@@ -225,23 +263,24 @@ def main():
     username = args.username or config.get('login', 'username')
 
     cj = cookielib.LWPCookieJar(
-        os.path.join(config_dir, '%s.cookie' % username)
-    )
+        os.path.join(config_dir, '%s.cookie' % username))
+
     try:
         cj.load() # this will fail with IOError if it does not exist
-                  #TODO: what if it exists, but is expired?
     except IOError:
-        # no cookie saved for this user; log in.
-        if args.password is None:
-            # prompt for password if necessary
-            args.password = getpass.getpass("[%s]'s password: " % username)
-            if '\x03' in args.password:
-                # http://bugs.python.org/issue11236 (2.6 only)
-                raise PlansError('aborted by user')
-        pc = PlansConnection(cj)
-        pc.plans_login(username, args.password)
+        pass      # no cookie saved for this user
+
+    pc = PlansConnection(cj)
+
+    if pc.plans_login():
+        pass # we're still logged in
     else:
-        pc = PlansConnection(cj)
+        # we're not logged in, prompt for password if necessary
+        password = args.password or getpass("[%s]'s password: " % username)
+        success = pc.plans_login(username, password)
+        if not success:
+            print >> sys.stderr, 'Failed to log in as [%s].' % username
+            sys.exit(1)
 
     plan_text, md5 = pc.get_edit_text(plus_hash=True)
 
