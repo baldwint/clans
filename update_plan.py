@@ -80,7 +80,11 @@ class PlansConnection(object):
         req = urllib2.Request(url)
         if post is not None:
             post = urlencode(post)
-        handle = self.opener.open(req, post)
+        try:
+            handle = self.opener.open(req, post)
+        except urllib2.URLError:
+            err = "Check your internet connection. Plans could also be down."
+            raise PlansError(err)
         return handle
 
     def plans_login(self, username='', password=''):
