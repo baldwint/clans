@@ -3,7 +3,6 @@
 
 import urllib2
 from urllib import urlencode
-from urlparse import urlparse
 import cookielib
 import os
 import sys
@@ -104,8 +103,7 @@ class PlansConnection(object):
                         'submit': 'Login' }
         response = self._get_page('index.php', post=login_info)
         # if login is successful, we'll be redirected to home
-        return urlparse(response.geturl()).path == '/home.php'
-            #raise PlansError('Could not log in as [%s].' % username)
+        return response.geturl()[-9:] == '/home.php'
 
     def get_edit_text(self, plus_hash=False):
         """
@@ -148,6 +146,7 @@ class PlansConnection(object):
                             'submit': 'Change Plan' }
         html = self._get_page('edit.php', post=edit_info).read()
         soup = BeautifulSoup(html)
+        #TODO: what if the edit fails? catch warnings as well.
         info = soup.find('div', {'class': 'infomessage'})
         print >> sys.stderr, info
 
@@ -225,6 +224,7 @@ def main():
     config = ConfigParser.ConfigParser()
     config.add_section('login')
     config.set('login', 'username', '')
+    config.set('login', 'url', 'http://www.grinnellplans.com')
 
     # create config directory if it doesn't exist
     config_dir = os.path.join(os.environ['HOME'], '.update_plan')
@@ -274,7 +274,7 @@ def main():
     except IOError:
         pass      # no cookie saved for this user
 
-    pc = PlansConnection(cj)
+    pc = PlansConnection(cj, base_url = config.get('login', 'url'))
 
     if pc.plans_login():
         pass # we're still logged in
