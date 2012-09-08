@@ -138,7 +138,7 @@ class PlansConnection(object):
         plan before replacing it with the new one. We provide an
         md5 sum to confirm that yes, we really want to update the plan.
 
-        Prints info message to stdout.
+        Returns info message.
         
         """
         edit_info = {         'plan': newtext,
@@ -148,7 +148,7 @@ class PlansConnection(object):
         soup = BeautifulSoup(html)
         #TODO: what if the edit fails? catch warnings as well.
         info = soup.find('div', {'class': 'infomessage'})
-        print >> sys.stderr, info
+        return info
 
     def get_autofinger(self):
         """
@@ -324,7 +324,8 @@ def main():
         print >> sys.stderr, "in 'pretend' mode, not really editing"
     else:
         # do the plan update!
-        pc.set_edit_text(edited, md5)
+        info = pc.set_edit_text(edited, md5)
+        print >> sys.stderr, info
 
     if args.logout:
         os.unlink(cj.filename)
