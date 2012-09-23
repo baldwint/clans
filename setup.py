@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 
-setup(name='update_plan',
+setup(name='clans',
       version='dev',
       description='GrinnellPlans plan-editing utility',
       author='Tom Baldwin',
