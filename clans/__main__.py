@@ -1,5 +1,5 @@
 #!/usr/bin/env python
 
-from update_plan import main
+from clans.ui import main
 if __name__ == "__main__":
     main()
