@@ -140,7 +140,8 @@ def main():
     # main parser: has subcommands for everything
     parser = ArgumentParser(description=__doc__, parents=[global_parser])
 
-    subparsers = parser.add_subparsers(title = "possible commands")
+    subparsers = parser.add_subparsers(title = "commands")
+    subparsers.metavar = 'COMMAND'
 
     # edit parser: options/arguments for editing plans
     edit_parser = subparsers.add_parser('edit', parents=[global_parser],
