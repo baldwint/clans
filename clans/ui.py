@@ -97,6 +97,7 @@ def edit(pc, args, config):
 
 def main():
     import ConfigParser
+    import appdirs
     from argparse import ArgumentParser
     import getpass as getpass_mod
 
@@ -114,15 +115,15 @@ def main():
     config.set('login', 'url', 'http://www.grinnellplans.com')
 
     # create config directory if it doesn't exist
-    config_dir = os.path.join(os.environ['HOME'], '.update_plan')
+    dirs = appdirs.AppDirs(appname='clans', appauthor='baldwint')
     try:
         # 0700 for secure-ish cookie storage.
-        os.mkdir(config_dir, 0700)
+        os.mkdir(dirs.user_data_dir, 0700)
     except OSError:
         pass # already exists
 
     # read user's config file, if present
-    config.read(os.path.join(config_dir, 'update_plan.cfg'))
+    config.read(os.path.join(dirs.user_data_dir, 'clans.ini'))
 
     # define command line arguments
 
@@ -171,7 +172,7 @@ def main():
     username = args.username or config.get('login', 'username')
 
     cj = cookielib.LWPCookieJar(
-        os.path.join(config_dir, '%s.cookie' % username))
+        os.path.join(dirs.user_data_dir, '%s.cookie' % username))
 
     try:
         cj.load() # this will fail with IOError if it does not exist
