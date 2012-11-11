@@ -41,9 +41,7 @@ class LoggedInTestCase(unittest.TestCase):
 
 class TestEdit(LoggedInTestCase):
 
-    def test_editing(self):
-        #prepend 'hello world' to plan text
-        hello = 'hello world!'
+    def prepend_and_remove(self, hello):
         orig, hashsum = self.pc.get_edit_text(plus_hash=True)
         result = self.pc.set_edit_text(hello + orig, hashsum)
         self.assertTrue("Plan changed successfully" in str(result))
@@ -56,6 +54,16 @@ class TestEdit(LoggedInTestCase):
         # edit again, undoing
         result = self.pc.set_edit_text(orig, new_hashsum)
         self.assertTrue("Plan changed successfully" in str(result))
+
+    def test_plaintext_editing(self):
+        #prepend 'hello world' to plan text
+        self.prepend_and_remove('hello world!')
+
+    def test_html_editing(self):
+        #make sure html is picked up
+        self.prepend_and_remove("<tt># 10 11 12 -----------------</tt>")
+        self.prepend_and_remove("<b>so excited</b>")
+        self.prepend_and_remove("<hr>contact info blah blah<hr>")
 
     def test_md5(self):
         #TODO
