@@ -100,6 +100,7 @@ def main():
     import appdirs
     from argparse import ArgumentParser
     import getpass as getpass_mod
+    import imp
 
     def getpass(*args, **kwargs):
         password = getpass_mod.getpass(*args, **kwargs)
@@ -124,6 +125,23 @@ def main():
 
     # read user's config file, if present
     config.read(os.path.join(dirs.user_data_dir, 'clans.cfg'))
+
+    # load extensions
+    if config.has_section('extensions'):
+        extensions, ext_order = {}, []
+        for name, path in config.items('extensions'):
+            try:
+                if path:
+                    mod = imp.load_source("clans_ext_%s" % name, path)
+                else:
+                    mod = __import__('clans.ext.%s' % name)
+            except (ImportError, IOError):
+                print >> sys.stderr, 'Failed to load extension "%s".' % name
+            else:
+                extensions[name] = mod
+                ext_order.append(name)
+
+    # TODO hooks into extension modules
 
     # define command line arguments
     class CommandSet(dict):
