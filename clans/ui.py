@@ -123,7 +123,7 @@ def main():
         pass # already exists
 
     # read user's config file, if present
-    config.read(os.path.join(dirs.user_data_dir, 'clans.ini'))
+    config.read(os.path.join(dirs.user_data_dir, 'clans.cfg'))
 
     # define command line arguments
 
