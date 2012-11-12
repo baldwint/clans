@@ -170,4 +170,17 @@ class PlansConnection(object):
             autofinger[name] = group['usernames']
         return autofinger
 
+    def read_plan(self, plan):
+        """
+        Retrieve the contents of the specified plan in HTML format.
+
+        """
+        get = {'searchname': plan}
+        response = self._get_page('read.php', get=get)
+        soup = BeautifulSoup(response.read())
+        text = soup.find('div', {'class': 'plan_text'})
+        #TODO following line fails if there is a <hr>
+        elements = text.contents[1].contents
+        plan = ''.join([str(el) for el in elements])
+        return plan
 

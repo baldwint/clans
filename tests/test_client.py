@@ -8,6 +8,7 @@ import unittest
 from clans.client import PlansConnection
 import subprocess
 import cookielib
+import pdb
 
 TEST_URL = 'http://localhost/~tkb/plans/plans2012'
 
@@ -36,8 +37,9 @@ class TestAuth(unittest.TestCase):
 class LoggedInTestCase(unittest.TestCase):
 
     def setUp(self):
+        self.un = 'baldwint'
         self.pc = PlansConnection(base_url = TEST_URL)
-        self.pc.plans_login('baldwint', 'password')
+        self.pc.plans_login(self.un, 'password')
 
 class TestEdit(LoggedInTestCase):
 
@@ -68,6 +70,98 @@ class TestEdit(LoggedInTestCase):
     def test_md5(self):
         #TODO
         pass
+
+class PlanChangingTestCase(LoggedInTestCase):
+    """
+    saves the original plan at the start of tests,
+    and restores it at the end.
+
+    """
+
+    def setUp(self):
+        super(PlanChangingTestCase, self).setUp()
+        self.orig, self.hashnum = self.pc.get_edit_text(plus_hash=True)
+        # tests should set hashnum as they go along
+
+    def tearDown(self):
+        result = self.pc.set_edit_text(self.orig, self.hashnum)
+        self.assertTrue("Plan changed successfully" in str(result))
+
+
+class TestPlanspeak(PlanChangingTestCase):
+    """
+    tests that strings entered in the edit field are
+    converted properly to html
+
+    """
+
+    def planify(self, text, xf=None):
+        self.pc.set_edit_text(text, self.hashnum)
+        text_plan, self.hashnum = self.pc.get_edit_text(plus_hash=True)
+        html_plan = self.pc.read_plan(self.un)
+        return text_plan, html_plan
+
+    def test_text(self):
+        orig = 'hello world!'
+        text, html = self.planify(orig)
+        self.assertEqual(orig, text)
+        self.assertEqual(orig, html)
+
+    @unittest.expectedFailure
+    def test_multiline(self):
+        # BeautifulSoup problem
+        orig = 'hello\nworld'
+        text, html = self.planify(orig)
+        self.assertEqual(orig, text)
+        self.assertEqual('hello<br>world', html)
+
+    def test_allowed_html(self):
+        examples = ['<b>hello world</b>',
+                    '<i>hello world</i>',
+                    '<tt>hello world</tt>',
+                   ]
+        for orig in examples:
+            text, html = self.planify(orig)
+            self.assertEqual(orig, text)
+            self.assertEqual(orig, html)
+
+    def test_underline(self):
+        orig = '<u>hello world</u>'
+        expect = '<span class="underline">hello world</span><!--u-->'
+        # Plans weirdness; should the trailing comment be canonical?
+        text, html = self.planify(orig)
+        self.assertEqual(orig, text)
+        self.assertEqual(expect, html)
+
+    def test_strike(self):
+        orig = '<strike>hello world</strike>'
+        expect = '<span class="strike">hello world</span><!--strike-->'
+        # Plans weirdness; should the trailing comment be canonical?
+        text, html = self.planify(orig)
+        self.assertEqual(orig, text)
+        self.assertEqual(expect, html)
+
+    @unittest.expectedFailure
+    def test_pre(self):
+        # my code problem (multiple <p class="sub">s)
+        orig = '<pre>hello world</pre>'
+        text, html = self.planify(orig)
+        self.assertEqual(orig, text)
+        self.assertEqual(orig, html)
+
+    @unittest.expectedFailure
+    def test_horiz_rule(self):
+        # my code problem (multiple <p class="sub">s)
+        orig = '<hr>hello world<hr>'
+        text, html = self.planify(orig)
+        self.assertEqual(orig, text)
+        self.assertEqual(orig, html)
+
+class TestRead(LoggedInTestCase):
+
+    def test_reading(self):
+        #pdb.set_trace()
+        html_plan = self.pc.read_plan(self.un)
 
 if __name__ == "__main__":
     unittest.main()
