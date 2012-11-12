@@ -126,6 +126,34 @@ def main():
     config.read(os.path.join(dirs.user_data_dir, 'clans.cfg'))
 
     # define command line arguments
+    class CommandSet(dict):
+        """
+        Dictionary of subcommands to a program.
+
+        Initialize as you would the main ArgumentParser instance. Access
+        the main parser by the `.main` attribute. Individual subcommand parsers
+        are keyed by their names in the dictionary.
+
+        """
+
+        def __init__(self, **kwargs):
+            self.main = ArgumentParser(**kwargs)
+            self.subparsers = self.main.add_subparsers(title = "commands", metavar='COMMAND')
+            super(CommandSet, self).__init__()
+
+        def add_command(self, name, func, **kwargs):
+            """
+            Add a new subcommand to a program.
+
+            :param name: name of the command.
+            :param func: function implementing command
+
+            Keyword arguments are passed to the ArgumentParser constructor.
+
+            """
+            parser = self.subparsers.add_parser(name, **kwargs)
+            parser.set_defaults(func=func)
+            self[name] = parser
 
     # globals: options/arguments inherited by all parsers, including root
     global_parser = ArgumentParser(add_help=False)
@@ -139,34 +167,29 @@ def main():
                       help='Log out before quitting.')
 
     # main parser: has subcommands for everything
-    parser = ArgumentParser(description=__doc__, parents=[global_parser])
-
-    subparsers = parser.add_subparsers(title = "commands")
-    subparsers.metavar = 'COMMAND'
+    commands = CommandSet(description=__doc__, parents=[global_parser])
 
     # edit parser: options/arguments for editing plans
-    edit_parser = subparsers.add_parser('edit', parents=[global_parser],
-                        description='Opens your plan for editing in a text editor.',
-                            help='Edit your plan in $EDITOR.')
-    edit_parser.set_defaults(func=edit)
-    edit_parser.add_argument('-b', '--backup', dest='backup_file',
-                        nargs='?', default=False, metavar='FILE',
-              help="""Backup existing plan to file before editing.
-                        To print to stdout, omit filename.""")
-    edit_parser.add_argument('-s', '--save', dest='save_edit',
-                        default=False, metavar='FILE',
-              help='Save a local copy of edited plan before submitting.')
-    edit_parser.add_argument('--skip-update', dest='skip_update',
-                        action='store_true', default=False,
-              help="Don't update the plan or open it for editing.")
-    edit_parser.add_argument('--pretend', dest='pretend',
-                        action='store_true', default=False,
-              help="Open plan for editing, but don't actually do the update.")
+    commands.add_command('edit', edit, parents=[global_parser],
+                         description='Opens your plan for editing in a text editor.',
+                         help='Edit your plan in $EDITOR.')
+    commands["edit"].add_argument('-b', '--backup', dest='backup_file',
+                                  nargs='?', default=False, metavar='FILE',
+                                  help="""Backup existing plan to file before editing. To print to stdout, omit filename.""")
+    commands["edit"].add_argument('-s', '--save', dest='save_edit',
+                                  default=False, metavar='FILE',
+                                  help='Save a local copy of edited plan before submitting.')
+    commands["edit"].add_argument('--skip-update', dest='skip_update',
+                                  action='store_true', default=False,
+                                  help="Don't update the plan or open it for editing.")
+    commands["edit"].add_argument('--pretend', dest='pretend',
+                                  action='store_true', default=False,
+                                  help="Open plan for editing, but don't actually do the update.")
 
     # plugins down here (later)
 
     # get command line arguments
-    args = parser.parse_args()
+    args = commands.main.parse_args()
 
     # let command line args override equivalent config file settings
     username = args.username or config.get('login', 'username')
