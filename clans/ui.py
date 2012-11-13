@@ -85,10 +85,16 @@ def edit(pc, args, config):
 
     if args.skip_update:
         return
+
+    if args.source_file:
+        # read input from file
+        with open(args.source_file, 'r') as source:
+            edited = source.read()
     else:
         # open for external editing
         edited = external_editor(plan_text, suffix='.plan')
-        edit_was_made = edited != plan_text
+
+    edit_was_made = edited != plan_text
 
     if args.save_edit and edit_was_made:
         # save edited file
@@ -211,6 +217,10 @@ def main():
     commands.add_command('edit', edit, parents=[global_parser],
                          description='Opens your plan for editing in a text editor.',
                          help='Edit your plan in $EDITOR.')
+    commands["edit"].add_argument('-f', '--file', dest='source_file',
+                                  default=False, metavar='FILE',
+                                  help="Replace plan with the contents of FILE."
+                                  " Skips interactive editing.")
     commands["edit"].add_argument('-b', '--backup', dest='backup_file',
                                   nargs='?', default=False, metavar='FILE',
                                   help="""Backup existing plan to file before editing. To print to stdout, omit filename.""")
