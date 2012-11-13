@@ -83,19 +83,19 @@ def edit(pc, args, config):
         fp.write(plan_text)
         fp.close()
 
-    if not args.skip_update:
+    if args.skip_update:
+        return
+    else:
         # open for external editing
         edited = external_editor(plan_text, suffix='.plan')
         edit_was_made = edited != plan_text
 
-    if args.save_edit and not args.skip_update and edit_was_made:
+    if args.save_edit and edit_was_made:
         # save edited file
         fp = open(args.save_edit, 'w')
         fp.write(edited)
         fp.close()
 
-    if args.skip_update:
-        pass
     elif not edit_was_made:
         print >> sys.stderr, 'plan unchanged, aborting update'
     elif args.pretend:
