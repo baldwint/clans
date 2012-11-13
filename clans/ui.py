@@ -7,6 +7,7 @@ import sys
 import tempfile
 import subprocess
 from clans.client import PlansConnection
+import re
 
 # ----------
 # UI HELPERS
@@ -42,6 +43,15 @@ def external_editor(text, **kwargs):
         os.unlink(name)
 
     return t
+
+def ttlify(html):
+    """
+    search and replace certain html tags with ttl equivalents.
+
+    """
+    html = re.sub(r'<br ?/?>', '\n', html)
+    #TODO: lots of other things
+    return html
 
 # -----------
 # SUBCOMMANDS
@@ -94,6 +104,16 @@ def edit(pc, args, config):
         # do the plan update!
         info = pc.set_edit_text(edited, md5)
         print >> sys.stderr, info
+
+def read(pc, args, config):
+    """ plan-reading command """
+    plan =  pc.read_plan(args.plan)
+
+    if args.text:
+        plan = ttlify(plan)
+
+    print plan
+
 
 def main():
     import ConfigParser
@@ -203,6 +223,15 @@ def main():
     commands["edit"].add_argument('--pretend', dest='pretend',
                                   action='store_true', default=False,
                                   help="Open plan for editing, but don't actually do the update.")
+    # read parser
+    commands.add_command('read', read, parents=[global_parser],
+                         description="Read someone else's plan.",
+                         help="Print a plan's contents to stdout.",)
+    commands["read"].add_argument('plan', default=False, metavar='PLAN',
+                                  help="""Name of plan to be read.""")
+    commands["read"].add_argument('-t', '--text', dest='text',
+                                  action='store_true', default=False,
+                                  help="""Attempt to convert plan to plain text.""")
 
     # plugins down here (later)
 
