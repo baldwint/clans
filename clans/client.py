@@ -8,7 +8,7 @@ from urllib import urlencode
 import cookielib
 import urllib2
 import json
-from BeautifulSoup import BeautifulSoup
+import BeautifulSoup as bs3
 from HTMLParser import HTMLParser
 
 class PlansError(Exception):
@@ -115,7 +115,7 @@ class PlansConnection(object):
         # grab edit page
         html = self._get_page('edit.php').read()
         # parse out existing plan
-        soup = BeautifulSoup(html)
+        soup = bs3.BeautifulSoup(html)
         plan = soup.find('textarea')
         if plan is None:
             raise PlansError("Couldn't get edit text, are we logged in?")
@@ -144,7 +144,7 @@ class PlansConnection(object):
                      'edit_text_md5': md5,
                             'submit': 'Change Plan' }
         html = self._get_page('edit.php', post=edit_info).read()
-        soup = BeautifulSoup(html)
+        soup = bs3.BeautifulSoup(html)
         #TODO: what if the edit fails? catch warnings as well.
         info = soup.find('div', {'class': 'infomessage'})
         return info
@@ -177,7 +177,7 @@ class PlansConnection(object):
         """
         get = {'searchname': plan}
         response = self._get_page('read.php', get=get)
-        soup = BeautifulSoup(response.read())
+        soup = bs3.BeautifulSoup(response.read())
         text = soup.find('div', {'class': 'plan_text'})
         if not formatted:
             # return beautifulsoup object complete with wrapper <div>
