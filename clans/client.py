@@ -147,7 +147,7 @@ class PlansConnection(object):
         soup = bs3.BeautifulSoup(html)
         #TODO: what if the edit fails? catch warnings as well.
         info = soup.find('div', {'class': 'infomessage'})
-        return info
+        return str(info)
 
     def get_autofinger(self):
         """
@@ -195,7 +195,7 @@ class PlansConnection(object):
                     ).find(
                         'span', {'class': 'value'}
                     ).contents[0]
-            header_dict[key] = value
+            header_dict[key] = str(value)
         for key in ('lastupdated', 'lastlogin'):
             value = header.find(
                         'li', {'class': key}
@@ -204,7 +204,7 @@ class PlansConnection(object):
                     ).find(
                         'span', {'class': 'long'}
                     ).contents[0]
-            header_dict[key] = value
+            header_dict[key] = str(value)
         # format plan text
         planlets = []
         for souplet in text.contents[1:]:
@@ -254,6 +254,6 @@ class PlansConnection(object):
             for li in snippetlist:
                 snip = ''.join(str(el) for el in li.find('span').contents)
                 snippets.append(snip)
-            resultlist.append((user, int(count), snippets))
+            resultlist.append((str(user), int(count), snippets))
         return resultlist
 
