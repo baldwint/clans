@@ -113,7 +113,7 @@ def edit(pc, args, config):
 
 def read(pc, args, config):
     """ plan-reading command """
-    plan =  pc.read_plan(args.plan)
+    header, plan = pc.read_plan(args.plan)
 
     if args.text:
         plan = ttlify(plan)

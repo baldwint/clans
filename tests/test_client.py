@@ -10,7 +10,7 @@ import subprocess
 import cookielib
 import pdb
 
-TEST_URL = 'http://localhost/~tkb/plans/plans2012'
+TEST_URL = 'http://localhost/~tkb/phplans'
 
 class TestAuth(unittest.TestCase):
 
@@ -98,7 +98,7 @@ class TestPlanspeak(PlanChangingTestCase):
     def planify(self, text, xf=None):
         self.pc.set_edit_text(text, self.hashnum)
         text_plan, self.hashnum = self.pc.get_edit_text(plus_hash=True)
-        html_plan = self.pc.read_plan(self.un)
+        plan_header, html_plan = self.pc.read_plan(self.un)
         return text_plan, html_plan
 
     def test_text(self):
@@ -161,7 +161,8 @@ class TestRead(LoggedInTestCase):
 
     def test_reading(self):
         #pdb.set_trace()
-        html_plan = self.pc.read_plan(self.un)
+        plan_header, html_plan = self.pc.read_plan(self.un)
+        self.assertEqual(plan_header['username'], self.un)
 
 if __name__ == "__main__":
     unittest.main()

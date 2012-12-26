@@ -172,16 +172,40 @@ class PlansConnection(object):
 
     def read_plan(self, plan, formatted=True):
         """
-        Retrieve the contents of the specified plan in HTML format.
+        Retrieve the contents of the specified plan.
+
+        Returns two objects: the plan header (as a python dictionary)
+                             the plan text (in HTML format)
 
         """
         get = {'searchname': plan}
         response = self._get_page('read.php', get=get)
         soup = bs3.BeautifulSoup(response.read())
+        header = soup.find('div', {'id': 'header'})
         text = soup.find('div', {'class': 'plan_text'})
         if not formatted:
-            # return beautifulsoup object complete with wrapper <div>
-            return text
+            # return raw beautifulsoup objects
+            # (complete with wrapper <div>)
+            return header, text
+        # convert header html into a python dictionary
+        header_dict = {}
+        for key in ('username', 'planname'):
+            value = header.find(
+                        'li', {'class': key}
+                    ).find(
+                        'span', {'class': 'value'}
+                    ).contents[0]
+            header_dict[key] = value
+        for key in ('lastupdated', 'lastlogin'):
+            value = header.find(
+                        'li', {'class': key}
+                    ).find(
+                        'span', {'class': 'value'}
+                    ).find(
+                        'span', {'class': 'long'}
+                    ).contents[0]
+            header_dict[key] = value
+        # format plan text
         planlets = []
         for souplet in text.contents[1:]:
             if (u'class', u'sub') in souplet.attrs:
@@ -191,5 +215,5 @@ class PlansConnection(object):
                 planlet = str(souplet)
             planlets.append(planlet)
         plan = ''.join(planlets)
-        return plan
+        return header_dict, plan
 
