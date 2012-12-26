@@ -164,6 +164,21 @@ class TestRead(LoggedInTestCase):
         plan_header, html_plan = self.pc.read_plan(self.un)
         self.assertEqual(plan_header['username'], self.un)
 
+class TestSearch(PlanChangingTestCase):
+    """
+    tests that words written or planlove given in edits turns up in
+    searches right afterward
+
+    """
+
+    def test_giving_planlove(self):
+        text = ("No one doubts that [gorp] is among "
+            "the finest college outdoor programs.")
+        self.pc.set_edit_text(text, self.hashnum)
+        result = self.pc.search_plans('gorp', planlove=True)
+        plans_with_results = [tup[0] for tup in result]
+        self.assertTrue(self.un in plans_with_results)
+
 if __name__ == "__main__":
     unittest.main()
 

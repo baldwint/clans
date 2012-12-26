@@ -217,3 +217,43 @@ class PlansConnection(object):
         plan = ''.join(planlets)
         return header_dict, plan
 
+    def search_plans(self, term, planlove=False):
+        """
+        Search plans for the provided ``term``.
+
+        If ``planlove`` is ``True``, ``term`` is a username, and the
+        search will be for incidences of planlove for that user.
+
+        returns: list of plans upon which the search term was found.
+        each list element is a 3-tuple:
+         - plan name
+         - number of occurrences of search term on the plan
+         - list of plan excerpts giving context
+
+        the length of the excerpt list may be equal to or less than
+        the number of occurrences of the search term, since
+        overlapping excerpts are consolidated.
+
+        """
+        get = {'mysearch': term,
+               'planlove': int(bool(planlove))}
+        response = self._get_page('search.php', get=get)
+        soup = bs3.BeautifulSoup(response.read())
+        results = soup.find('ul', {'id': 'search_results'})
+        # results are grouped by the plan
+        # on which the result was found
+        user_groups = results.findAll(
+                'div', {'class': 'result_user_group'})
+        resultlist = []
+        for group in user_groups:
+            user = group.find('a', {'class': 'planlove'}).contents[0]
+            count = group.find('span').contents[0]
+            # now extract snippets
+            snippetlist = group.findAll('li')
+            snippets = []
+            for li in snippetlist:
+                snip = ''.join(str(el) for el in li.find('span').contents)
+                snippets.append(snip)
+            resultlist.append((user, int(count), snippets))
+        return resultlist
+
