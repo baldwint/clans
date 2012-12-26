@@ -3,13 +3,20 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to clans's documentation!
-=================================
+Command-line Plans
+==================
+
+``clans`` is a command-line client for GrinnellPlans_.
+
+.. _GrinnellPlans: http://grinnellplans.com/
 
 Contents:
 
 .. toctree::
    :maxdepth: 2
+
+   install
+..   usage
 
 
 
