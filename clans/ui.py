@@ -124,7 +124,7 @@ def read(pc, args, config):
 def main():
     import ConfigParser
     import appdirs
-    from argparse import ArgumentParser
+    from argparse import ArgumentParser, RawTextHelpFormatter
     import getpass as getpass_mod
     import imp
 
@@ -150,7 +150,8 @@ def main():
         pass # already exists
 
     # read user's config file, if present
-    config.read(os.path.join(dirs.user_data_dir, 'clans.cfg'))
+    config_loc = os.path.join(dirs.user_data_dir, 'clans.cfg')
+    config.read(config_loc)
 
     # load extensions
     if config.has_section('extensions'):
@@ -217,7 +218,10 @@ def main():
                       help='Log out before quitting.')
 
     # main parser: has subcommands for everything
-    commands = CommandSet(description=__doc__, parents=[global_parser])
+    commands = CommandSet(
+            description= __doc__ + "\n\nconfiguration file:\n  " + config_loc,
+            parents=[global_parser],
+            formatter_class=RawTextHelpFormatter)
 
     # edit parser: options/arguments for editing plans
     commands.add_command(
