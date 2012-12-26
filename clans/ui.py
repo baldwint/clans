@@ -175,14 +175,16 @@ def main():
         Dictionary of subcommands to a program.
 
         Initialize as you would the main ArgumentParser instance. Access
-        the main parser by the `.main` attribute. Individual subcommand parsers
-        are keyed by their names in the dictionary.
+        the main parser by the `.main` attribute. Individual subcommand
+        parsers are keyed by their names in the dictionary.
 
         """
 
         def __init__(self, **kwargs):
             self.main = ArgumentParser(**kwargs)
-            self.subparsers = self.main.add_subparsers(title = "commands", metavar='COMMAND')
+            self.subparsers = self.main.add_subparsers(
+                    title = "commands",
+                    metavar='COMMAND')
             super(CommandSet, self).__init__()
 
         def add_command(self, name, func, **kwargs):
@@ -202,10 +204,14 @@ def main():
     # globals: options/arguments inherited by all parsers, including root
     global_parser = ArgumentParser(add_help=False)
 
-    global_parser.add_argument('-u', '--username', dest='username', default='',
-              help='GrinnellPlans username, no brackets.')
-    global_parser.add_argument('-p', '--password', dest='password', default='',
-              help='GrinnellPlans password. Omit for secure entry.')
+    global_parser.add_argument(
+            '-u', '--username',
+            dest='username', default='',
+            help='GrinnellPlans username, no brackets.')
+    global_parser.add_argument(
+            '-p', '--password',
+            dest='password', default='',
+            help='GrinnellPlans password. Omit for secure entry.')
     global_parser.add_argument('--logout', dest='logout',
                         action='store_true', default=False,
                       help='Log out before quitting.')
@@ -214,34 +220,45 @@ def main():
     commands = CommandSet(description=__doc__, parents=[global_parser])
 
     # edit parser: options/arguments for editing plans
-    commands.add_command('edit', edit, parents=[global_parser],
-                         description='Opens your plan for editing in a text editor.',
-                         help='Edit your plan in $EDITOR.')
-    commands["edit"].add_argument('-f', '--file', dest='source_file',
-                                  default=False, metavar='FILE',
-                                  help="Replace plan with the contents of FILE."
-                                  " Skips interactive editing.")
-    commands["edit"].add_argument('-b', '--backup', dest='backup_file',
-                                  nargs='?', default=False, metavar='FILE',
-                                  help="""Backup existing plan to file before editing. To print to stdout, omit filename.""")
-    commands["edit"].add_argument('-s', '--save', dest='save_edit',
-                                  default=False, metavar='FILE',
-                                  help='Save a local copy of edited plan before submitting.')
-    commands["edit"].add_argument('--skip-update', dest='skip_update',
-                                  action='store_true', default=False,
-                                  help="Don't update the plan or open it for editing.")
-    commands["edit"].add_argument('--pretend', dest='pretend',
-                                  action='store_true', default=False,
-                                  help="Open plan for editing, but don't actually do the update.")
+    commands.add_command(
+            'edit', edit, parents=[global_parser],
+            description='Opens your plan for editing in a text editor.',
+            help='Edit your plan in $EDITOR.')
+    commands["edit"].add_argument(
+            '-f', '--file', dest='source_file',
+            default=False, metavar='FILE',
+            help="Replace plan with the contents of FILE. "
+            "Skips interactive editing.")
+    commands["edit"].add_argument(
+            '-b', '--backup', dest='backup_file',
+            nargs='?', default=False, metavar='FILE',
+            help="Backup existing plan to file before editing. "
+            "To print to stdout, omit filename.")
+    commands["edit"].add_argument(
+            '-s', '--save', dest='save_edit',
+            default=False, metavar='FILE',
+            help='Save a local copy of edited plan before submitting.')
+    commands["edit"].add_argument(
+            '--skip-update', dest='skip_update',
+            action='store_true', default=False,
+            help="Don't update the plan or open it for editing.")
+    commands["edit"].add_argument(
+            '--pretend', dest='pretend',
+            action='store_true', default=False,
+            help="Open plan for editing, but don't actually do the update.")
+
     # read parser
-    commands.add_command('read', read, parents=[global_parser],
-                         description="Read someone else's plan.",
-                         help="Print a plan's contents to stdout.",)
-    commands["read"].add_argument('plan', default=False, metavar='PLAN',
-                                  help="""Name of plan to be read.""")
-    commands["read"].add_argument('-t', '--text', dest='text',
-                                  action='store_true', default=False,
-                                  help="""Attempt to convert plan to plain text.""")
+    commands.add_command(
+            'read', read, parents=[global_parser],
+            description="Read someone else's plan.",
+            help="Print a plan's contents to stdout.",)
+    commands["read"].add_argument(
+            'plan', default=False, metavar='PLAN',
+            help="Name of plan to be read.")
+    commands["read"].add_argument(
+            '-t', '--text', dest='text',
+            action='store_true', default=False,
+            help="Attempt to convert plan to plain text.")
 
     # plugins down here (later)
 
