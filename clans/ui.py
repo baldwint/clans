@@ -118,6 +118,11 @@ def read(pc, args, config):
     if args.text:
         plan = ttlify(plan)
 
+    print 'Username: ', header['username']
+    print 'Last Updated: ', header['lastupdated']
+    print 'Last Login: ', header['lastlogin']
+    print 'Name: ', header['planname']
+    print ''
     print plan
 
 
