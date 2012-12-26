@@ -12,6 +12,8 @@ Supported commands are:
         Edit your plan in $EDITOR.
     ``read``
         Print a plan's contents to stdout.
+    ``search``
+        Search plans for a word or phrase.
 
 For help on a specific command, run::
 

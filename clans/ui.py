@@ -125,6 +125,15 @@ def read(pc, args, config):
     print ''
     print plan
 
+def search(pc, args, config):
+    """ search command """
+    results = pc.search_plans(args.term, planlove=args.love)
+
+    for un, count, snips in results:
+        print "%s: %d" % (un, count)
+        for snip in snips:
+            print " - %s" % snip
+        print ""
 
 def main():
     import ConfigParser
@@ -268,6 +277,19 @@ def main():
             '-t', '--text', dest='text',
             action='store_true', default=False,
             help="Attempt to convert plan to plain text.")
+
+    # search parser
+    commands.add_command(
+            'search', search, parents=[global_parser],
+            description="Search plans for a word or phrase.",
+            help="Search plans for a word or phrase.",)
+    commands["search"].add_argument(
+            'term', default=False, metavar='TERM',
+            help="Term to search for.")
+    commands["search"].add_argument(
+            '-l', '--love', dest='love',
+            action='store_true', default=False,
+            help="Restrict search to planlove.")
 
     # plugins down here (later)
 
