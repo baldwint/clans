@@ -9,6 +9,7 @@ from clans.client import PlansConnection
 import subprocess
 import cookielib
 import pdb
+import md5
 
 TEST_URL = 'http://localhost/~tkb/phplans'
 
@@ -68,8 +69,9 @@ class TestEdit(LoggedInTestCase):
         self.prepend_and_remove("<hr>contact info blah blah<hr>")
 
     def test_md5(self):
-        #TODO
-        pass
+        plan, server_hashnum = self.pc.get_edit_text(plus_hash=True)
+        python_hashnum = md5.md5(plan).hexdigest()
+        self.assertEqual(server_hashnum, python_hashnum)
 
 class PlanChangingTestCase(LoggedInTestCase):
     """
@@ -82,9 +84,11 @@ class PlanChangingTestCase(LoggedInTestCase):
         super(PlanChangingTestCase, self).setUp()
         self.orig, self.hashnum = self.pc.get_edit_text(plus_hash=True)
         # tests should set hashnum as they go along
+        # (but sometimes they fail)
 
     def tearDown(self):
-        result = self.pc.set_edit_text(self.orig, self.hashnum)
+        whatever, ending_hash = self.pc.get_edit_text(plus_hash=True)
+        result = self.pc.set_edit_text(self.orig, ending_hash)
         self.assertTrue("Plan changed successfully" in str(result))
 
 
