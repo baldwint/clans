@@ -195,6 +195,7 @@ def search(pc, args, config):
 import ConfigParser
 import appdirs
 import imp
+from collections import OrderedDict
 
 class ClansSession(object):
     """
@@ -241,9 +242,15 @@ class ClansSession(object):
         return config
 
     def _load_extensions(self):
-        # load extensions
+        """
+        Load Clans extensions.
+
+        reads the config file for extension information, and loads
+        extensions as python modules into an ordered dictionary.
+
+        """
         if self.config.has_section('extensions'):
-            extensions, ext_order = {}, []
+            extensions = OrderedDict()
             for name, path in self.config.items('extensions'):
                 try:
                     if path:
@@ -254,9 +261,7 @@ class ClansSession(object):
                     print >> sys.stderr, 'Failed to load extension "%s".' % name
                 else:
                     extensions[name] = mod
-                    ext_order.append(name)
-
-        return extensions, ext_order
+        return extensions
 
     # TODO hooks into extension modules
 
