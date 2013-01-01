@@ -5,6 +5,7 @@ Provides client interface to Plans.
 """
 
 from urllib import urlencode
+import urlparse
 import cookielib
 import urllib2
 import json
@@ -25,6 +26,20 @@ class PlansPageParser(HTMLParser):
             # (can use to identify page)
             for key, value in attrs:
                 if key == 'id': self.page_id = value
+        if tag == 'a':
+            # parse out username to see who we're logged in as.
+            # amazingly, the only place this reliably appears
+            # is in the bug report link at the bottom of every page.
+            attrs = dict(attrs)
+            href = urlparse.urlparse(attrs.get('href'))
+            if (href.netloc == 'code.google.com'
+                    and href.path == '/p/grinnellplans/issues/entry'):
+                # if this is the bug submission link
+                query = urlparse.parse_qsl(href.query)
+                comment = dict(query)['comment']
+                # find username in submission content using brackets
+                start, stop = comment.index('['), comment.index(']')
+                self.username = comment[start + 1:stop]
         if tag == 'input':
             # parse edit text md5 from input tag.
             # in the current plans implementation,
@@ -64,6 +79,7 @@ class PlansConnection(object):
         proc = urllib2.HTTPCookieProcessor(self.cookiejar)
         self.opener = urllib2.build_opener(proc)
         self.parser = PlansPageParser()
+        self.username = None
 
     def _get_page(self, name, get=None, post=None):
         """
@@ -100,7 +116,11 @@ class PlansConnection(object):
                         'submit': 'Login' }
         response = self._get_page('index.php', post=login_info)
         # if login is successful, we'll be redirected to home
-        return response.geturl()[-9:] == '/home.php'
+        success = response.geturl()[-9:] == '/home.php'
+        if success:
+            self.parser.feed(response.read()) # parse out username
+            self.username = self.parser.username
+        return success
 
     def get_edit_text(self, plus_hash=False):
         """
@@ -129,6 +149,8 @@ class PlansConnection(object):
             md5sum = self.parser.edit_text_md5
             # also, explicitly compute the hash, for kicks
             assert md5sum == md5(plan.encode('utf8')).hexdigest()
+            # verify that username has not changed
+            assert self.username == self.parser.username
             return plan, md5sum
         else:
             return plan

@@ -23,10 +23,16 @@ class TestAuth(unittest.TestCase):
         self.pc = PlansConnection(base_url = TEST_URL)
         # we should not be admitted if we give the wrong password
         self.assertFalse(self.pc.plans_login('baldwint', 'wrong_password'))
+        self.assertNotEqual('baldwint', self.pc.username)
         # we should be admitted if we provide the correct one
         self.assertTrue(self.pc.plans_login('baldwint', 'password'))
+        self.assertEqual('baldwint', self.pc.username)
         # once we are logged in, plans_login always returns true
         self.assertTrue(self.pc.plans_login('baldwint', ''))
+        self.assertEqual('baldwint', self.pc.username)
+        # even if we give a bad username
+        self.assertTrue(self.pc.plans_login('foobar', ''))
+        self.assertEqual('baldwint', self.pc.username)
 
     def test_cookie(self):
         oreo = cookielib.LWPCookieJar()
