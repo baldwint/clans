@@ -188,165 +188,211 @@ def search(pc, args, config):
     results = pc.search_plans(args.term, planlove=args.love)
     print_search_results(results)
 
-def main():
-    import ConfigParser
-    import appdirs
-    import imp
+# -------------
+# CLANS SESSION
+# -------------
 
-    # set config file defaults
-    config = ConfigParser.ConfigParser()
-    config.add_section('login')
-    config.set('login', 'username', '')
-    config.set('login', 'url', 'http://www.grinnellplans.com')
+import ConfigParser
+import appdirs
+import imp
 
-    # create config directory if it doesn't exist
-    dirs = appdirs.AppDirs(appname='clans', appauthor='baldwint')
-    try:
-        # 0700 for secure-ish cookie storage.
-        os.mkdir(dirs.user_data_dir, 0700)
-    except OSError:
-        pass # already exists
+class ClansSession(object):
+    """
+    This object is created on each `clans` incantation as a storage
+    place for configuration info, command-line arguments, and other
+    stuff
 
-    # read user's config file, if present
-    config_loc = os.path.join(dirs.user_data_dir, 'clans.cfg')
-    config.read(config_loc)
+    """
 
-    # load extensions
-    if config.has_section('extensions'):
-        extensions, ext_order = {}, []
-        for name, path in config.items('extensions'):
-            try:
-                if path:
-                    mod = imp.load_source("clans_ext_%s" % name, path)
+    def __init__(self):
+        # configure configuration directory/file names.
+        self.dirs = appdirs.AppDirs(appname='clans', appauthor='baldwint')
+        self.config_loc = os.path.join(self.dirs.user_data_dir, 'clans.cfg')
+
+        # load config, extensions, and define command line args
+        self.config = self._load_config()
+        self.extensions = self._load_extensions()
+        self.commands = self._load_commands()
+
+        # get command line arguments
+        self.args = self.commands.main.parse_args()
+
+        # let command line args override equivalent config file settings
+        self.username = (self.args.username or
+                self.config.get('login', 'username'))
+
+    def _load_config(self):
+        # set config file defaults
+        config = ConfigParser.ConfigParser()
+        config.add_section('login')
+        config.set('login', 'username', '')
+        config.set('login', 'url', 'http://www.grinnellplans.com')
+
+        # create config directory if it doesn't exist
+        try:
+            # 0700 for secure-ish cookie storage.
+            os.mkdir(self.dirs.user_data_dir, 0700)
+        except OSError:
+            pass # already exists
+
+        # read user's config file, if present
+        config.read(self.config_loc)
+
+        return config
+
+    def _load_extensions(self):
+        # load extensions
+        if self.config.has_section('extensions'):
+            extensions, ext_order = {}, []
+            for name, path in self.config.items('extensions'):
+                try:
+                    if path:
+                        mod = imp.load_source("clans_ext_%s" % name, path)
+                    else:
+                        mod = __import__('clans.ext.%s' % name)
+                except (ImportError, IOError):
+                    print >> sys.stderr, 'Failed to load extension "%s".' % name
                 else:
-                    mod = __import__('clans.ext.%s' % name)
-            except (ImportError, IOError):
-                print >> sys.stderr, 'Failed to load extension "%s".' % name
-            else:
-                extensions[name] = mod
-                ext_order.append(name)
+                    extensions[name] = mod
+                    ext_order.append(name)
+
+        return extensions, ext_order
 
     # TODO hooks into extension modules
 
-    # define command line arguments
+    def _load_commands(self):
+        # define command line arguments
 
-    # globals: options/arguments inherited by all parsers, including root
-    global_parser = argparse.ArgumentParser(add_help=False)
+        # globals: options/arguments inherited by all parsers, including root
+        global_parser = argparse.ArgumentParser(add_help=False)
 
-    global_parser.add_argument(
-            '-u', '--username',
-            dest='username', default='',
-            help='GrinnellPlans username, no brackets.')
-    global_parser.add_argument(
-            '-p', '--password',
-            dest='password', default='',
-            help='GrinnellPlans password. Omit for secure entry.')
-    global_parser.add_argument('--logout', dest='logout',
-                        action='store_true', default=False,
-                      help='Log out before quitting.')
+        global_parser.add_argument(
+                '-u', '--username',
+                dest='username', default='',
+                help='GrinnellPlans username, no brackets.')
+        global_parser.add_argument(
+                '-p', '--password',
+                dest='password', default='',
+                help='GrinnellPlans password. Omit for secure entry.')
+        global_parser.add_argument('--logout', dest='logout',
+                            action='store_true', default=False,
+                          help='Log out before quitting.')
 
-    # main parser: has subcommands for everything
-    commands = CommandSet(
-            description= __doc__ + "\n\nconfiguration file:\n  " + config_loc,
-            parents=[global_parser],
-            formatter_class=argparse.RawTextHelpFormatter)
+        # main parser: has subcommands for everything
+        commands = CommandSet(
+                description= __doc__ + "\n\nconfiguration file:\n  " + self.config_loc,
+                parents=[global_parser],
+                formatter_class=argparse.RawTextHelpFormatter)
 
-    # edit parser: options/arguments for editing plans
-    commands.add_command(
-            'edit', edit, parents=[global_parser],
-            description='Opens your plan for editing in a text editor.',
-            help='Edit your plan in $EDITOR.')
-    commands["edit"].add_argument(
-            '-f', '--file', dest='source_file',
-            default=False, metavar='FILE',
-            help="Replace plan with the contents of FILE. "
-            "Skips interactive editing.")
-    commands["edit"].add_argument(
-            '-b', '--backup', dest='backup_file',
-            nargs='?', default=False, metavar='FILE',
-            help="Backup existing plan to file before editing. "
-            "To print to stdout, omit filename.")
-    commands["edit"].add_argument(
-            '-s', '--save', dest='save_edit',
-            default=False, metavar='FILE',
-            help='Save a local copy of edited plan before submitting.')
-    commands["edit"].add_argument(
-            '--skip-update', dest='skip_update',
-            action='store_true', default=False,
-            help="Don't update the plan or open it for editing.")
-    commands["edit"].add_argument(
-            '--pretend', dest='pretend',
-            action='store_true', default=False,
-            help="Open plan for editing, but don't actually do the update.")
+        # edit parser: options/arguments for editing plans
+        commands.add_command(
+                'edit', edit, parents=[global_parser],
+                description='Opens your plan for editing in a text editor.',
+                help='Edit your plan in $EDITOR.')
+        commands["edit"].add_argument(
+                '-f', '--file', dest='source_file',
+                default=False, metavar='FILE',
+                help="Replace plan with the contents of FILE. "
+                "Skips interactive editing.")
+        commands["edit"].add_argument(
+                '-b', '--backup', dest='backup_file',
+                nargs='?', default=False, metavar='FILE',
+                help="Backup existing plan to file before editing. "
+                "To print to stdout, omit filename.")
+        commands["edit"].add_argument(
+                '-s', '--save', dest='save_edit',
+                default=False, metavar='FILE',
+                help='Save a local copy of edited plan before submitting.')
+        commands["edit"].add_argument(
+                '--skip-update', dest='skip_update',
+                action='store_true', default=False,
+                help="Don't update the plan or open it for editing.")
+        commands["edit"].add_argument(
+                '--pretend', dest='pretend',
+                action='store_true', default=False,
+                help="Open plan for editing, but don't actually do the update.")
 
-    # read parser
-    commands.add_command(
-            'read', read, parents=[global_parser],
-            description="Read someone else's plan.",
-            help="Print a plan's contents to stdout.",)
-    commands["read"].add_argument(
-            'plan', default=False, metavar='PLAN',
-            help="Name of plan to be read.")
-    commands["read"].add_argument(
-            '-t', '--text', dest='text',
-            action='store_true', default=False,
-            help="Attempt to convert plan to plain text.")
+        # read parser
+        commands.add_command(
+                'read', read, parents=[global_parser],
+                description="Read someone else's plan.",
+                help="Print a plan's contents to stdout.",)
+        commands["read"].add_argument(
+                'plan', default=False, metavar='PLAN',
+                help="Name of plan to be read.")
+        commands["read"].add_argument(
+                '-t', '--text', dest='text',
+                action='store_true', default=False,
+                help="Attempt to convert plan to plain text.")
 
-    # quicklove parser
-    commands.add_command(
-            'love', love, parents=[global_parser],
-            description="Search for other users giving you planlove.",
-            help="Check quicklove.",)
+        # quicklove parser
+        commands.add_command(
+                'love', love, parents=[global_parser],
+                description="Search for other users giving you planlove.",
+                help="Check quicklove.",)
 
-    # search parser
-    commands.add_command(
-            'search', search, parents=[global_parser],
-            description="Search plans for any word or phrase.",
-            help="Search plans for any word or phrase.",)
-    commands["search"].add_argument(
-            'term', default=False, metavar='TERM',
-            help="Term to search for.")
-    commands["search"].add_argument(
-            '-l', '--love', dest='love',
-            action='store_true', default=False,
-            help="Restrict search to planlove.")
+        # search parser
+        commands.add_command(
+                'search', search, parents=[global_parser],
+                description="Search plans for any word or phrase.",
+                help="Search plans for any word or phrase.",)
+        commands["search"].add_argument(
+                'term', default=False, metavar='TERM',
+                help="Term to search for.")
+        commands["search"].add_argument(
+                '-l', '--love', dest='love',
+                action='store_true', default=False,
+                help="Restrict search to planlove.")
+
+        return commands
 
     # plugins down here (later)
 
-    # get command line arguments
-    args = commands.main.parse_args()
+# -------------
+# MAIN FUNCTION
+# -------------
 
-    # let command line args override equivalent config file settings
-    username = args.username or config.get('login', 'username')
+def main():
+    """
+    Initializes ClansSession, connects to plans, then calls subcommand.
 
-    cj = cookielib.LWPCookieJar(
-        os.path.join(dirs.user_data_dir, '%s.cookie' % username))
+    """
+    # initialize clans session
+    session = ClansSession()
 
+    # create a cookie
+    cookie = cookielib.LWPCookieJar(
+            os.path.join(
+                session.dirs.user_data_dir,
+                '%s.cookie' % session.username))
     try:
-        cj.load() # this will fail with IOError if it does not exist
+        cookie.load() # this will fail with IOError if it does not exist
     except IOError:
-        pass      # no cookie saved for this user
+        pass          # no cookie saved for this user
 
-    pc = PlansConnection(cj, base_url = config.get('login', 'url'))
+    # create plans connection using cookie
+    pc = PlansConnection(
+            cookie, base_url = session.config.get('login', 'url'))
 
     if pc.plans_login():
         pass # we're still logged in
     else:
         # we're not logged in, prompt for password if necessary
-        password = args.password or getpass("[%s]'s password: " % username)
-        success = pc.plans_login(username, password)
+        password = (session.args.password or
+                getpass("[%s]'s password: " % session.username))
+        success = pc.plans_login(session.username, password)
         if not success:
-            print >> sys.stderr, 'Failed to log in as [%s].' % username
+            print >> sys.stderr, 'Failed to log in as [%s].' % session.username
             sys.exit(1)
 
     # pass execution to the subcommand
-    args.func(pc, args, config)
+    session.args.func(pc, session.args, session.config)
 
-    if args.logout:
-        os.unlink(cj.filename)
+    if session.args.logout:
+        os.unlink(cookie.filename)
     else:
         # save cookie
-        cj.save()
+        cookie.save()
 
 if __name__ == '__main__':
     main()
