@@ -70,7 +70,7 @@ def edit(pc, args, config):
         pass
     elif args.backup_file is None:
         # print existing plan to stdout and exit
-        print >> sys.stdout, plan_text
+        print >> sys.stdout, plan_text.encode(sys.stdout.encoding or 'utf8')
         sys.exit()
     elif args.backup_file:
         # save existing plan to file
