@@ -112,34 +112,33 @@ def print_search_results(results):
 # SUBCOMMANDS
 # -----------
 
-# these are functions that take three agruments:
+# these are functions that take two agruments:
 #  - a PlansConnection instance
-#  - a namespace of parsed arguments
-#  - a configfile instance.
+#  - a ClansSession instance
 
-def edit(pc, args, config):
+def edit(pc, cs):
     """ plan-editing command """
     plan_text, md5 = pc.get_edit_text(plus_hash=True)
 
-    if args.backup_file is False:
+    if cs.args.backup_file is False:
         pass
-    elif args.backup_file is None:
+    elif cs.args.backup_file is None:
         # print existing plan to stdout and exit
         print >> sys.stdout, plan_text.encode(sys.stdout.encoding or 'utf8')
         sys.exit()
-    elif args.backup_file:
+    elif cs.args.backup_file:
         # save existing plan to file
         # NB, there will be no newline at the end of the file
-        fp = open(args.backup_file, 'w')
+        fp = open(cs.args.backup_file, 'w')
         fp.write(plan_text.encode('utf8'))
         fp.close()
 
-    if args.skip_update:
+    if cs.args.skip_update:
         return
 
-    if args.source_file:
+    if cs.args.source_file:
         # read input from file
-        with open(args.source_file, 'r') as source:
+        with open(cs.args.source_file, 'r') as source:
             edited = source.read()
             edited = edited.decode('utf8')
     else:
@@ -148,15 +147,15 @@ def edit(pc, args, config):
 
     edit_was_made = edited != plan_text
 
-    if args.save_edit and edit_was_made:
+    if cs.args.save_edit and edit_was_made:
         # save edited file
-        fp = open(args.save_edit, 'w')
+        fp = open(cs.args.save_edit, 'w')
         fp.write(edited.encode('utf8'))
         fp.close()
 
     elif not edit_was_made:
         print >> sys.stderr, 'plan unchanged, aborting update'
-    elif args.pretend:
+    elif cs.args.pretend:
         print >> sys.stderr, "in 'pretend' mode, not really editing"
     else:
         # do the plan update!
@@ -164,11 +163,11 @@ def edit(pc, args, config):
         info = pc.set_edit_text(edited, md5)
         print >> sys.stderr, info
 
-def read(pc, args, config):
+def read(pc, cs):
     """ plan-reading command """
-    header, plan = pc.read_plan(args.plan)
+    header, plan = pc.read_plan(cs.args.plan)
 
-    if args.text:
+    if cs.args.text:
         plan = ttlify(plan)
 
     print 'Username: ', header['username']
@@ -178,14 +177,14 @@ def read(pc, args, config):
     print ''
     print plan
 
-def love(pc, args, config):
+def love(pc, cs):
     """ quicklove command """
     results = pc.search_plans(pc.username, planlove=True)
     print_search_results(results)
 
-def search(pc, args, config):
+def search(pc, cs):
     """ search command """
-    results = pc.search_plans(args.term, planlove=args.love)
+    results = pc.search_plans(cs.args.term, planlove=cs.args.love)
     print_search_results(results)
 
 # -------------
@@ -363,37 +362,34 @@ def main():
 
     """
     # initialize clans session
-    session = ClansSession()
+    cs = ClansSession()
 
     # create a cookie
     cookie = cookielib.LWPCookieJar(
-            os.path.join(
-                session.dirs.user_data_dir,
-                '%s.cookie' % session.username))
+            os.path.join(cs.dirs.user_data_dir, '%s.cookie' % cs.username))
     try:
         cookie.load() # this will fail with IOError if it does not exist
     except IOError:
         pass          # no cookie saved for this user
 
     # create plans connection using cookie
-    pc = PlansConnection(
-            cookie, base_url = session.config.get('login', 'url'))
+    pc = PlansConnection(cookie, base_url = cs.config.get('login', 'url'))
 
     if pc.plans_login():
         pass # we're still logged in
     else:
         # we're not logged in, prompt for password if necessary
-        password = (session.args.password or
-                getpass("[%s]'s password: " % session.username))
-        success = pc.plans_login(session.username, password)
+        password = (cs.args.password or
+                getpass("[%s]'s password: " % cs.username))
+        success = pc.plans_login(cs.username, password)
         if not success:
-            print >> sys.stderr, 'Failed to log in as [%s].' % session.username
+            print >> sys.stderr, 'Failed to log in as [%s].' % cs.username
             sys.exit(1)
 
     # pass execution to the subcommand
-    session.args.func(pc, session.args, session.config)
+    cs.args.func(pc, cs)
 
-    if session.args.logout:
+    if cs.args.logout:
         os.unlink(cookie.filename)
     else:
         # save cookie
