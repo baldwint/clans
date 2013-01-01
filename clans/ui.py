@@ -53,6 +53,20 @@ def ttlify(html):
     #TODO: lots of other things
     return html
 
+def print_search_results(results):
+    """
+    prints search results to stdout.
+
+    :param results: whatever was returned by the ``search_plans``
+    method on PlansConnection.
+
+    """
+    for un, count, snips in results:
+        print "%s: %d" % (un, count)
+        for snip in snips:
+            print " - %s" % snip
+        print ""
+
 # -----------
 # SUBCOMMANDS
 # -----------
@@ -123,15 +137,15 @@ def read(pc, args, config):
     print ''
     print plan
 
+def love(pc, args, config):
+    """ quicklove command """
+    results = pc.search_plans(pc.username, planlove=True)
+    print_search_results(results)
+
 def search(pc, args, config):
     """ search command """
     results = pc.search_plans(args.term, planlove=args.love)
-
-    for un, count, snips in results:
-        print "%s: %d" % (un, count)
-        for snip in snips:
-            print " - %s" % snip
-        print ""
+    print_search_results(results)
 
 def main():
     import ConfigParser
@@ -276,11 +290,17 @@ def main():
             action='store_true', default=False,
             help="Attempt to convert plan to plain text.")
 
+    # quicklove parser
+    commands.add_command(
+            'love', love, parents=[global_parser],
+            description="Search for other users giving you planlove.",
+            help="Check quicklove.",)
+
     # search parser
     commands.add_command(
             'search', search, parents=[global_parser],
-            description="Search plans for a word or phrase.",
-            help="Search plans for a word or phrase.",)
+            description="Search plans for any word or phrase.",
+            help="Search plans for any word or phrase.",)
     commands["search"].add_argument(
             'term', default=False, metavar='TERM',
             help="Term to search for.")
