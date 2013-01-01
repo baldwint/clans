@@ -30,11 +30,8 @@ class PlansPageParser(HTMLParser):
             # in the current plans implementation,
             # the syntax is < > and not < />
             attrs = dict(attrs)
-            try:
-                if attrs['name'] == 'edit_text_md5':
-                    self.edit_text_md5 = attrs['value']
-            except KeyError:
-                pass
+            if attrs.get('name') == 'edit_text_md5':
+                self.edit_text_md5 = attrs['value']
 
 # -------------------------------------------
 #              PLANS SCRAPEY-I
