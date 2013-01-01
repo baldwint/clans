@@ -255,14 +255,24 @@ class ClansSession(object):
                     if path:
                         mod = imp.load_source("clans_ext_%s" % name, path)
                     else:
-                        mod = __import__('clans.ext.%s' % name)
+                        mod = __import__('clans.ext.%s' % name,
+                                         fromlist='clans.ext')
+                        assert mod.__name__ == 'clans.ext.%s' % name
                 except (ImportError, IOError):
                     print >> sys.stderr, 'Failed to load extension "%s".' % name
                 else:
                     extensions[name] = mod
         return extensions
 
-    # TODO hooks into extension modules
+    def hook(self, name):
+        """
+        Call the method named ``name`` in every loaded extension.
+
+        """
+        for ext_name, ext in self.extensions.iteritems():
+            func = getattr(ext, name, None)
+            if func is not None:
+                func()
 
     def _load_commands(self):
         # define command line arguments
