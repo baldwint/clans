@@ -28,7 +28,7 @@ def external_editor(text, **kwargs):
     try:
         # populate the temp file with original text.
         f = os.fdopen(fd, 'w')
-        f.write(text)
+        f.write(text.encode('utf8'))
         f.close()
 
         # open in $EDITOR (default to pico)
@@ -42,7 +42,7 @@ def external_editor(text, **kwargs):
     finally:
         os.unlink(name)
 
-    return t
+    return t.decode('utf8')
 
 def ttlify(html):
     """
@@ -66,11 +66,6 @@ def edit(pc, args, config):
     """ plan-editing command """
     plan_text, md5 = pc.get_edit_text(plus_hash=True)
 
-    #TODO: get these to match somehow
-    #import hashlib
-    #print md5
-    #print hashlib.md5(plan_text).hexdigest()
-
     if args.backup_file is False:
         pass
     elif args.backup_file is None:
@@ -79,8 +74,9 @@ def edit(pc, args, config):
         sys.exit()
     elif args.backup_file:
         # save existing plan to file
+        # NB, there will be no newline at the end of the file
         fp = open(args.backup_file, 'w')
-        fp.write(plan_text)
+        fp.write(plan_text.encode('utf8'))
         fp.close()
 
     if args.skip_update:
@@ -90,6 +86,7 @@ def edit(pc, args, config):
         # read input from file
         with open(args.source_file, 'r') as source:
             edited = source.read()
+            edited = edited.decode('utf8')
     else:
         # open for external editing
         edited = external_editor(plan_text, suffix='.plan')
@@ -99,7 +96,7 @@ def edit(pc, args, config):
     if args.save_edit and edit_was_made:
         # save edited file
         fp = open(args.save_edit, 'w')
-        fp.write(edited)
+        fp.write(edited.encode('utf8'))
         fp.close()
 
     elif not edit_was_made:
@@ -108,6 +105,7 @@ def edit(pc, args, config):
         print >> sys.stderr, "in 'pretend' mode, not really editing"
     else:
         # do the plan update!
+        assert type(edited) == unicode
         info = pc.set_edit_text(edited, md5)
         print >> sys.stderr, info
 

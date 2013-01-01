@@ -10,6 +10,7 @@ import urllib2
 import json
 import BeautifulSoup as bs3
 from HTMLParser import HTMLParser
+from hashlib import md5
 
 class PlansError(Exception):
     """Exception raised when there is an error talking to plans."""
@@ -114,18 +115,24 @@ class PlansConnection(object):
         """
         # grab edit page
         html = self._get_page('edit.php').read()
+        # Convert to unicode.
+        # This will fail hard if plans ever serves invalid UTF-8.
+        html = html.decode('utf-8')
         # parse out existing plan
-        soup = bs3.BeautifulSoup(html)
+        soup = bs3.BeautifulSoup(html, fromEncoding='utf-8')
         plan = soup.find('textarea')
         if plan is None:
             raise PlansError("Couldn't get edit text, are we logged in?")
         else:
-            plan = plan.text.encode('utf8')
+            plan = plan.text
+            assert type(plan) == unicode
         if plus_hash:
             # parse out plan md5
             self.parser.feed(html)
-            md5 = self.parser.edit_text_md5
-            return plan, md5
+            md5sum = self.parser.edit_text_md5
+            # also, explicitly compute the hash, for kicks
+            assert md5sum == md5(plan.encode('utf8')).hexdigest()
+            return plan, md5sum
         else:
             return plan
 
@@ -140,11 +147,12 @@ class PlansConnection(object):
         Returns info message.
 
         """
+        newtext = newtext.encode('utf8')
         edit_info = {         'plan': newtext,
                      'edit_text_md5': md5,
                             'submit': 'Change Plan' }
         html = self._get_page('edit.php', post=edit_info).read()
-        soup = bs3.BeautifulSoup(html)
+        soup = bs3.BeautifulSoup(html, fromEncoding='utf-8')
         #TODO: what if the edit fails? catch warnings as well.
         info = soup.find('div', {'class': 'infomessage'})
         return str(info)
@@ -180,7 +188,7 @@ class PlansConnection(object):
         """
         get = {'searchname': plan}
         response = self._get_page('read.php', get=get)
-        soup = bs3.BeautifulSoup(response.read())
+        soup = bs3.BeautifulSoup(response.read(), fromEncoding='utf-8')
         header = soup.find('div', {'id': 'header'})
         text = soup.find('div', {'class': 'plan_text'})
         if not formatted:
@@ -238,7 +246,7 @@ class PlansConnection(object):
         get = {'mysearch': term,
                'planlove': int(bool(planlove))}
         response = self._get_page('search.php', get=get)
-        soup = bs3.BeautifulSoup(response.read())
+        soup = bs3.BeautifulSoup(response.read(), fromEncoding='utf-8')
         results = soup.find('ul', {'id': 'search_results'})
         # results are grouped by the plan
         # on which the result was found

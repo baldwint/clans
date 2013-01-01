@@ -9,9 +9,13 @@ from clans.client import PlansConnection
 import subprocess
 import cookielib
 import pdb
-import md5
+from hashlib import md5
 
 TEST_URL = 'http://localhost/~tkb/phplans'
+# when using a local PHP-Plans development server to test clans,
+# it is VITAL to set the 'display_errors' initialization parameter to
+# FALSE in Plans.php. Otherwise, PHP debug messages will be tacked on
+# to the top of pages, which will confuse the clans parser.
 
 class TestAuth(unittest.TestCase):
 
@@ -68,10 +72,14 @@ class TestEdit(LoggedInTestCase):
         self.prepend_and_remove("<b>so excited</b>")
         self.prepend_and_remove("<hr>contact info blah blah<hr>")
 
-    def test_md5(self):
+    def test_md5_existing(self):
+        # this just tests md5 on the existing plan data
         plan, server_hashnum = self.pc.get_edit_text(plus_hash=True)
-        python_hashnum = md5.md5(plan).hexdigest()
+        python_hashnum = md5(plan.encode('utf8')).hexdigest()
         self.assertEqual(server_hashnum, python_hashnum)
+
+    def test_unicode_editing(self):
+        self.prepend_and_remove(u"Non-breaking \xa0\xa0 spaces")
 
 class PlanChangingTestCase(LoggedInTestCase):
     """
@@ -91,6 +99,21 @@ class PlanChangingTestCase(LoggedInTestCase):
         result = self.pc.set_edit_text(self.orig, ending_hash)
         self.assertTrue("Plan changed successfully" in str(result))
 
+class TestMD5(PlanChangingTestCase):
+
+    #@unittest.expectedFailure
+    def md5check(self, phrase):
+        self.pc.set_edit_text(phrase, self.hashnum)
+        plan, server_hashnum = self.pc.get_edit_text(plus_hash=True)
+        self.hashnum = server_hashnum # for later cleanup
+        python_hashnum = md5(plan.encode('utf-8')).hexdigest()
+        self.assertEqual(server_hashnum, python_hashnum)
+
+    def test_md5(self):
+        self.md5check("<tt># 10 11 12 -----------------</tt>")
+        self.md5check("<b>so excited</b>")
+        self.md5check("<hr>contact info blah blah<hr>")
+        self.md5check(u'Non-breaking \xa0\xa0 spaces!')
 
 class TestPlanspeak(PlanChangingTestCase):
     """
