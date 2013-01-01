@@ -7,6 +7,8 @@ import sys
 import tempfile
 import subprocess
 from clans.client import PlansConnection
+import getpass as getpass_mod
+import argparse
 import re
 
 # ----------
@@ -43,6 +45,45 @@ def external_editor(text, **kwargs):
         os.unlink(name)
 
     return t.decode('utf8')
+
+def getpass(*args, **kwargs):
+    """ version of getpass that works better on py26 """
+    password = getpass_mod.getpass(*args, **kwargs)
+    if '\x03' in password:
+        # http://bugs.python.org/issue11236 (2.6 only)
+        raise KeyboardInterrupt('aborted by user')
+    return password
+
+class CommandSet(dict):
+    """
+    Dictionary of subcommands to a program.
+
+    Initialize as you would the main ArgumentParser instance. Access
+    the main parser by the `.main` attribute. Individual subcommand
+    parsers are keyed by their names in the dictionary.
+
+    """
+
+    def __init__(self, **kwargs):
+        self.main = argparse.ArgumentParser(**kwargs)
+        self.subparsers = self.main.add_subparsers(
+                title = "commands",
+                metavar='COMMAND')
+        super(CommandSet, self).__init__()
+
+    def add_command(self, name, func, **kwargs):
+        """
+        Add a new subcommand to a program.
+
+        :param name: name of the command.
+        :param func: function implementing command
+
+        Keyword arguments are passed to the ArgumentParser constructor.
+
+        """
+        parser = self.subparsers.add_parser(name, **kwargs)
+        parser.set_defaults(func=func)
+        self[name] = parser
 
 def ttlify(html):
     """
@@ -150,16 +191,7 @@ def search(pc, args, config):
 def main():
     import ConfigParser
     import appdirs
-    from argparse import ArgumentParser, RawTextHelpFormatter
-    import getpass as getpass_mod
     import imp
-
-    def getpass(*args, **kwargs):
-        password = getpass_mod.getpass(*args, **kwargs)
-        if '\x03' in password:
-            # http://bugs.python.org/issue11236 (2.6 only)
-            raise KeyboardInterrupt('aborted by user')
-        return password
 
     # set config file defaults
     config = ConfigParser.ConfigParser()
@@ -197,39 +229,9 @@ def main():
     # TODO hooks into extension modules
 
     # define command line arguments
-    class CommandSet(dict):
-        """
-        Dictionary of subcommands to a program.
-
-        Initialize as you would the main ArgumentParser instance. Access
-        the main parser by the `.main` attribute. Individual subcommand
-        parsers are keyed by their names in the dictionary.
-
-        """
-
-        def __init__(self, **kwargs):
-            self.main = ArgumentParser(**kwargs)
-            self.subparsers = self.main.add_subparsers(
-                    title = "commands",
-                    metavar='COMMAND')
-            super(CommandSet, self).__init__()
-
-        def add_command(self, name, func, **kwargs):
-            """
-            Add a new subcommand to a program.
-
-            :param name: name of the command.
-            :param func: function implementing command
-
-            Keyword arguments are passed to the ArgumentParser constructor.
-
-            """
-            parser = self.subparsers.add_parser(name, **kwargs)
-            parser.set_defaults(func=func)
-            self[name] = parser
 
     # globals: options/arguments inherited by all parsers, including root
-    global_parser = ArgumentParser(add_help=False)
+    global_parser = argparse.ArgumentParser(add_help=False)
 
     global_parser.add_argument(
             '-u', '--username',
@@ -247,7 +249,7 @@ def main():
     commands = CommandSet(
             description= __doc__ + "\n\nconfiguration file:\n  " + config_loc,
             parents=[global_parser],
-            formatter_class=RawTextHelpFormatter)
+            formatter_class=argparse.RawTextHelpFormatter)
 
     # edit parser: options/arguments for editing plans
     commands.add_command(
