@@ -6,7 +6,7 @@ import os
 import sys
 import tempfile
 import subprocess
-from clans.client import PlansConnection
+from clans.client import PlansConnection, PlansError
 import getpass as getpass_mod
 import argparse
 import re
@@ -134,6 +134,7 @@ def edit(pc, cs):
         # open for external editing
         edited = external_editor(plan_text, suffix='.plan')
 
+    assert type(edited) == unicode
     cs.hook('pre_set_edit_text', edited)
 
     edit_was_made = edited != plan_text
@@ -144,9 +145,16 @@ def edit(pc, cs):
         print >> sys.stderr, "in 'pretend' mode, not really editing"
     else:
         # do the plan update!
-        assert type(edited) == unicode
-        info = pc.set_edit_text(edited, md5)
-        print >> sys.stderr, info
+        try:
+            info = pc.set_edit_text(edited, md5)
+            print >> sys.stderr, info
+        except PlansError as err:
+            print >> sys.stderr, err
+            bakfile = '%s.plan.unsubmitted' % cs.username
+            with open(bakfile, 'w') as fl:
+                fl.write(edited.encode('utf8'))
+            print >> sys.stderr, "A copy of your unsubmitted edit" \
+                    " was stored in %s" % bakfile
 
 def read(pc, cs):
     """ plan-reading command """

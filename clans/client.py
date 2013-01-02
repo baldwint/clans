@@ -99,6 +99,20 @@ class PlansConnection(object):
             raise PlansError(err)
         return handle
 
+    def _parse_message(self, soup):
+        """
+        Scrape details from an infomessage or alertmessage div.
+
+        Returns a dictionary of the message parameters.
+
+        """
+        kind = soup.attrMap[u'class']
+        title, body = [t.text for t in soup.findChildren()]
+        message = dict(kind=kind, title=title, body=body)
+        for val in message.values():
+            assert type(val) == unicode
+        return message
+
     def plans_login(self, username='', password=''):
         """
         Log into plans.
@@ -178,13 +192,14 @@ class PlansConnection(object):
         info = soup.find('div', {'class': 'infomessage'})
         if alert is not None:
             # some kind of error
-            # TODO: raise an exception here
-            return unicode(alert)
-        elif info is not None:
-            # probably success
-            return unicode(info)
+            msg = self._parse_message(alert)
+            raise PlansError(msg['body'])
+        elif info is None:
+            raise PlansError('Plans did not verify update')
         else:
-            raise PlansError('Unknown response from Plans')
+            # probably success
+            msg = self._parse_message(info)
+            return msg['body']
 
     def get_autofinger(self):
         """

@@ -10,6 +10,7 @@ import subprocess
 import cookielib
 import pdb
 from hashlib import md5
+from clans.client import PlansError
 
 TEST_URL = 'http://localhost/~tkb/phplans'
 # when using a local PHP-Plans development server to test clans,
@@ -62,8 +63,9 @@ class TestEdit(LoggedInTestCase):
         new, new_hashsum = self.pc.get_edit_text(plus_hash=True)
         self.assertEqual(new[:len(hello)], hello)
         # try to change back, with wrong hashsum
-        result = self.pc.set_edit_text(orig, hashsum)
-        self.assertFalse("Plan changed successfully" in str(result))
+        with self.assertRaises(PlansError):
+            # md5 mismatch error
+            result = self.pc.set_edit_text(orig, hashsum)
         # edit again, undoing
         result = self.pc.set_edit_text(orig, new_hashsum)
         self.assertTrue("Plan changed successfully" in str(result))
@@ -127,8 +129,9 @@ class TestEditing(PlanChangingTestCase):
         # which have a max length of 16777215 chars.
         # however, the max length warning triggers at much lower values.
         phrase = 'fu' * 35000 # about 107%
-        result = self.pc.set_edit_text(phrase, self.hashnum)
-        self.assertIn("Maximum Plan length exceeded", str(result))
+        with self.assertRaises(PlansError):
+            # plan too long error
+            result = self.pc.set_edit_text(phrase, self.hashnum)
 
 class TestMD5(PlanChangingTestCase):
 
