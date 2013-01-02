@@ -141,7 +141,9 @@ class PlansConnection(object):
         if plan is None:
             raise PlansError("Couldn't get edit text, are we logged in?")
         else:
-            plan = plan.text
+            plan = u'' + plan.contents[0]
+            # prepending the empty string somehow prevents BS from
+            # escaping all the HTML characters (weird)
             assert type(plan) == unicode
         if plus_hash:
             # parse out plan md5

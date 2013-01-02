@@ -105,6 +105,22 @@ class PlanChangingTestCase(LoggedInTestCase):
         result = self.pc.set_edit_text(self.orig, ending_hash)
         self.assertTrue("Plan changed successfully" in str(result))
 
+class TestEditing(PlanChangingTestCase):
+
+    def editandcheck(self, phrase):
+        self.pc.set_edit_text(phrase, self.hashnum)
+        plan, server_hashnum = self.pc.get_edit_text(plus_hash=True)
+        self.hashnum = server_hashnum # for later cleanup
+        self.assertEqual(phrase, plan)
+
+    def test_editing(self):
+        self.editandcheck(u'plain text')
+        self.editandcheck("<tt># 10 11 12 -----------------</tt>")
+        self.editandcheck("<b>so excited</b>")
+        self.editandcheck("<hr>contact info blah blah<hr>")
+        self.editandcheck(u'Non-breaking \xa0\xa0 spaces!')
+        self.editandcheck(u'Newline at the end\n')
+
 class TestMD5(PlanChangingTestCase):
 
     #@unittest.expectedFailure
@@ -116,10 +132,12 @@ class TestMD5(PlanChangingTestCase):
         self.assertEqual(server_hashnum, python_hashnum)
 
     def test_md5(self):
+        self.md5check(u'plain text')
         self.md5check("<tt># 10 11 12 -----------------</tt>")
         self.md5check("<b>so excited</b>")
         self.md5check("<hr>contact info blah blah<hr>")
         self.md5check(u'Non-breaking \xa0\xa0 spaces!')
+        self.md5check(u'Newline at the end\n')
 
 class TestPlanspeak(PlanChangingTestCase):
     """
