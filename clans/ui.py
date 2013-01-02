@@ -120,18 +120,7 @@ def edit(pc, cs):
     """ plan-editing command """
     plan_text, md5 = pc.get_edit_text(plus_hash=True)
 
-    if cs.args.backup_file is False:
-        pass
-    elif cs.args.backup_file is None:
-        # print existing plan to stdout and exit
-        print >> sys.stdout, plan_text.encode(sys.stdout.encoding or 'utf8')
-        sys.exit()
-    elif cs.args.backup_file:
-        # save existing plan to file
-        # NB, there will be no newline at the end of the file
-        fp = open(cs.args.backup_file, 'w')
-        fp.write(plan_text.encode('utf8'))
-        fp.close()
+    cs.hook('post_get_edit_text', plan_text)
 
     if cs.args.skip_update:
         return
@@ -145,15 +134,11 @@ def edit(pc, cs):
         # open for external editing
         edited = external_editor(plan_text, suffix='.plan')
 
+    cs.hook('pre_set_edit_text', edited)
+
     edit_was_made = edited != plan_text
 
-    if cs.args.save_edit and edit_was_made:
-        # save edited file
-        fp = open(cs.args.save_edit, 'w')
-        fp.write(edited.encode('utf8'))
-        fp.close()
-
-    elif not edit_was_made:
+    if not edit_was_made:
         print >> sys.stderr, 'plan unchanged, aborting update'
     elif cs.args.pretend:
         print >> sys.stderr, "in 'pretend' mode, not really editing"
@@ -214,6 +199,9 @@ class ClansSession(object):
         self.extensions = self._load_extensions()
         self.commands = self._load_commands()
 
+        # let extensions modify command list
+        self.hook('post_load_commands')
+
         # get command line arguments
         self.args = self.commands.main.parse_args()
 
@@ -264,7 +252,7 @@ class ClansSession(object):
                     extensions[name] = mod
         return extensions
 
-    def hook(self, name):
+    def hook(self, name, *args):
         """
         Call the method named ``name`` in every loaded extension.
 
@@ -272,7 +260,7 @@ class ClansSession(object):
         for ext_name, ext in self.extensions.iteritems():
             func = getattr(ext, name, None)
             if func is not None:
-                func()
+                func(self, *args)
 
     def _load_commands(self):
         # define command line arguments
@@ -308,15 +296,6 @@ class ClansSession(object):
                 default=False, metavar='FILE',
                 help="Replace plan with the contents of FILE. "
                 "Skips interactive editing.")
-        commands["edit"].add_argument(
-                '-b', '--backup', dest='backup_file',
-                nargs='?', default=False, metavar='FILE',
-                help="Backup existing plan to file before editing. "
-                "To print to stdout, omit filename.")
-        commands["edit"].add_argument(
-                '-s', '--save', dest='save_edit',
-                default=False, metavar='FILE',
-                help='Save a local copy of edited plan before submitting.')
         commands["edit"].add_argument(
                 '--skip-update', dest='skip_update',
                 action='store_true', default=False,
@@ -359,8 +338,6 @@ class ClansSession(object):
                 help="Restrict search to planlove.")
 
         return commands
-
-    # plugins down here (later)
 
 # -------------
 # MAIN FUNCTION
