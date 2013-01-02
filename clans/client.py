@@ -174,9 +174,17 @@ class PlansConnection(object):
                             'submit': 'Change Plan' }
         html = self._get_page('edit.php', post=edit_info).read()
         soup = bs3.BeautifulSoup(html, fromEncoding='utf-8')
-        #TODO: what if the edit fails? catch warnings as well.
+        alert = soup.find('div', {'class': 'alertmessage'})
         info = soup.find('div', {'class': 'infomessage'})
-        return str(info)
+        if alert is not None:
+            # some kind of error
+            # TODO: raise an exception here
+            return unicode(alert)
+        elif info is not None:
+            # probably success
+            return unicode(info)
+        else:
+            raise PlansError('Unknown response from Plans')
 
     def get_autofinger(self):
         """

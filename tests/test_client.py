@@ -108,7 +108,8 @@ class PlanChangingTestCase(LoggedInTestCase):
 class TestEditing(PlanChangingTestCase):
 
     def editandcheck(self, phrase):
-        self.pc.set_edit_text(phrase, self.hashnum)
+        result = self.pc.set_edit_text(phrase, self.hashnum)
+        self.assertIn("Plan changed successfully", str(result))
         plan, server_hashnum = self.pc.get_edit_text(plus_hash=True)
         self.hashnum = server_hashnum # for later cleanup
         self.assertEqual(phrase, plan)
@@ -120,6 +121,14 @@ class TestEditing(PlanChangingTestCase):
         self.editandcheck("<hr>contact info blah blah<hr>")
         self.editandcheck(u'Non-breaking \xa0\xa0 spaces!')
         self.editandcheck(u'Newline at the end\n')
+
+    def test_long_plan(self):
+        # on the server side, plans are MySQL mediumtext,
+        # which have a max length of 16777215 chars.
+        # however, the max length warning triggers at much lower values.
+        phrase = 'fu' * 35000 # about 107%
+        result = self.pc.set_edit_text(phrase, self.hashnum)
+        self.assertIn("Maximum Plan length exceeded", str(result))
 
 class TestMD5(PlanChangingTestCase):
 
