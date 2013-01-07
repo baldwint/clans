@@ -110,6 +110,12 @@ class PlanChangingTestCase(LoggedInTestCase):
 class TestEditing(PlanChangingTestCase):
 
     def editandcheck(self, phrase):
+        """
+        Sets plan edit-text to the phrase given,
+        then opens it for editing again to make
+        sure it is still there.
+
+        """
         result = self.pc.set_edit_text(phrase, self.hashnum)
         self.assertIn("Plan changed successfully", str(result))
         plan, server_hashnum = self.pc.get_edit_text(plus_hash=True)
@@ -123,6 +129,17 @@ class TestEditing(PlanChangingTestCase):
         self.editandcheck("<hr>contact info blah blah<hr>")
         self.editandcheck(u'Non-breaking \xa0\xa0 spaces!')
         self.editandcheck(u'Newline at the end\n')
+
+    def test_unicode(self):
+        self.editandcheck(u'Non-breaking \u00a0\u00a0 spaces!')
+        self.editandcheck(u'Black \u2605 star')
+        self.editandcheck(u"North \u2196 west")
+        self.editandcheck(u"Gauss' \u2207\u2022E = \u03c1/\u03b5\u2080 law")
+
+    @unittest.expectedFailure
+    def test_unicode_edge(self):
+        #plans bug: truncating after some unicode characters
+        self.editandcheck(u'Pile of \U0001f4a9!') # poo
 
     def test_long_plan(self):
         # on the server side, plans are MySQL mediumtext,
