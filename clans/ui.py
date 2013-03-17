@@ -92,8 +92,6 @@ import pkgutil
 def find_formatters():
     fmt_location = os.path.dirname(clans.fmt.__file__)
     gen = pkgutil.iter_modules([fmt_location])
-    #formatters = dict((name, imp.find_module(name)) for imp,name,_ in gen)
-    #return formatters
     names = [name for _, name, _ in gen]
     return names
 
@@ -172,11 +170,7 @@ def read(pc, cs):
 
     plan = formatter.filter_html(plan)
 
-    print ("Username: {username}\n"
-           "Last Updated: {lastupdated}\n"
-           "Last Login: {lastlogin}\n"
-           "Name: {planname}\n\n"
-           "{plan}").format(plan=plan, **header)
+    print (formatter.READ_FMT).format(plan=plan, **header)
 
 def love(pc, cs):
     """ quicklove command """

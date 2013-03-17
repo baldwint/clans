@@ -2,6 +2,13 @@ import re
 from .text import REGEX_LOVE, REGEX_SUB
 import colorama as cr
 
+READ_FMT = (
+    cr.Style.BRIGHT + "Username" + cr.Style.NORMAL + ": {username}\n" +
+    cr.Style.BRIGHT + "Last Updated" + cr.Style.NORMAL + ": {lastupdated}\n" +
+    cr.Style.BRIGHT + "Last Login" + cr.Style.NORMAL + ": {lastlogin}\n" +
+    cr.Style.BRIGHT + "Name" + cr.Style.NORMAL + ": {planname}\n\n" +
+            "{plan}")
+
 def filter_html(html):
     """
     format html for display in the terminal, with colors.

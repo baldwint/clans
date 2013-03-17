@@ -1,4 +1,5 @@
 import re
+from .raw import READ_FMT
 
 REGEX_LOVE = r'<a href=[^\s]* class="planlove">(.+?)</a>'
 REGEX_SUB = r'<p class="sub">(.+?)</p>'
