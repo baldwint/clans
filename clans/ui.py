@@ -6,6 +6,7 @@ import os
 import sys
 import tempfile
 import subprocess
+from collections import OrderedDict
 from clans.client import PlansConnection, PlansError
 import getpass as getpass_mod
 import argparse
@@ -126,6 +127,12 @@ def colorify(html):
             r'\1' + cr.Style.NORMAL + cr.Fore.RESET, html)
     return html
 
+filters = OrderedDict((
+            ('text',  textify),
+            ('color', colorify),
+            ('raw',   None))
+        )
+
 def print_search_results(results, filter_function=None):
     """
     prints search results to stdout.
@@ -194,10 +201,9 @@ def read(pc, cs):
     """ plan-reading command """
     header, plan = pc.read_plan(cs.args.plan)
 
-    if cs.args.text:
-        plan = textify(plan)
-    elif cs.args.color:
-        plan = colorify(plan)
+    filter_function = filters[cs.args.fmt]
+    if filter_function is not None:
+        plan = filter_function(plan)
 
     print 'Username: ', header['username']
     print 'Last Updated: ', header['lastupdated']
@@ -209,23 +215,13 @@ def read(pc, cs):
 def love(pc, cs):
     """ quicklove command """
     results = pc.search_plans(pc.username, planlove=True)
-    if cs.args.text:
-        ff = textify
-    elif cs.args.color:
-        ff = colorify
-    else:
-        ff = None
+    ff = filters[cs.args.fmt]
     print_search_results(results, filter_function=ff)
 
 def search(pc, cs):
     """ search command """
     results = pc.search_plans(cs.args.term, planlove=cs.args.love)
-    if cs.args.text:
-        ff = textify
-    elif cs.args.color:
-        ff = colorify
-    else:
-        ff = None
+    ff = filters[cs.args.fmt]
     print_search_results(results, filter_function=ff)
 
 # -------------
@@ -235,7 +231,6 @@ def search(pc, cs):
 import ConfigParser
 import appdirs
 import imp
-from collections import OrderedDict
 
 class ClansSession(object):
     """
@@ -339,13 +334,9 @@ class ClansSession(object):
         # filters: options/arguments for those commands that format text
         filter_parser = argparse.ArgumentParser(add_help=False)
         filter_parser.add_argument(
-                '-t', '--text', dest='text',
-                action='store_true', default=False,
-                help="Display result as plain text.")
-        filter_parser.add_argument(
-                '--color', dest='color',
-                action='store_true', default=False,
-                help="Display result in color.")
+                '--format', dest='fmt', default='raw',
+                choices = filters.keys(),
+                help="Display format to use")
 
         # main parser: has subcommands for everything
         commands = CommandSet(
