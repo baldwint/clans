@@ -9,6 +9,7 @@ import subprocess
 from clans.client import PlansConnection, PlansError
 import getpass as getpass_mod
 import argparse
+import colorama
 import re
 
 # ----------
@@ -85,13 +86,23 @@ class CommandSet(dict):
         parser.set_defaults(func=func)
         self[name] = parser
 
-def ttlify(html):
+def textify(html):
     """
-    search and replace certain html tags with ttl equivalents.
+    format plan html as plain text.
 
     """
     html = re.sub(r'<br ?/?>', '\n', html)
-    #TODO: lots of other things
+    html = re.sub(r'</?b>', '', html)
+    return html
+
+def colorify(html):
+    """
+    format html for display in the terminal, with colors.
+
+    """
+    html = re.sub(r'<br ?/?>', '\n', html)
+    html = re.sub(r'<b>', colorama.Style.BRIGHT, html)
+    html = re.sub(r'</b>', colorama.Style.NORMAL, html)
     return html
 
 def print_search_results(results, filter_function=None):
@@ -163,7 +174,9 @@ def read(pc, cs):
     header, plan = pc.read_plan(cs.args.plan)
 
     if cs.args.text:
-        plan = ttlify(plan)
+        plan = textify(plan)
+    elif cs.args.color:
+        plan = colorify(plan)
 
     print 'Username: ', header['username']
     print 'Last Updated: ', header['lastupdated']
@@ -175,13 +188,23 @@ def read(pc, cs):
 def love(pc, cs):
     """ quicklove command """
     results = pc.search_plans(pc.username, planlove=True)
-    ff = ttlify if cs.args.text else None
+    if cs.args.text:
+        ff = textify
+    elif cs.args.color:
+        ff = colorify
+    else:
+        ff = None
     print_search_results(results, filter_function=ff)
 
 def search(pc, cs):
     """ search command """
     results = pc.search_plans(cs.args.term, planlove=cs.args.love)
-    ff = ttlify if cs.args.text else None
+    if cs.args.text:
+        ff = textify
+    elif cs.args.color:
+        ff = colorify
+    else:
+        ff = None
     print_search_results(results, filter_function=ff)
 
 # -------------
@@ -298,6 +321,10 @@ class ClansSession(object):
                 '-t', '--text', dest='text',
                 action='store_true', default=False,
                 help="Display result as plain text.")
+        filter_parser.add_argument(
+                '--color', dest='color',
+                action='store_true', default=False,
+                help="Display result in color.")
 
         # main parser: has subcommands for everything
         commands = CommandSet(
