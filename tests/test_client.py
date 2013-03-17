@@ -11,12 +11,19 @@ import cookielib
 import pdb
 from hashlib import md5
 from clans.client import PlansError
+import MySQLdb
 
 TEST_URL = 'http://localhost/~tkb/phplans'
 # when using a local PHP-Plans development server to test clans,
 # it is VITAL to set the 'display_errors' initialization parameter to
 # FALSE in Plans.php. Otherwise, PHP debug messages will be tacked on
 # to the top of pages, which will confuse the clans parser.
+
+# certain tests will access the database directly.
+TEST_DB = {'host':   'localhost',
+           'db':     'plans',
+           'user':   'plans_dev',
+           'passwd': 'plans_dev_password'}
 
 class TestAuth(unittest.TestCase):
 
@@ -237,12 +244,39 @@ class TestPlanspeak(PlanChangingTestCase):
         # BeautifulSoup problem, should be:
         #self.assertEqual('hello<hr>world', html)
 
-class TestRead(LoggedInTestCase):
+class DbTestCase(LoggedInTestCase):
 
+    def setUp(self):
+        super(DbTestCase, self).setUp()
+        self.db = MySQLdb.connect(**TEST_DB)
+        self.c = self.db.cursor()
+
+    def find_userid(self, un=None):
+        if un is None:
+            un = self.un
+        self.c.execute("select userid from accounts "
+                       "where username=%s", (un,))
+        userid, = self.c.fetchone()
+        return userid
+
+class TestRead(DbTestCase):
+    """
+    The read_plan method should return plan text
+    as it is formatted in the database
+
+    """
+
+    # this fails because beautifulsoup doesn't preserve syntactically
+    # irrelevant details (<br> vs <br />, etc.). #TODO
+    @unittest.expectedFailure
     def test_reading(self):
-        #pdb.set_trace()
+        userid = self.find_userid()
+        self.c.execute("select plan from plans "
+                       "where user_id=%s", (userid,))
+        plan_in_db, = self.c.fetchone()
         plan_header, html_plan = self.pc.read_plan(self.un)
         self.assertEqual(plan_header['username'], self.un)
+        self.assertEqual(html_plan, plan_in_db)
 
 class TestSearch(PlanChangingTestCase):
     """

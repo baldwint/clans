@@ -257,16 +257,18 @@ class PlansConnection(object):
                         'span', {'class': 'long'}
                     ).contents[0]
             header_dict[key] = str(value)
-        # format plan text
-        planlets = []
-        for souplet in text.contents[1:]:
-            if (u'class', u'sub') in souplet.attrs:
-                # extract contents of <p class="sub">
-                planlet = ''.join([str(el) for el in souplet.contents])
-            else:
-                planlet = str(souplet)
-            planlets.append(planlet)
-        plan = ''.join(planlets)
+        plan = ''.join(str(el) for el in text.contents[1:])
+        plan = plan.replace('<br />', '<br>')
+        ## format plan text
+        #planlets = []
+        #for souplet in text.contents[1:]:
+        #    if (u'class', u'sub') in souplet.attrs:
+        #        # extract contents of <p class="sub">
+        #        planlet = ''.join([str(el) for el in souplet.contents])
+        #    else:
+        #        planlet = str(souplet)
+        #    planlets.append(planlet)
+        #plan = ''.join(planlets)
         return header_dict, plan
 
     def search_plans(self, term, planlove=False):
