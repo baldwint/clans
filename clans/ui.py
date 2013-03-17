@@ -244,8 +244,8 @@ class ClansSession(object):
         extensions as python modules into an ordered dictionary.
 
         """
+        extensions = OrderedDict()
         if self.config.has_section('extensions'):
-            extensions = OrderedDict()
             for name, path in self.config.items('extensions'):
                 try:
                     if path:
