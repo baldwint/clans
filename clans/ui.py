@@ -94,7 +94,7 @@ def ttlify(html):
     #TODO: lots of other things
     return html
 
-def print_search_results(results):
+def print_search_results(results, filter_function=None):
     """
     prints search results to stdout.
 
@@ -105,6 +105,8 @@ def print_search_results(results):
     for un, count, snips in results:
         print "%s: %d" % (un, count)
         for snip in snips:
+            if filter_function is not None:
+                snip = filter_function(snip)
             print " - %s" % snip
         print ""
 
@@ -173,12 +175,14 @@ def read(pc, cs):
 def love(pc, cs):
     """ quicklove command """
     results = pc.search_plans(pc.username, planlove=True)
-    print_search_results(results)
+    ff = ttlify if cs.args.text else None
+    print_search_results(results, filter_function=ff)
 
 def search(pc, cs):
     """ search command """
     results = pc.search_plans(cs.args.term, planlove=cs.args.love)
-    print_search_results(results)
+    ff = ttlify if cs.args.text else None
+    print_search_results(results, filter_function=ff)
 
 # -------------
 # CLANS SESSION
@@ -288,6 +292,13 @@ class ClansSession(object):
                             action='store_true', default=False,
                           help='Log out before quitting.')
 
+        # filters: options/arguments for those commands that format text
+        filter_parser = argparse.ArgumentParser(add_help=False)
+        filter_parser.add_argument(
+                '-t', '--text', dest='text',
+                action='store_true', default=False,
+                help="Display result as plain text.")
+
         # main parser: has subcommands for everything
         commands = CommandSet(
                 description= __doc__ + "\n\nconfiguration file:\n  " + self.config_loc,
@@ -315,26 +326,22 @@ class ClansSession(object):
 
         # read parser
         commands.add_command(
-                'read', read, parents=[global_parser],
+                'read', read, parents=[global_parser, filter_parser],
                 description="Read someone else's plan.",
                 help="Print a plan's contents to stdout.",)
         commands["read"].add_argument(
                 'plan', default=False, metavar='PLAN',
                 help="Name of plan to be read.")
-        commands["read"].add_argument(
-                '-t', '--text', dest='text',
-                action='store_true', default=False,
-                help="Attempt to convert plan to plain text.")
 
         # quicklove parser
         commands.add_command(
-                'love', love, parents=[global_parser],
+                'love', love, parents=[global_parser, filter_parser],
                 description="Search for other users giving you planlove.",
                 help="Check quicklove.",)
 
         # search parser
         commands.add_command(
-                'search', search, parents=[global_parser],
+                'search', search, parents=[global_parser, filter_parser],
                 description="Search plans for any word or phrase.",
                 help="Search plans for any word or phrase.",)
         commands["search"].add_argument(
