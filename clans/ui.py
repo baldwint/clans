@@ -10,7 +10,6 @@ from collections import OrderedDict
 from clans.client import PlansConnection, PlansError
 import getpass as getpass_mod
 import argparse
-import colorama as cr
 import re
 
 # ----------
@@ -87,51 +86,18 @@ class CommandSet(dict):
         parser.set_defaults(func=func)
         self[name] = parser
 
-REGEX_LOVE = r'<a href=[^\s]* class="planlove">(.+?)</a>'
-REGEX_SUB = r'<p class="sub">(.+?)</p>'
+import clans.fmt
+import pkgutil
 
-def textify(html):
-    """
-    format plan html as plain text.
+def find_formatters():
+    fmt_location = os.path.dirname(clans.fmt.__file__)
+    gen = pkgutil.iter_modules([fmt_location])
+    #formatters = dict((name, imp.find_module(name)) for imp,name,_ in gen)
+    #return formatters
+    names = [name for _, name, _ in gen]
+    return names
 
-    """
-    html = re.sub(r'<br ?/?>', '\n', html)
-    html = re.sub(r'&quot;', '"', html)
-    html = re.sub(r'&gt;', '>', html)
-    html = re.sub(r'&lt;', '<', html)
-    html = re.sub(r'<b>(.+?)</b>', r'\1', html)
-    html = re.sub(r'<i>(.+?)</i>', r'\1', html)
-    html = re.sub(REGEX_LOVE, r'\1', html)
-    html = re.sub(REGEX_SUB, r'\1', html, flags=re.DOTALL)
-    html = re.sub(r'<hr ?/?>', 70*'=' + '\n', html)
-    return html
-
-def colorify(html):
-    """
-    format html for display in the terminal, with colors.
-
-    """
-    html = re.sub(r'<br ?/?>', '\n', html)
-    html = re.sub(r'&quot;', '"', html)
-    html = re.sub(r'&gt;', '>', html)
-    html = re.sub(r'&lt;', '<', html)
-    html = re.sub(r'<b>(.+?)</b>',
-            cr.Style.BRIGHT + r'\1' + cr.Style.NORMAL, html)
-    html = re.sub(r'<i>(.+?)</i>',
-            cr.Style.DIM + r'\1' + cr.Style.NORMAL, html)
-    html = re.sub(REGEX_SUB, r'\1', html, flags=re.DOTALL)
-    html = re.sub(r'<hr ?/?>',
-            cr.Fore.RED + 70*'=' + cr.Fore.RESET + '\n', html)
-    html = re.sub(REGEX_LOVE,
-            cr.Style.BRIGHT + cr.Fore.BLUE + \
-            r'\1' + cr.Style.NORMAL + cr.Fore.RESET, html)
-    return html
-
-filters = OrderedDict((
-            ('text',  textify),
-            ('color', colorify),
-            ('raw',   None))
-        )
+formatters = find_formatters()
 
 def print_search_results(results, filter_function=None):
     """
@@ -201,9 +167,10 @@ def read(pc, cs):
     """ plan-reading command """
     header, plan = pc.read_plan(cs.args.plan)
 
-    filter_function = filters[cs.args.fmt]
-    if filter_function is not None:
-        plan = filter_function(plan)
+    formatter = __import__('clans.fmt.%s' % cs.args.fmt,
+                                        fromlist='clans.fmt')
+
+    plan = formatter.filter_html(plan)
 
     print ("Username: {username}\n"
            "Last Updated: {lastupdated}\n"
@@ -214,14 +181,18 @@ def read(pc, cs):
 def love(pc, cs):
     """ quicklove command """
     results = pc.search_plans(pc.username, planlove=True)
-    ff = filters[cs.args.fmt]
-    print_search_results(results, filter_function=ff)
+    formatter = __import__('clans.fmt.%s' % cs.args.fmt,
+                                        fromlist='clans.fmt')
+    print_search_results(results,
+            filter_function=formatter.filter_html)
 
 def search(pc, cs):
     """ search command """
     results = pc.search_plans(cs.args.term, planlove=cs.args.love)
-    ff = filters[cs.args.fmt]
-    print_search_results(results, filter_function=ff)
+    formatter = __import__('clans.fmt.%s' % cs.args.fmt,
+                                        fromlist='clans.fmt')
+    print_search_results(results,
+            filter_function=formatter.filter_html)
 
 # -------------
 # CLANS SESSION
@@ -334,7 +305,7 @@ class ClansSession(object):
         filter_parser = argparse.ArgumentParser(add_help=False)
         filter_parser.add_argument(
                 '--format', dest='fmt', default='raw',
-                choices = filters.keys(),
+                choices = formatters,
                 help="Display format to use")
 
         # main parser: has subcommands for everything
