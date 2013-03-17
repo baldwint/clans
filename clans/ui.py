@@ -142,11 +142,11 @@ def print_search_results(results, filter_function=None):
 
     """
     for un, count, snips in results:
-        print "%s: %d" % (un, count)
+        print ("[{username}]: {0}\n").format(count, username=un)
         for snip in snips:
             if filter_function is not None:
                 snip = filter_function(snip)
-            print " - %s" % snip
+            print (" - {0}").format(snip)
         print ""
 
 # -----------
@@ -205,12 +205,11 @@ def read(pc, cs):
     if filter_function is not None:
         plan = filter_function(plan)
 
-    print 'Username: ', header['username']
-    print 'Last Updated: ', header['lastupdated']
-    print 'Last Login: ', header['lastlogin']
-    print 'Name: ', header['planname']
-    print ''
-    print plan
+    print ("Username: {username}\n"
+           "Last Updated: {lastupdated}\n"
+           "Last Login: {lastlogin}\n"
+           "Name: {planname}\n\n"
+           "{plan}").format(plan=plan, **header)
 
 def love(pc, cs):
     """ quicklove command """
