@@ -9,7 +9,7 @@ import subprocess
 from clans.client import PlansConnection, PlansError
 import getpass as getpass_mod
 import argparse
-import colorama
+import colorama as cr
 import re
 
 # ----------
@@ -86,6 +86,9 @@ class CommandSet(dict):
         parser.set_defaults(func=func)
         self[name] = parser
 
+REGEX_LOVE = r'<a href=[^\s]* class="planlove">(.+?)</a>'
+REGEX_SUB = r'<p class="sub">(.+?)</p>'
+
 def textify(html):
     """
     format plan html as plain text.
@@ -93,6 +96,10 @@ def textify(html):
     """
     html = re.sub(r'<br ?/?>', '\n', html)
     html = re.sub(r'</?b>', '', html)
+    html = re.sub(r'&quot;', '"', html)
+    html = re.sub(REGEX_LOVE, r'\1', html)
+    html = re.sub(REGEX_SUB, r'\1', html, flags=re.DOTALL)
+    html = re.sub(r'<hr ?/?>', 70*'=' + '\n', html)
     return html
 
 def colorify(html):
@@ -101,8 +108,15 @@ def colorify(html):
 
     """
     html = re.sub(r'<br ?/?>', '\n', html)
-    html = re.sub(r'<b>', colorama.Style.BRIGHT, html)
-    html = re.sub(r'</b>', colorama.Style.NORMAL, html)
+    html = re.sub(r'<b>', cr.Style.BRIGHT, html)
+    html = re.sub(r'</b>', cr.Style.NORMAL, html)
+    html = re.sub(r'&quot;', '"', html)
+    html = re.sub(REGEX_SUB, r'\1', html, flags=re.DOTALL)
+    html = re.sub(r'<hr ?/?>',
+            cr.Fore.RED + 70*'=' + cr.Fore.RESET + '\n', html)
+    html = re.sub(REGEX_LOVE,
+            cr.Style.BRIGHT + cr.Fore.BLUE + \
+            r'\1' + cr.Style.NORMAL + cr.Fore.RESET, html)
     return html
 
 def print_search_results(results, filter_function=None):
