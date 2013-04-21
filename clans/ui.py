@@ -16,9 +16,11 @@ import re
 # UI HELPERS
 # ----------
 
-def external_editor(text, **kwargs):
+def external_editor(text, editor=None, **kwargs):
     """
     Open some text for editing by the user.
+
+    specify 'editor' to choose which editor to use
 
     Keyword arguments are passed to the tempfile constructor.
 
@@ -34,8 +36,9 @@ def external_editor(text, **kwargs):
         f.write(text.encode('utf8'))
         f.close()
 
-        # open in $EDITOR (default to pico)
-        editor = os.environ.get('EDITOR', 'pico')
+        # open in editor (default to $EDITOR, or pico)
+        if editor is None:
+            editor = os.environ.get('EDITOR', 'pico')
         subprocess.call([editor, name])
 
         # retrieve edited text
@@ -137,7 +140,8 @@ def edit(pc, cs):
             edited = edited.decode('utf8')
     else:
         # open for external editing
-        edited = external_editor(plan_text, suffix='.plan')
+        editor = cs.config.get('clans', 'editor')
+        edited = external_editor(plan_text, editor=editor, suffix='.plan')
 
     assert type(edited) == unicode
     cs.hook('pre_set_edit_text', edited)
@@ -188,6 +192,10 @@ def search(pc, cs):
     print_search_results(results,
             filter_function=formatter.filter_html)
 
+def config(pc, cs):
+    """ config command """
+    subprocess.call([cs.config.get('clans', 'editor'), cs.config_loc])
+
 # -------------
 # CLANS SESSION
 # -------------
@@ -230,6 +238,9 @@ class ClansSession(object):
         config.add_section('login')
         config.set('login', 'username', '')
         config.set('login', 'url', 'http://www.grinnellplans.com')
+        config.add_section('clans')
+        # text editor: either specified in config file, or $EDITOR, or pico
+        config.set('clans', 'editor', os.environ.get('EDITOR', 'pico'))
 
         # create config directory if it doesn't exist
         try:
@@ -354,6 +365,14 @@ class ClansSession(object):
                 '-l', '--love', dest='love',
                 action='store_true', default=False,
                 help="Restrict search to planlove.")
+
+        # config parser
+        commands.add_command(
+                'config', config, parents=[global_parser, filter_parser],
+                description="The clans config file sets the default"
+                " behavior of the client."
+                " (Not to be confused with Plans preferences!)",
+                help="Edit clans configuration file.")
 
         return commands
 
