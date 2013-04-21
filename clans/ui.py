@@ -241,6 +241,7 @@ class ClansSession(object):
         config.add_section('clans')
         # text editor: either specified in config file, or $EDITOR, or pico
         config.set('clans', 'editor', os.environ.get('EDITOR', 'pico'))
+        config.set('clans', 'format', 'raw')
 
         # create config directory if it doesn't exist
         try:
@@ -309,7 +310,8 @@ class ClansSession(object):
         # filters: options/arguments for those commands that format text
         filter_parser = argparse.ArgumentParser(add_help=False)
         filter_parser.add_argument(
-                '--format', dest='fmt', default='raw',
+                '--format', dest='fmt',
+                default=self.config.get('clans', 'format'),
                 choices = formatters,
                 help="Display format to use")
 
