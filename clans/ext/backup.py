@@ -7,17 +7,25 @@ plan before and after editing.
 """
 
 import sys
+import os.path
 storage = {}
 
 def post_load_commands(cs):
+    # read configured options
+    if cs.config.has_section('backup'):
+        config = dict(cs.config.items('backup'))
+
+    # then add command line arguments
     cs.commands["edit"].add_argument(
                '-b', '--backup', dest='backup_file',
-               nargs='?', default=False, metavar='FILE',
+               nargs='?', metavar='FILE',
+               default=config.get('backup_file', False),
                help="Backup existing plan to file before editing. "
                "To print to stdout, omit filename.")
     cs.commands["edit"].add_argument(
                '-s', '--save', dest='save_edit',
-               default=False, metavar='FILE',
+               metavar='FILE',
+               default=config.get('save_edit', False),
                help='Save a local copy of edited plan before submitting.')
 
 def post_get_edit_text(cs, plan_text):
