@@ -242,21 +242,23 @@ class PlansConnection(object):
         # convert header html into a python dictionary
         header_dict = {}
         for key in ('username', 'planname'):
-            value = header.find(
+            content = header.find(
                         'li', {'class': key}
                     ).find(
                         'span', {'class': 'value'}
-                    ).contents[0]
-            header_dict[key] = str(value)
+                    ).contents
+            value = str(content[0]) if len(content) > 0 else None
+            header_dict[key] = value
         for key in ('lastupdated', 'lastlogin'):
-            value = header.find(
+            content = header.find(
                         'li', {'class': key}
                     ).find(
                         'span', {'class': 'value'}
                     ).find(
                         'span', {'class': 'long'}
-                    ).contents[0]
-            header_dict[key] = str(value)
+                    ).contents
+            value = str(content[0]) if len(content) > 0 else None
+            header_dict[key] = value
         plan = ''.join(str(el) for el in text.contents[1:])
         plan = plan.replace('<br />', '<br>')
         ## format plan text
