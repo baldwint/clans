@@ -215,9 +215,12 @@ class ClansSession(object):
     """
 
     def __init__(self):
-        # configure configuration directory/file names.
+        # persistent data storage location
         self.dirs = appdirs.AppDirs(appname='clans', appauthor='baldwint')
-        self.config_loc = os.path.join(self.dirs.user_data_dir, 'clans.cfg')
+
+        # config location: either in appdata/clans.cfg, or set by CLANS_CFG
+        self.config_loc = (os.environ.get('CLANS_CFG', '') or
+                    os.path.join(self.dirs.user_data_dir, 'clans.cfg'))
 
         # load config, extensions, and define command line args
         self.config = self._load_config()
