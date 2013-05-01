@@ -52,7 +52,6 @@ class LoveEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 def post_search(cs, results):
-
     # if this is a non-planlove search, skip
     if cs.args.func.__name__ == 'love':
         # quick love
@@ -63,8 +62,18 @@ def post_search(cs, results):
     else:
         return
 
+    # read configured options
+    config = {}
+    if cs.config.has_section('newlove'):
+        config.update(dict(cs.config.items('newlove')))
+
+    # determine lovelog location. in appdir by default, but can be
+    # set in config file. username expansion works there too!
+    lovelog = config.get('lovelog',
+            os.path.join(cs.dirs.user_data_dir, '{username}.love')
+                ).format(username=un)
+
     # load stored planlove
-    lovelog = os.path.join(cs.dirs.user_data_dir, '%s.love' % un)
     try:
         oldlove = json.load(open(lovelog, 'r'),
                 object_hook=LoveState.from_json)
