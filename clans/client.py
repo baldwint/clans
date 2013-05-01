@@ -308,8 +308,8 @@ class PlansConnection(object):
             snippetlist = group.findAll('li')
             snippets = []
             for li in snippetlist:
-                snip = ''.join(str(el) for el in li.find('span').contents)
+                snip = ''.join(unicode(el) for el in li.find('span').contents)
                 snippets.append(snip)
-            resultlist.append((str(user), int(count), snippets))
+            resultlist.append((unicode(user), int(count), snippets))
         return resultlist
 

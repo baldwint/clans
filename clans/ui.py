@@ -109,12 +109,12 @@ def print_search_results(results, filter_function=None):
 
     """
     for un, count, snips in results:
-        print ("[{username}]: {0}\n").format(count, username=un)
+        print (u"[{username}]: {0}\n").format(count, username=un)
         for snip in snips:
             if filter_function is not None:
                 snip = filter_function(snip)
-            print (" - {0}").format(snip)
-        print ""
+            print (u" - {0}").format(snip)
+        print u""
 
 # -----------
 # SUBCOMMANDS
