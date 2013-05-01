@@ -81,3 +81,22 @@ def pre_set_edit_text(cs, edited):
     # retrieve value stored in a previous hook
     assert storage['foo'] == 'bar'
     pass
+
+def post_search(cs, results):
+    """
+    This hook is called after a (quicklove or regular) search, and is
+    passed a list containing the results.
+
+    Elements of this list are 3-tuples:
+     - the name of the plan on which the term was found (str)
+     - the number of instances found (int)
+     - a list of snippets
+
+    Note that the snippet list may not be the same length as the
+    number of instances found.
+
+    Lists are mutable, so results may be filtered by modifying this
+    list in-place.
+
+    """
+    pass

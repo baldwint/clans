@@ -179,6 +179,7 @@ def read(pc, cs):
 def love(pc, cs):
     """ quicklove command """
     results = pc.search_plans(pc.username, planlove=True)
+    cs.hook('post_search', results)
     formatter = __import__('clans.fmt.%s' % cs.args.fmt,
                                         fromlist='clans.fmt')
     print_search_results(results,
@@ -187,6 +188,7 @@ def love(pc, cs):
 def search(pc, cs):
     """ search command """
     results = pc.search_plans(cs.args.term, planlove=cs.args.love)
+    cs.hook('post_search', results)
     formatter = __import__('clans.fmt.%s' % cs.args.fmt,
                                         fromlist='clans.fmt')
     print_search_results(results,
