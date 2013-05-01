@@ -18,6 +18,10 @@ def post_load_commands(cs):
                '-n', '--new', dest='new',
                action='store_true', default=False,
                help="Only show new planlove.")
+    cs.commands['love'].add_argument(
+               '--keep-unread', dest='keepunread',
+               action='store_true', default=False,
+               help="Preserve read state of any new planlove.")
 
 date_fmt = '%Y-%m-%d %H:%M:%S UTC'
         # dodgy; writing 'UTC' doesn't make it true
@@ -110,10 +114,11 @@ def post_search(cs, results):
             snips[:] = unread
 
     # mark all planlove as read
-    for dic in newlove.values():
-        for ls in dic.values():
-            if ls.unread:
-                ls.unread = False
+    if not cs.args.keepunread:
+        for dic in newlove.values():
+            for ls in dic.values():
+                if ls.unread:
+                    ls.unread = False
 
     # store log
     json.dump(newlove, open(lovelog, 'w'), cls=LoveEncoder)
