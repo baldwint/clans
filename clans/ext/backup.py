@@ -12,8 +12,9 @@ storage = {}
 
 def post_load_commands(cs):
     # read configured options
+    config = {}
     if cs.config.has_section('backup'):
-        config = dict(cs.config.items('backup'))
+        config.update(dict(cs.config.items('backup')))
 
     # then add command line arguments
     cs.commands["edit"].add_argument(
