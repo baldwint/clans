@@ -16,6 +16,7 @@ import re
 # UI HELPERS
 # ----------
 
+
 def external_editor(text, editor=None, **kwargs):
     """
     Open some text for editing by the user.
@@ -50,6 +51,7 @@ def external_editor(text, editor=None, **kwargs):
 
     return t.decode('utf8')
 
+
 def getpass(*args, **kwargs):
     """ version of getpass that works better on py26 """
     password = getpass_mod.getpass(*args, **kwargs)
@@ -57,6 +59,7 @@ def getpass(*args, **kwargs):
         # http://bugs.python.org/issue11236 (2.6 only)
         raise KeyboardInterrupt('aborted by user')
     return password
+
 
 class CommandSet(dict):
     """
@@ -71,8 +74,8 @@ class CommandSet(dict):
     def __init__(self, **kwargs):
         self.main = argparse.ArgumentParser(**kwargs)
         self.subparsers = self.main.add_subparsers(
-                title = "commands",
-                metavar='COMMAND')
+            title="commands",
+            metavar='COMMAND')
         super(CommandSet, self).__init__()
 
     def add_command(self, name, func, **kwargs):
@@ -89,8 +92,10 @@ class CommandSet(dict):
         parser.set_defaults(func=func)
         self[name] = parser
 
+
 import clans.fmt
 import pkgutil
+
 
 def find_formatters():
     fmt_location = os.path.dirname(clans.fmt.__file__)
@@ -98,7 +103,9 @@ def find_formatters():
     names = [name for _, name, _ in gen]
     return names
 
+
 formatters = find_formatters()
+
 
 def print_search_results(results, filter_function=None):
     """
@@ -115,6 +122,7 @@ def print_search_results(results, filter_function=None):
                 snip = filter_function(snip)
             print (u" - {0}").format(snip)
         print u""
+
 
 # -----------
 # SUBCOMMANDS
@@ -165,34 +173,38 @@ def edit(pc, cs):
             print >> sys.stderr, "A copy of your unsubmitted edit" \
                     " was stored in %s" % bakfile
 
+
 def read(pc, cs):
     """ plan-reading command """
     header, plan = pc.read_plan(cs.args.plan)
 
     formatter = __import__('clans.fmt.%s' % cs.args.fmt,
-                                        fromlist='clans.fmt')
+                           fromlist='clans.fmt')
 
     plan = formatter.filter_html(plan)
 
     print (formatter.READ_FMT).format(plan=plan, **header)
+
 
 def love(pc, cs):
     """ quicklove command """
     results = pc.search_plans(pc.username, planlove=True)
     cs.hook('post_search', results)
     formatter = __import__('clans.fmt.%s' % cs.args.fmt,
-                                        fromlist='clans.fmt')
+                           fromlist='clans.fmt')
     print_search_results(results,
-            filter_function=formatter.filter_html)
+                         filter_function=formatter.filter_html)
+
 
 def search(pc, cs):
     """ search command """
     results = pc.search_plans(cs.args.term, planlove=cs.args.love)
     cs.hook('post_search', results)
     formatter = __import__('clans.fmt.%s' % cs.args.fmt,
-                                        fromlist='clans.fmt')
+                           fromlist='clans.fmt')
     print_search_results(results,
-            filter_function=formatter.filter_html)
+                         filter_function=formatter.filter_html)
+
 
 def config(pc, cs):
     """ config command """
@@ -205,6 +217,7 @@ def config(pc, cs):
 import ConfigParser
 import appdirs
 import imp
+
 
 class ClansSession(object):
     """
@@ -220,7 +233,7 @@ class ClansSession(object):
 
         # config location: either in appdata/clans.cfg, or set by CLANS_CFG
         self.config_loc = (os.environ.get('CLANS_CFG', '') or
-                    os.path.join(self.dirs.user_data_dir, 'clans.cfg'))
+            os.path.join(self.dirs.user_data_dir, 'clans.cfg'))
 
         # load config, extensions, and define command line args
         self.config = self._load_config()
@@ -235,7 +248,7 @@ class ClansSession(object):
 
         # let command line args override equivalent config file settings
         self.username = (self.args.username or
-                self.config.get('login', 'username'))
+                         self.config.get('login', 'username'))
 
     def _load_config(self):
         # set config file defaults
@@ -253,7 +266,7 @@ class ClansSession(object):
             # 0700 for secure-ish cookie storage.
             os.mkdir(self.dirs.user_data_dir, 0700)
         except OSError:
-            pass # already exists
+            pass  # already exists
 
         # read user's config file, if present
         config.read(self.config_loc)
@@ -301,91 +314,93 @@ class ClansSession(object):
         global_parser = argparse.ArgumentParser(add_help=False)
 
         global_parser.add_argument(
-                '-u', '--username',
-                dest='username', default='',
-                help='GrinnellPlans username, no brackets.')
+            '-u', '--username',
+            dest='username', default='',
+            help='GrinnellPlans username, no brackets.')
         global_parser.add_argument(
-                '-p', '--password',
-                dest='password', default='',
-                help='GrinnellPlans password. Omit for secure entry.')
-        global_parser.add_argument('--logout', dest='logout',
-                            action='store_true', default=False,
-                          help='Log out before quitting.')
+            '-p', '--password',
+            dest='password', default='',
+            help='GrinnellPlans password. Omit for secure entry.')
+        global_parser.add_argument(
+            '--logout', dest='logout',
+            action='store_true', default=False,
+            help='Log out before quitting.')
 
         # filters: options/arguments for those commands that format text
         filter_parser = argparse.ArgumentParser(add_help=False)
         filter_parser.add_argument(
-                '--format', dest='fmt',
-                default=self.config.get('clans', 'format'),
-                choices = formatters,
-                help="Display format to use")
+            '--format', dest='fmt',
+            default=self.config.get('clans', 'format'),
+            choices=formatters,
+            help="Display format to use")
 
         # main parser: has subcommands for everything
         commands = CommandSet(
-                description= __doc__ + "\n\nconfiguration file:\n  " + self.config_loc,
-                parents=[global_parser],
-                formatter_class=argparse.RawTextHelpFormatter)
+            description= __doc__ + "\n\nconfiguration file:\n  " + self.config_loc,
+            parents=[global_parser],
+            formatter_class=argparse.RawTextHelpFormatter)
 
         # edit parser: options/arguments for editing plans
         commands.add_command(
-                'edit', edit, parents=[global_parser],
-                description='Opens your plan for editing in a text editor.',
-                help='Edit your plan in $EDITOR.')
+            'edit', edit, parents=[global_parser],
+            description='Opens your plan for editing in a text editor.',
+            help='Edit your plan in $EDITOR.')
         commands["edit"].add_argument(
-                '-f', '--file', dest='source_file',
-                default=False, metavar='FILE',
-                help="Replace plan with the contents of FILE. "
-                "Skips interactive editing.")
+            '-f', '--file', dest='source_file',
+            default=False, metavar='FILE',
+            help="Replace plan with the contents of FILE. "
+            "Skips interactive editing.")
         commands["edit"].add_argument(
-                '--skip-update', dest='skip_update',
-                action='store_true', default=False,
-                help="Don't update the plan or open it for editing.")
+            '--skip-update', dest='skip_update',
+            action='store_true', default=False,
+            help="Don't update the plan or open it for editing.")
         commands["edit"].add_argument(
-                '--pretend', dest='pretend',
-                action='store_true', default=False,
-                help="Open plan for editing, but don't actually do the update.")
+            '--pretend', dest='pretend',
+            action='store_true', default=False,
+            help="Open plan for editing, but don't actually do the update.")
 
         # read parser
         commands.add_command(
-                'read', read, parents=[global_parser, filter_parser],
-                description="Read someone else's plan.",
-                help="Print a plan's contents to stdout.",)
+            'read', read, parents=[global_parser, filter_parser],
+            description="Read someone else's plan.",
+            help="Print a plan's contents to stdout.",)
         commands["read"].add_argument(
-                'plan', default=False, metavar='PLAN',
-                help="Name of plan to be read.")
+            'plan', default=False, metavar='PLAN',
+            help="Name of plan to be read.")
 
         # quicklove parser
         commands.add_command(
-                'love', love, parents=[global_parser, filter_parser],
-                description="Search for other users giving you planlove.",
-                help="Check quicklove.",)
+            'love', love, parents=[global_parser, filter_parser],
+            description="Search for other users giving you planlove.",
+            help="Check quicklove.",)
 
         # search parser
         commands.add_command(
-                'search', search, parents=[global_parser, filter_parser],
-                description="Search plans for any word or phrase.",
-                help="Search plans for any word or phrase.",)
+            'search', search, parents=[global_parser, filter_parser],
+            description="Search plans for any word or phrase.",
+            help="Search plans for any word or phrase.",)
         commands["search"].add_argument(
-                'term', default=False, metavar='TERM',
-                help="Term to search for.")
+            'term', default=False, metavar='TERM',
+            help="Term to search for.")
         commands["search"].add_argument(
-                '-l', '--love', dest='love',
-                action='store_true', default=False,
-                help="Restrict search to planlove.")
+            '-l', '--love', dest='love',
+            action='store_true', default=False,
+            help="Restrict search to planlove.")
 
         # config parser
         commands.add_command(
-                'config', config, parents=[global_parser, filter_parser],
-                description="The clans config file sets the default"
-                " behavior of the client."
-                " (Not to be confused with Plans preferences!)",
-                help="Edit clans configuration file.")
+            'config', config, parents=[global_parser, filter_parser],
+            description="The clans config file sets the default"
+            " behavior of the client."
+            " (Not to be confused with Plans preferences!)",
+            help="Edit clans configuration file.")
 
         return commands
 
 # -------------
 # MAIN FUNCTION
 # -------------
+
 
 def main():
     """
@@ -397,21 +412,21 @@ def main():
 
     # create a cookie
     cookie = cookielib.LWPCookieJar(
-            os.path.join(cs.dirs.user_data_dir, '%s.cookie' % cs.username))
+        os.path.join(cs.dirs.user_data_dir, '%s.cookie' % cs.username))
     try:
-        cookie.load() # this will fail with IOError if it does not exist
+        cookie.load()  # this will fail with IOError if it does not exist
     except IOError:
-        pass          # no cookie saved for this user
+        pass           # no cookie saved for this user
 
     # create plans connection using cookie
-    pc = PlansConnection(cookie, base_url = cs.config.get('login', 'url'))
+    pc = PlansConnection(cookie, base_url=cs.config.get('login', 'url'))
 
     if pc.plans_login():
-        pass # we're still logged in
+        pass           # we're still logged in
     else:
         # we're not logged in, prompt for password if necessary
         password = (cs.args.password or
-                getpass("[%s]'s password: " % cs.username))
+                    getpass("[%s]'s password: " % cs.username))
         success = pc.plans_login(cs.username, password)
         if not success:
             print >> sys.stderr, 'Failed to log in as [%s].' % cs.username
