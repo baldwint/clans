@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Command-line Plans."""
 
+from __future__ import print_function
 import cookielib
 import os
 import sys
@@ -117,7 +118,7 @@ def print_list(items, filter_function=None):
     for item in items:
         if filter_function is not None:
             item = filter_function(item)
-        print (u" - {0}").format(item)
+        print((u" - {0}").format(item))
 
 
 def print_search_results(results, filter_function=None):
@@ -129,16 +130,16 @@ def print_search_results(results, filter_function=None):
 
     """
     for un, count, snips in results:
-        print (u"[{username}]: {0}\n").format(count, username=un)
+        print((u"[{username}]: {0}\n").format(count, username=un))
         print_list(snips, filter_function=filter_function)
-        print u""
+        print(u"")
 
 
 def print_autoread(results, filter_function=None):
     for level in sorted(results.keys()):
-        print u"{level}:".format(level=level)
+        print(u"{level}:".format(level=level))
         print_list(results[level], filter_function=filter_function)
-        print u""
+        print(u"")
 
 
 # -----------
@@ -174,21 +175,21 @@ def edit(pc, cs):
     edit_was_made = edited != plan_text
 
     if not edit_was_made:
-        print >> sys.stderr, 'plan unchanged, aborting update'
+        print('plan unchanged, aborting update', file=sys.stderr)
     elif cs.args.pretend:
-        print >> sys.stderr, "in 'pretend' mode, not really editing"
+        print("in 'pretend' mode, not really editing", file=sys.stderr)
     else:
         # do the plan update!
         try:
             info = pc.set_edit_text(edited, md5)
-            print >> sys.stderr, info
+            print(info, file=sys.stderr)
         except PlansError as err:
-            print >> sys.stderr, err
+            print(err, file=sys.stderr)
             bakfile = '%s.plan.unsubmitted' % cs.username
             with open(bakfile, 'w') as fl:
                 fl.write(edited.encode('utf8'))
-            print >> sys.stderr, "A copy of your unsubmitted edit" \
-                    " was stored in %s" % bakfile
+            print("A copy of your unsubmitted edit"
+                  " was stored in %s" % bakfile, file=sys.stderr)
 
 
 def read(pc, cs):
@@ -200,7 +201,7 @@ def read(pc, cs):
 
     plan = formatter.filter_html(plan)
 
-    print (formatter.READ_FMT).format(plan=plan, **header)
+    print((formatter.READ_FMT).format(plan=plan, **header))
 
 
 def autoread(pc, cs):
@@ -318,7 +319,8 @@ class ClansSession(object):
                                          fromlist='clans.ext')
                         assert mod.__name__ == 'clans.ext.%s' % name
                 except (ImportError, IOError):
-                    print >> sys.stderr, 'Failed to load extension "%s".' % name
+                    print('Failed to load extension "%s".' % name,
+                          file=sys.stderr)
                 else:
                     extensions[name] = mod
         return extensions
@@ -461,7 +463,8 @@ def main():
                     getpass("[%s]'s password: " % cs.username))
         success = pc.plans_login(cs.username, password)
         if not success:
-            print >> sys.stderr, 'Failed to log in as [%s].' % cs.username
+            print('Failed to log in as [%s].' % cs.username,
+                  file=sys.stderr)
             sys.exit(1)
 
     # pass execution to the subcommand
