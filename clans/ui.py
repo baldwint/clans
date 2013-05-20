@@ -107,6 +107,19 @@ def find_formatters():
 formatters = find_formatters()
 
 
+def print_list(items, filter_function=None):
+    """
+    prints a list line by line
+
+    :param items: a list of strings to print.
+
+    """
+    for item in items:
+        if filter_function is not None:
+            item = filter_function(item)
+        print (u" - {0}").format(item)
+
+
 def print_search_results(results, filter_function=None):
     """
     prints search results to stdout.
@@ -117,10 +130,14 @@ def print_search_results(results, filter_function=None):
     """
     for un, count, snips in results:
         print (u"[{username}]: {0}\n").format(count, username=un)
-        for snip in snips:
-            if filter_function is not None:
-                snip = filter_function(snip)
-            print (u" - {0}").format(snip)
+        print_list(snips, filter_function=filter_function)
+        print u""
+
+
+def print_autoread(results, filter_function=None):
+    for level in sorted(results.keys()):
+        print u"{level}:".format(level=level)
+        print_list(results[level], filter_function=filter_function)
         print u""
 
 
@@ -184,6 +201,15 @@ def read(pc, cs):
     plan = formatter.filter_html(plan)
 
     print (formatter.READ_FMT).format(plan=plan, **header)
+
+
+def autoread(pc, cs):
+    """ autoread list command """
+    results = pc.get_autofinger()
+    formatter = __import__('clans.fmt.%s' % cs.args.fmt,
+                           fromlist='clans.fmt')
+    print_autoread(results,
+                         filter_function=formatter.filter_html)
 
 
 def love(pc, cs):
@@ -367,6 +393,12 @@ class ClansSession(object):
         commands["read"].add_argument(
             'plan', default=False, metavar='PLAN',
             help="Name of plan to be read.")
+
+        # autoread list parser
+        commands.add_command(
+            'list', autoread, parents=[global_parser, filter_parser],
+            description="Autoread list",
+            help="Check unread plans",)
 
         # quicklove parser
         commands.add_command(
