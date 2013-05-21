@@ -107,7 +107,8 @@ class PlansConnection(object):
 
         """
         kind = soup.attrMap[u'class']
-        title, body = [t.text for t in soup.findChildren()]
+        title  = soup.findChild().text
+        body = ''.join(t.text for t in soup.findChildren()[1:])
         message = dict(kind=kind, title=title, body=body)
         for val in message.values():
             assert type(val) == unicode
@@ -235,6 +236,11 @@ class PlansConnection(object):
         soup = bs3.BeautifulSoup(response.read(), fromEncoding='utf-8')
         header = soup.find('div', {'id': 'header'})
         text = soup.find('div', {'class': 'plan_text'})
+        if text is None or header is None:
+            # probably a nonexistent user
+            alert = soup.find('div', {'class': 'alertmessage'})
+            msg = self._parse_message(alert)
+            raise PlansError(msg['title'])
         if not formatted:
             # return raw beautifulsoup objects
             # (complete with wrapper <div>)
