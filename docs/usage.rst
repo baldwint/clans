@@ -1,84 +1,107 @@
-General Usage
-=============
+Usage
+=====
 
-Clans has a variety of functions that can are invoked as subcommands
-of the ``clans`` executable, like::
+To get an overview of available Clans commands, run:: 
 
-    $ clans edit
+    $ clans --help
 
-Supported commands are:
-
-    ``edit``
-        Edit your plan in $EDITOR.
-    ``read``
-        Print a plan's contents to stdout.
-    ``search``
-        Search plans for a word or phrase.
-
-For help on a specific command, run::
+To get help on a specific subcommand, like ``edit``, run::
 
     $ clans edit --help
 
-Command-line options
---------------------
+This will list all available arguments and option flags.
 
-Each command accepts its own set of arguments and option flags. Some
-option flags are accepted by all commands, because they handle
-authentication:
+Logging in
+----------
+
+All commands share several option flags related to authentication with
+the GrinnellPlans server:
 
     -u USERNAME, --username USERNAME  GrinnellPlans username, no brackets.
     -p PASSWORD, --password PASSWORD  GrinnellPlans password.
                                       Omit for secure entry.
     --logout                          Log out before quitting.
 
-The ``--username`` and ``--password`` flags are used to authenticate
-with the Plans server. If ``--password`` is not given, and is
-required, you will be prompted to enter your password securely.
+By default, you must specify your username with ``-u`` for every
+``clans`` incantation::
+
+    $ clans -u baldwint read portland
+
+This can be avoided by setting a default username in clans.cfg.
+
+It is *not* necessary to specify ``--password`` each time.
+In fact, it is a good idea to omit this flag as a rule.
+If your password is required, you will be prompted for it.
+
+.. note ::
+
+    ``clans`` stores active authentications, but will only use them if
+    ``--username`` is specified on the command line, or a default
+    username has been set in clans.cfg. This permits having multiple
+    concurrent Plans logins.
 
 Authentications generally expire on the server side after two days of
 inactivity, unless ``--logout`` is given, in which case the
-authentication will expire immediately after the command completes.
+authentication token will be deleted immediately after the command completes.
 
-``clans`` stores active authentications, but will only use them if
-``--username`` is specified on the command line, or a default username has
-been set in clans.cfg. This permits having multiple concurrent Plans logins.
+In addition, all commands accept a ``--help`` option.
 
-.. Authentications are stored as ``USERNAME.cookie`` in a
-.. system-dependent location.
+Reading Plans
+-------------
 
-In addition, all clans commands accept a ``--help`` option.
+To see what's new on your autoread list::
 
-Configuration file (``clans.cfg``)
-----------------------------------
+    $ clans list
 
-Persistent configuration is set in a file called ``clans.cfg``.
-The location of this file is reported by::
+This returns a list of plans on your autoread lists that have been
+updated since you last read them.
 
-    $ clans --help
+To read a plan, use the ``read`` subcommand::
 
-``clans.cfg`` follows the ConfigParser_ syntax: essentially, it
-consists of sections, each led by a ``[section]``
-header and followed by ``name: value`` or ``name=value`` entries.
+    $ clans read <planname>
 
-The ``[login]`` section sets options to do with authentication. The
-following configuration options may be set:
+This dumps the contents of the specified plan to standard output, in
+HTML format. It's normally easier to read plain text, and to pipe the
+output to a pager application like ``less``::
 
-:username: sets a default value for the ``--username`` flag, if it is
-           not specified.
-:url:      sets the location of the Plans service to use for login.
-           Defaults to ``http://www.grinnellplans.com``.
+    $ clans read <planname> --format text | less
 
-For example, my ``clans.cfg`` contains::
+Run ``clans read --help`` for a list of available formatters. You can
+configure a default formatter in clans.cfg.
 
-    [login]
-    username=baldwint
-    #url=http://localhost/~tkb/plans/
+Searching Plans and Quicklove
+-----------------------------
 
-The middle line saves me from having to specify ``-u baldwint`` every
-time I use clans.
-The last line, which is commented out in this example, gives the
-location of my local GrinnellPlans development server. I uncomment
-this from time to time for testing purposes.
+To search plans, use::
 
-.. _ConfigParser: http://docs.python.org/2/library/configparser.html
+    $ clans search <term>
+
+This returns a lists of plans containing the search term, and a little
+context. To restrict search to a planlove, use the ``--love``
+flag::
+
+    $ clans search --love <planname>
+
+Searching for love of your own username ("quicklove") gets a shortcut::
+
+    $ clans love
+
+Editing Plans
+-------------
+
+To edit your own plan::
+
+    $ clans edit
+
+This opens your plan for editing in a text editor.
+Clans decides which editor to use based on the following:
+
+ 1. The ``editor`` value configured in clans.cfg
+ 2. Failing that, the value of the ``$EDITOR`` environment variable
+ 3. Failing that, ``less``.
+
+To submit your update, save and close the file. To cancel the update,
+quit from the editor without saving.
+
+
 
