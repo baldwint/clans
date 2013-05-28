@@ -27,7 +27,8 @@ By default, you must specify your username with ``-u`` for every
 
     $ clans -u baldwint read portland
 
-This can be avoided by setting a default username in clans.cfg.
+This can be avoided by :ref:`setting a default username <config-username>`
+in clans.cfg.
 
 It is *not* necessary to specify ``--password`` each time.
 In fact, it is a good idea to omit this flag as a rule.
@@ -67,7 +68,7 @@ output to a pager application like ``less``::
     $ clans read <planname> --format text | less
 
 Run ``clans read --help`` for a list of available formatters. You can
-configure a default formatter in clans.cfg.
+:ref:`configure a default formatter <config-formatter>` in clans.cfg.
 
 Searching Plans and Quicklove
 -----------------------------

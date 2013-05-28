@@ -25,6 +25,8 @@ configuration file:
  - your username
  - your preferred output format
 
+.. _config-username:
+
 To set your username, create the ``[login]`` section and add a
 ``username`` entry::
 
@@ -33,6 +35,8 @@ To set your username, create the ``[login]`` section and add a
 
 With this value set, I will no longer have to specify ``-u baldwint``
 every time I use clans.
+
+.. _config-formatter:
 
 I'm also accustomed to passing ``--format color`` when I read plans. I
 can avoid passing this every time by setting ``format=color`` in the
