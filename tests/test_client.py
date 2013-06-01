@@ -175,6 +175,13 @@ class TestMD5(PlanChangingTestCase):
         self.md5check(u'Non-breaking \xa0\xa0 spaces!')
         self.md5check(u'Newline at the end\n')
 
+def psub(text):
+    """
+    Wraps some text in an annoying <p class="sub"> tag.
+
+    """
+    return '<p class="sub">%s</p>' % text
+
 class TestPlanspeak(PlanChangingTestCase):
     """
     tests that strings entered in the edit field are
@@ -192,13 +199,13 @@ class TestPlanspeak(PlanChangingTestCase):
         orig = 'hello world!'
         text, html = self.planify(orig)
         self.assertEqual(orig, text)
-        self.assertEqual(orig, html)
+        self.assertEqual(psub(orig), html)
 
     def test_multiline(self):
         orig = 'hello\nworld'
         text, html = self.planify(orig)
         self.assertEqual(orig, text)
-        self.assertEqual('hello<br />world', html)
+        self.assertEqual(psub('hello<br />world'), html)
         # BeautifulSoup problem, should be:
         #self.assertEqual('hello<br>world', html)
 
@@ -210,7 +217,7 @@ class TestPlanspeak(PlanChangingTestCase):
         for orig in examples:
             text, html = self.planify(orig)
             self.assertEqual(orig, text)
-            self.assertEqual(orig, html)
+            self.assertEqual(psub(orig), html)
 
     def test_underline(self):
         orig = '<u>hello world</u>'
@@ -218,7 +225,7 @@ class TestPlanspeak(PlanChangingTestCase):
         # Plans weirdness; should the trailing comment be canonical?
         text, html = self.planify(orig)
         self.assertEqual(orig, text)
-        self.assertEqual(expect, html)
+        self.assertEqual(psub(expect), html)
 
     def test_strike(self):
         orig = '<strike>hello world</strike>'
@@ -226,21 +233,27 @@ class TestPlanspeak(PlanChangingTestCase):
         # Plans weirdness; should the trailing comment be canonical?
         text, html = self.planify(orig)
         self.assertEqual(orig, text)
-        self.assertEqual(expect, html)
+        self.assertEqual(psub(expect), html)
 
     @unittest.expectedFailure
     def test_pre(self):
-        # my code problem (multiple <p class="sub">s)
         orig = '<pre>hello world</pre>'
+        expect = psub(orig)
+        # real plans doesn't do this - it applies class="sub" directly
+        # to the pre tag. Additionally, if the plan starts (or ends)
+        # with the pre tag, it puts an empty <p class="sub">
+        # before (after) the pre tag. No idea why that is done,
+        # possible plans bug
         text, html = self.planify(orig)
         self.assertEqual(orig, text)
-        self.assertEqual(orig, html)
+        self.assertEqual(expect, html)
 
     def test_horiz_rule(self):
         orig = 'hello<hr>world'
+        expect = psub('hello') + '<hr />' + psub('world')
         text, html = self.planify(orig)
         self.assertEqual(orig, text)
-        self.assertEqual('hello<hr />world', html)
+        self.assertEqual(expect, html)
         # BeautifulSoup problem, should be:
         #self.assertEqual('hello<hr>world', html)
 
