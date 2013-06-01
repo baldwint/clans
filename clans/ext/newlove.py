@@ -23,8 +23,8 @@ def post_load_commands(cs):
                action='store_true', default=False,
                help="Preserve read state of any new planlove.")
 
-date_fmt = '%Y-%m-%d %H:%M:%S UTC'
-        # dodgy; writing 'UTC' doesn't make it true
+date_fmt = '%Y-%m-%dT%H:%M:%SZ'
+        # dodgy; writing 'Z' (UTC) doesn't make it true
 
 class LoveState(object):
     """ Encapsulates read state of active love. """
