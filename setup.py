@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='clans',
       version='dev',
-      description='GrinnellPlans plan-editing utility',
+      description='A command-line client for the '
+                  'GrinnellPlans social network.',
       author='Tom Baldwin',
       author_email='tbaldwin@uoregon.edu',
-      requires=['argparse', 'BeautifulSoup'],
+      install_requires=['appdirs', 'BeautifulSoup', 'colorama'],
       packages=['clans',],
       scripts=['bin/clans',],
      )
