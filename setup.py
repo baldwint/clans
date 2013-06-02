@@ -4,9 +4,9 @@ from setuptools import setup
 import sys
 
 # build dependency list
-reqs = ['appdirs', 'BeautifulSoup', 'colorama'],
+reqs = ['appdirs', 'BeautifulSoup', 'colorama']
 
-if sys.version_info >= 3:
+if sys.version_info >= (3,):
     sys.stderr.write("Clans does not support Python 3 yet\n")
     sys.exit(1)
 elif sys.version_info >= (2,7):
