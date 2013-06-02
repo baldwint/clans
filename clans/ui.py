@@ -299,7 +299,7 @@ class ClansSession(object):
         # create config directory if it doesn't exist
         try:
             # 0700 for secure-ish cookie storage.
-            os.mkdir(self.dirs.user_data_dir, 0700)
+            os.makedirs(self.dirs.user_data_dir, 0700)
         except OSError:
             pass  # already exists
 
