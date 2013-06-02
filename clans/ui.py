@@ -126,7 +126,7 @@ def print_list(items, filter_function=None):
     for item in items:
         if filter_function is not None:
             item = filter_function(item)
-        print((u" - {0}").format(item))
+        print((u" - {0}").format(item).encode('utf8'))
 
 
 def print_search_results(results, filter_function=None):
@@ -138,14 +138,15 @@ def print_search_results(results, filter_function=None):
 
     """
     for un, count, snips in results:
-        print((u"[{username}]: {0}\n").format(count, username=un))
+        print((u"[{username}]: {0}\n"
+            ).format(count, username=un).encode('utf8'))
         print_list(snips, filter_function=filter_function)
         print(u"")
 
 
 def print_autoread(results, filter_function=None):
     for level in sorted(results.keys()):
-        print(u"{level}:".format(level=level))
+        print(u"{level}:".format(level=level).encode('utf8'))
         print_list(results[level], filter_function=filter_function)
         print(u"")
 
