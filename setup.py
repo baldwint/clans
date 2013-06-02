@@ -25,6 +25,7 @@ setup(name='clans',
       author='Tom Baldwin',
       author_email='tbaldwin@uoregon.edu',
       install_requires=reqs,
+      extras_require={'tests': ['MySQL-python',]},
       packages=['clans', 'clans.ext', 'clans.fmt'],
       scripts=['bin/clans',],
      )
