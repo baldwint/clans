@@ -7,11 +7,19 @@ import os
 import sys
 import tempfile
 import subprocess
-from collections import OrderedDict
 from clans.client import PlansConnection, PlansError
 import getpass as getpass_mod
 import argparse
 import re
+
+if sys.version_info >= (2,7):
+    from collections import OrderedDict
+elif sys.version_info >= (2,6):
+    from ordereddict import OrderedDict
+else:
+    sys.stderr.write('Clans requires Python 2.6 or 2.7')
+    sys.exit(1)
+
 
 # ----------
 # UI HELPERS

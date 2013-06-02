@@ -22,7 +22,7 @@ def filter_html(html):
             cr.Style.BRIGHT + r'\1' + cr.Style.NORMAL, html)
     html = re.sub(r'<i>(.+?)</i>',
             cr.Style.DIM + r'\1' + cr.Style.NORMAL, html)
-    html = re.sub(REGEX_SUB, r'\1', html, flags=re.DOTALL)
+    html = re.sub(re.compile(REGEX_SUB, flags=re.DOTALL), r'\1', html)
     html = re.sub(r'<hr ?/?>',
             cr.Fore.RED + 70*'=' + cr.Fore.RESET + '\n', html)
     html = re.sub(REGEX_LOVE,

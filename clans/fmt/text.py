@@ -16,7 +16,7 @@ def filter_html(html):
     html = re.sub(r'<b>(.+?)</b>', r'\1', html)
     html = re.sub(r'<i>(.+?)</i>', r'\1', html)
     html = re.sub(REGEX_LOVE, r'\1', html)
-    html = re.sub(REGEX_SUB, r'\1', html, flags=re.DOTALL)
+    html = re.sub(re.compile(REGEX_SUB, flags=re.DOTALL), r'\1', html)
     html = re.sub(r'<hr ?/?>', 70*'=' + '\n', html)
     return html
 
