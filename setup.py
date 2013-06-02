@@ -5,6 +5,7 @@ import sys
 
 # build dependency list
 reqs = ['appdirs', 'BeautifulSoup', 'colorama']
+extras = {'tests': ['MySQL-python',]},
 
 if sys.version_info >= (3,):
     sys.stderr.write("Clans does not support Python 3 yet\n")
@@ -13,6 +14,7 @@ elif sys.version_info >= (2,7):
     pass
 elif sys.version_info >= (2,6):
     reqs.extend(['argparse', 'ordereddict'])
+    extras['tests'].append('unittest2')
 else:
     sys.stderr.write("Clans requires Python 2.6 or 2.7\n")
     sys.exit(1)
@@ -25,7 +27,7 @@ setup(name='clans',
       author='Tom Baldwin',
       author_email='tbaldwin@uoregon.edu',
       install_requires=reqs,
-      extras_require={'tests': ['MySQL-python',]},
+      extras_require=extras,
       packages=['clans', 'clans.ext', 'clans.fmt'],
       scripts=['bin/clans',],
      )
