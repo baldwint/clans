@@ -25,6 +25,6 @@ setup(name='clans',
       author='Tom Baldwin',
       author_email='tbaldwin@uoregon.edu',
       install_requires=reqs,
-      packages=['clans',],
+      packages=['clans', 'clans.ext', 'clans.fmt'],
       scripts=['bin/clans',],
      )
