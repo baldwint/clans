@@ -24,7 +24,7 @@ def filter_html(html):
             cr.Style.DIM + r'\1' + cr.Style.NORMAL, html)
     html = re.sub(re.compile(REGEX_SUB, flags=re.DOTALL), r'\1', html)
     html = re.sub(r'<hr ?/?>',
-            cr.Fore.RED + 70*'=' + cr.Fore.RESET + '\n', html)
+            '\n' + cr.Fore.RED + 70*'=' + cr.Fore.RESET + '\n', html)
     html = re.sub(REGEX_LOVE,
             cr.Style.BRIGHT + cr.Fore.BLUE + \
             r'\1' + cr.Style.NORMAL + cr.Fore.RESET, html)
