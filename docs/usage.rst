@@ -61,12 +61,12 @@ To read a plan, use the ``read`` subcommand::
 
     $ clans read <planname>
 
-This dumps the contents of the specified plan to standard output, in
-HTML format. It's normally easier to read plain text, and to pipe the
-output to a pager application like ``less``::
+This displays the contents of the specified plan in a pager application in
+HTML format. It's normally easier to read plain text, though::
 
-    $ clans read <planname> --format text | less
+    $ clans read <planname> --format text
 
+This formats the plan as plain text before displaying it.
 Run ``clans read --help`` for a list of available formatters. You can
 :ref:`configure a default formatter <config-formatter>` in clans.cfg.
 

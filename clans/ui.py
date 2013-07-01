@@ -7,6 +7,7 @@ import os
 import sys
 import tempfile
 import subprocess
+from pydoc import pager
 from clans.client import PlansConnection, PlansError
 import getpass as getpass_mod
 import argparse
@@ -210,7 +211,7 @@ def read(pc, cs):
 
     plan = formatter.filter_html(plan)
 
-    print((formatter.READ_FMT).format(plan=plan, **header))
+    pager((formatter.READ_FMT).format(plan=plan, **header))
 
 
 def autoread(pc, cs):
