@@ -210,9 +210,7 @@ class TestPlanspeak(PlanChangingTestCase):
         orig = 'hello\nworld'
         text, html = self.planify(orig)
         self.assertEqual(orig, text)
-        self.assertEqual(psub('hello<br />world'), html)
-        # BeautifulSoup problem, should be:
-        #self.assertEqual('hello<br>world', html)
+        self.assertEqual(psub('hello<br>world'), html)
 
     def test_allowed_html(self):
         examples = ['<b>hello world</b>',
@@ -255,12 +253,10 @@ class TestPlanspeak(PlanChangingTestCase):
 
     def test_horiz_rule(self):
         orig = 'hello<hr>world'
-        expect = psub('hello') + '<hr />' + psub('world')
+        expect = psub('hello') + '<hr>' + psub('world')
         text, html = self.planify(orig)
         self.assertEqual(orig, text)
         self.assertEqual(expect, html)
-        # BeautifulSoup problem, should be:
-        #self.assertEqual('hello<hr>world', html)
 
 class DbTestCase(LoggedInTestCase):
 
@@ -284,9 +280,9 @@ class TestRead(DbTestCase):
 
     """
 
-    # this fails because beautifulsoup doesn't preserve syntactically
-    # irrelevant details (<br> vs <br />, etc.). #TODO
-    @unittest.expectedFailure
+    # this might fail because beautifulsoup doesn't preserve syntactically
+    # irrelevant details of html. I've compensated for the obvious
+    # ones (<br> vs <br />, etc.) but more remain to be found #TODO
     def test_reading(self):
         userid = self.find_userid()
         self.c.execute("select plan from plans "
