@@ -258,6 +258,30 @@ class TestPlanspeak(PlanChangingTestCase):
         self.assertEqual(orig, text)
         self.assertEqual(expect, html)
 
+    def test_planlove(self):
+        orig = "May the [gorp] be with you."
+        expect = ('May the [<a href="read.php?searchname=gorp"'
+                ' class="planlove">gorp</a>] be with you.')
+        text, html = self.planify(orig)
+        self.assertEqual(orig, text)
+        self.assertEqual(psub(expect), html)
+
+    def test_link(self):
+        orig = "Where the hell is [http://grinnell.edu/|Grinnell]?"
+        expect = ('Where the hell is <a href="http://grinnell.edu/"'
+        ' class="onplan">Grinnell</a>?')
+        text, html = self.planify(orig)
+        self.assertEqual(orig, text)
+        self.assertEqual(psub(expect), html)
+
+    def test_other_link(self):
+        orig = "Where the hell is [http://grinnell.edu/]?"
+        expect = ('Where the hell is <a href="http://grinnell.edu/"'
+        ' class="onplan">http://grinnell.edu/</a>?')
+        text, html = self.planify(orig)
+        self.assertEqual(orig, text)
+        self.assertEqual(psub(expect), html)
+
 class DbTestCase(LoggedInTestCase):
 
     def setUp(self):
