@@ -269,8 +269,8 @@ class PlansConnection(object):
         # we want to return the plan formatted *exactly* how it is
         # formatted when served, but our parser will correct <hr> and
         # <br> to self closing tags. This manually corrects them back.
-        plan = plan.replace('<br/>', '<br>')
-        plan = plan.replace('<hr/>', '<hr>')
+        plan = plan.replace('<br />', '<br>')
+        plan = plan.replace('<hr />', '<hr>')
         # to avoid playing whack-a-mole, we should configure the
         # parser to not do this, or else treat contents of
         # <div class="plan_text"> tags as plain text
