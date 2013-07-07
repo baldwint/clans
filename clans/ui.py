@@ -146,8 +146,6 @@ def edit(pc, cs):
 
     if not edit_was_made:
         print('plan unchanged, aborting update', file=sys.stderr)
-    elif cs.args.pretend:
-        print("in 'pretend' mode, not really editing", file=sys.stderr)
     else:
         # do the plan update!
         try:
@@ -344,10 +342,6 @@ class ClansSession(object):
             '--skip-update', dest='skip_update',
             action='store_true', default=False,
             help="Don't update the plan or open it for editing.")
-        commands["edit"].add_argument(
-            '--pretend', dest='pretend',
-            action='store_true', default=False,
-            help="Open plan for editing, but don't actually do the update.")
 
         # read parser
         commands.add_command(
