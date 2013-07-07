@@ -3,6 +3,7 @@ Formatters (views) for clans
 
 """
 
+from __future__ import print_function
 import re
 import colorama as cr
 #TODO only import these if needed
@@ -19,6 +20,41 @@ class RawFormatter(object):
 
     READ_FMT = '\n'.join( ': '.join(header) for header in HEADERS)
     READ_FMT += "\n\n{plan}"
+
+
+    def print_list(self, items):
+        """
+        prints a list line by line
+
+        :param items: a list of strings to print.
+
+        """
+        for item in items:
+            item = self.filter_html(item)
+            print((u" - {0}").format(item).encode('utf8'))
+
+
+    def print_search_results(self, results):
+        """
+        prints search results to stdout.
+
+        :param results: whatever was returned by the ``search_plans``
+        method on PlansConnection.
+
+        """
+        for un, count, snips in results:
+            print((u"[{username}]: {0}\n"
+                ).format(count, username=un).encode('utf8'))
+            self.print_list(snips)
+            print(u"")
+
+
+    def print_autoread(self, results):
+        for level in sorted(results.keys()):
+            print(u"{level}:".format(level=level).encode('utf8'))
+            self.print_list(results[level])
+            print(u"")
+
 
 class TextFormatter(RawFormatter):
 

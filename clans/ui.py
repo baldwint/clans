@@ -111,40 +111,6 @@ formatters = {
         'color': clans.fmt.ColorFormatter,
         }
 
-def print_list(items, filter_function=None):
-    """
-    prints a list line by line
-
-    :param items: a list of strings to print.
-
-    """
-    for item in items:
-        if filter_function is not None:
-            item = filter_function(item)
-        print((u" - {0}").format(item).encode('utf8'))
-
-
-def print_search_results(results, filter_function=None):
-    """
-    prints search results to stdout.
-
-    :param results: whatever was returned by the ``search_plans``
-    method on PlansConnection.
-
-    """
-    for un, count, snips in results:
-        print((u"[{username}]: {0}\n"
-            ).format(count, username=un).encode('utf8'))
-        print_list(snips, filter_function=filter_function)
-        print(u"")
-
-
-def print_autoread(results, filter_function=None):
-    for level in sorted(results.keys()):
-        print(u"{level}:".format(level=level).encode('utf8'))
-        print_list(results[level], filter_function=filter_function)
-        print(u"")
-
 
 # -----------
 # SUBCOMMANDS
@@ -210,8 +176,7 @@ def autoread(pc, cs):
     """ autoread list command """
     results = pc.get_autofinger()
     formatter = formatters[cs.args.fmt]()
-    print_autoread(results,
-                         filter_function=formatter.filter_html)
+    formatter.print_autoread(results)
 
 
 def love(pc, cs):
@@ -219,8 +184,7 @@ def love(pc, cs):
     results = pc.search_plans(pc.username, planlove=True)
     cs.hook('post_search', results)
     formatter = formatters[cs.args.fmt]()
-    print_search_results(results,
-                         filter_function=formatter.filter_html)
+    formatter.print_search_results(results)
 
 
 def search(pc, cs):
@@ -228,8 +192,7 @@ def search(pc, cs):
     results = pc.search_plans(cs.args.term, planlove=cs.args.love)
     cs.hook('post_search', results)
     formatter = formatters[cs.args.fmt]()
-    print_search_results(results,
-                         filter_function=formatter.filter_html)
+    formatter.print_search_results(results)
 
 
 def config(pc, cs):
