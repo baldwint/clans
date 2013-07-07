@@ -8,19 +8,20 @@ import re
 import colorama as cr
 #TODO only import these if needed
 
+HEADERS = [('Username', '{username}'),
+           ('Last Updated', '{lastupdated}'),
+           ('Last Login', '{lastlogin}'),
+           ('Name', '{planname}')]
+
 class RawFormatter(object):
 
     def filter_html(self, html):
         return html
 
-    HEADERS = [('Username', '{username}'),
-               ('Last Updated', '{lastupdated}'),
-               ('Last Login', '{lastlogin}'),
-               ('Name', '{planname}')]
-
-    READ_FMT = '\n'.join( ': '.join(header) for header in HEADERS)
-    READ_FMT += "\n\n{plan}"
-
+    def format_plan(self, **kwargs):
+        read_fmt = '\n'.join( ': '.join(header) for header in HEADERS)
+        read_fmt += "\n\n{plan}"
+        return read_fmt.format(**kwargs)
 
     def print_list(self, items):
         """
@@ -79,11 +80,12 @@ class TextFormatter(RawFormatter):
 
 class ColorFormatter(TextFormatter):
 
-    HEADERS = [(cr.Style.BRIGHT + k + cr.Style.NORMAL, v)
-                    for k,v in RawFormatter.HEADERS]
-
-    READ_FMT = '\n'.join( ': '.join(header) for header in HEADERS)
-    READ_FMT += "\n\n{plan}"
+    def format_plan(self, **kwargs):
+        color_headers = [(cr.Style.BRIGHT + k + cr.Style.NORMAL, v)
+                            for k,v in HEADERS]
+        read_fmt = '\n'.join( ': '.join(header) for header in color_headers)
+        read_fmt += "\n\n{plan}"
+        return read_fmt.format(**kwargs)
 
     def filter_html(self, html):
         """

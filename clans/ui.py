@@ -169,7 +169,7 @@ def read(pc, cs):
     formatter = formatters[cs.args.fmt]()
     plan = formatter.filter_html(plan)
 
-    pager((formatter.READ_FMT).format(plan=plan, **header))
+    pager(formatter.format_plan(plan=plan, **header))
 
 
 def autoread(pc, cs):
