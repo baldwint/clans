@@ -28,6 +28,6 @@ setup(name='clans',
       author_email='tbaldwin@uoregon.edu',
       install_requires=reqs,
       extras_require=extras,
-      packages=['clans', 'clans.ext', 'clans.fmt'],
+      packages=['clans', 'clans.ext'],
       scripts=['bin/clans',],
      )

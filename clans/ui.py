@@ -104,18 +104,12 @@ class CommandSet(dict):
 
 
 import clans.fmt
-import pkgutil
 
-
-def find_formatters():
-    fmt_location = os.path.dirname(clans.fmt.__file__)
-    gen = pkgutil.iter_modules([fmt_location])
-    names = [name for _, name, _ in gen]
-    return names
-
-
-formatters = find_formatters()
-
+formatters = {
+        'raw': clans.fmt.RawFormatter,
+        'text': clans.fmt.TextFormatter,
+        'color': clans.fmt.ColorFormatter,
+        }
 
 def print_list(items, filter_function=None):
     """
@@ -206,9 +200,7 @@ def read(pc, cs):
     """ plan-reading command """
     header, plan = pc.read_plan(cs.args.plan)
 
-    formatter = __import__('clans.fmt.%s' % cs.args.fmt,
-                           fromlist='clans.fmt')
-
+    formatter = formatters[cs.args.fmt]()
     plan = formatter.filter_html(plan)
 
     pager((formatter.READ_FMT).format(plan=plan, **header))
@@ -217,8 +209,7 @@ def read(pc, cs):
 def autoread(pc, cs):
     """ autoread list command """
     results = pc.get_autofinger()
-    formatter = __import__('clans.fmt.%s' % cs.args.fmt,
-                           fromlist='clans.fmt')
+    formatter = formatters[cs.args.fmt]()
     print_autoread(results,
                          filter_function=formatter.filter_html)
 
@@ -227,8 +218,7 @@ def love(pc, cs):
     """ quicklove command """
     results = pc.search_plans(pc.username, planlove=True)
     cs.hook('post_search', results)
-    formatter = __import__('clans.fmt.%s' % cs.args.fmt,
-                           fromlist='clans.fmt')
+    formatter = formatters[cs.args.fmt]()
     print_search_results(results,
                          filter_function=formatter.filter_html)
 
@@ -237,8 +227,7 @@ def search(pc, cs):
     """ search command """
     results = pc.search_plans(cs.args.term, planlove=cs.args.love)
     cs.hook('post_search', results)
-    formatter = __import__('clans.fmt.%s' % cs.args.fmt,
-                           fromlist='clans.fmt')
+    formatter = formatters[cs.args.fmt]()
     print_search_results(results,
                          filter_function=formatter.filter_html)
 
