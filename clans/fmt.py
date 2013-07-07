@@ -12,12 +12,13 @@ class RawFormatter(object):
     def filter_html(self, html):
         return html
 
-    READ_FMT = ("Username: {username}\n"
-               "Last Updated: {lastupdated}\n"
-               "Last Login: {lastlogin}\n"
-               "Name: {planname}\n\n"
-               "{plan}")
+    HEADERS = [('Username', '{username}'),
+               ('Last Updated', '{lastupdated}'),
+               ('Last Login', '{lastlogin}'),
+               ('Name', '{planname}')]
 
+    READ_FMT = '\n'.join( ': '.join(header) for header in HEADERS)
+    READ_FMT += "\n\n{plan}"
 
 class TextFormatter(RawFormatter):
 
@@ -42,12 +43,11 @@ class TextFormatter(RawFormatter):
 
 class ColorFormatter(TextFormatter):
 
-    READ_FMT = (
-        cr.Style.BRIGHT + "Username" + cr.Style.NORMAL + ": {username}\n" +
-        cr.Style.BRIGHT + "Last Updated" + cr.Style.NORMAL + ": {lastupdated}\n" +
-        cr.Style.BRIGHT + "Last Login" + cr.Style.NORMAL + ": {lastlogin}\n" +
-        cr.Style.BRIGHT + "Name" + cr.Style.NORMAL + ": {planname}\n\n" +
-                "{plan}")
+    HEADERS = [(cr.Style.BRIGHT + k + cr.Style.NORMAL, v)
+                    for k,v in RawFormatter.HEADERS]
+
+    READ_FMT = '\n'.join( ': '.join(header) for header in HEADERS)
+    READ_FMT += "\n\n{plan}"
 
     def filter_html(self, html):
         """
