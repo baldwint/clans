@@ -1,12 +1,17 @@
 Configuration file (``clans.cfg``)
 ----------------------------------
 
-Persistent configuration is set in a file called ``clans.cfg``.
-The location of this file is reported by::
+Persistent configuration is set in a file called ``clans.cfg``,
+in the clans profile directory. The location of this directory is
+reported by:
+
+.. code-block:: console
 
     $ clans --help
 
-You can go directly to editing the file with::
+You can go directly to editing the configuration file with:
+
+.. code-block:: console
 
     $ clans config
 
@@ -58,16 +63,4 @@ following configuration options may be set:
            not specified.
 :url:      sets the location of the Plans service to use for login.
            Defaults to ``http://www.grinnellplans.com``.
-
-For example, my ``clans.cfg`` contains::
-
-    [login]
-    username=baldwint
-    #url=http://localhost/~tkb/plans/
-
-The middle line saves me from having to specify ``-u baldwint`` every
-time I use clans.
-The last line, which is commented out in this example, gives the
-location of my local GrinnellPlans development server. I uncomment
-this from time to time for testing purposes.
 

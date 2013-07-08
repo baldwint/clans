@@ -218,9 +218,13 @@ class ClansSession(object):
         # persistent data storage location
         self.dirs = appdirs.AppDirs(appname='clans', appauthor='baldwint')
 
-        # config location: either in appdata/clans.cfg, or set by CLANS_CFG
-        self.config_loc = (os.environ.get('CLANS_CFG', '') or
-            os.path.join(self.dirs.user_data_dir, 'clans.cfg'))
+        # profile folder: either set by CLANS_DIR environment
+        # variable, or the standard user data directory for this OS
+        self.profile_dir = (os.environ.get('CLANS_DIR', '') or
+                            self.dirs.user_data_dir)
+
+        # config file location: in data directory
+        self.config_loc = os.path.join(self.profile_dir, 'clans.cfg')
 
         # load config, extensions, and define command line args
         self.config = self._load_config()
@@ -248,10 +252,10 @@ class ClansSession(object):
         config.set('clans', 'editor', os.environ.get('EDITOR', 'pico'))
         config.set('clans', 'format', 'raw')
 
-        # create config directory if it doesn't exist
+        # create profile directory if it doesn't exist
         try:
             # 0700 for secure-ish cookie storage.
-            os.makedirs(self.dirs.user_data_dir, 0700)
+            os.makedirs(self.profile_dir, 0700)
         except OSError:
             pass  # already exists
 
@@ -324,7 +328,7 @@ class ClansSession(object):
 
         # main parser: has subcommands for everything
         commands = CommandSet(
-            description= __doc__ + "\n\nconfiguration file:\n  " + self.config_loc,
+            description= __doc__ + "\n\nprofile directory:\n  " + self.profile_dir,
             parents=[global_parser],
             formatter_class=argparse.RawTextHelpFormatter)
 
@@ -402,7 +406,7 @@ def main():
 
     # create a cookie
     cookie = cookielib.LWPCookieJar(
-        os.path.join(cs.dirs.user_data_dir, '%s.cookie' % cs.username))
+        os.path.join(cs.profile_dir, '%s.cookie' % cs.username))
     try:
         cookie.load()  # this will fail with IOError if it does not exist
     except IOError:

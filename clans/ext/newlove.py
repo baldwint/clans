@@ -70,7 +70,7 @@ def post_search(cs, results):
     # determine lovelog location. in appdir by default, but can be
     # set in config file. username expansion works there too!
     lovelog = config.get('lovelog',
-            os.path.join(cs.dirs.user_data_dir, '{username}.love')
+            os.path.join(cs.profile_dir, '{username}.love')
                 ).format(username=un)
 
     # load stored planlove
