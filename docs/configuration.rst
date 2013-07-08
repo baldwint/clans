@@ -68,3 +68,11 @@ following configuration options may be set:
 :url:      sets the location of the Plans service to use for login.
            Defaults to ``http://www.grinnellplans.com``.
 
+The ``[clans]`` section controls how the command-line client behaves.
+
+:format:   sets a default value for the ``--format`` flag, if it is
+           not specified.
+:editor:   sets which editor to use when editing your plan, in case
+           you want to use one other than is set by the ``EDITOR``
+           environment variable.
+
