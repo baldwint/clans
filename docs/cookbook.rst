@@ -10,13 +10,13 @@ Rather than checking planlove compulsively throughout the day, we can
 schedule a cron job that runs ``clans love`` at a reasonable interval,
 and emails us when there is something new.
 
-For this we should install Clans on a machine that is on all the time,
+For this we should install clans on a machine that is on all the time,
 and has a mail server installed. We will need to be able to send mail
 from the command line using ``mail``, which usually works like so:
 
 .. code-block:: console
 
-    $ echo "Hello world!" | mail -s 'subject' not-my-email@baldwint.com
+    $ echo "Hello world!" | mail -s 'subject' username@grinnell.edu
 
 After verifying that I can send email to myself using this method, I
 install clans on the server and configure ``clans.cfg`` like so:
@@ -48,10 +48,11 @@ email if it's not blank:
 
     #!/bin/bash
 
-    LOVE=`clans love -tn`;
+    CLANS='/full/path/to/clans'
+    LOVE=`$CLANS love -tn`;
 
     if [ -n "$LOVE" ]; then
-        echo "$LOVE" | mail -s 'new planlove' not-my-email@baldwint.com
+        echo "$LOVE" | mail -s 'new planlove' username@grinnell.edu
     fi
 
 I make it executable (``chmod +x lovenotify.sh``) and make an entry in
