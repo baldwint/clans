@@ -39,23 +39,21 @@ def external_editor(text, editor=None, **kwargs):
     if 'text' not in kwargs:
         kwargs['text'] = True
 
-    # I cribbed this from the mercurial source code, in ui.py.
-    fd, name = tempfile.mkstemp(**kwargs)
+    if editor is None: # default to $EDITOR, or pico
+        editor = os.environ.get('EDITOR', 'pico')
+
+    fd, name = tempfile.mkstemp(**kwargs) # make tempfile
     try:
         # populate the temp file with original text.
-        f = os.fdopen(fd, 'w')
-        f.write(text.encode('utf8'))
-        f.close()
+        with os.fdopen(fd, 'w') as f:
+            f.write(text.encode('utf8'))
 
-        # open in editor (default to $EDITOR, or pico)
-        if editor is None:
-            editor = os.environ.get('EDITOR', 'pico')
+        # open in editor and wait for user to quit
         subprocess.call([editor, name])
 
         # retrieve edited text
-        f = open(name)
-        t = f.read()
-        f.close()
+        with open(name) as f:
+            t = f.read()
     finally:
         os.unlink(name)
 
