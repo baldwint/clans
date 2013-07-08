@@ -10,6 +10,9 @@ Clans is a command-line client for the GrinnellPlans_ social network.
 
 .. _GrinnellPlans: http://grinnellplans.com/
 
+.. image:: gorp.png
+    :alt: "clans screenshot"
+
 See what's going on in Portland:
 
 .. code-block:: console
