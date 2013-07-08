@@ -3,32 +3,39 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Clans
-=====
+Command-line Plans (``clans``)
+==============================
 
 Clans is a command-line client for the GrinnellPlans_ social network.
 
 .. _GrinnellPlans: http://grinnellplans.com/
 
-See what's going on in Portland::
+See what's going on in Portland:
 
-    clans read portland
+.. code-block:: console
 
-Check quick love::
+    $ clans read portland
 
-    clans love
+Check quick love:
 
-Edit your plan::
+.. code-block:: console
 
-    clans edit  # opens in $EDITOR
+    $ clans love
 
-Not only is Clans the most legit way to waste time on Plans, but it is
-also a useful tool for:
+Edit your plan in ``$EDITOR``:
+
+.. code-block:: console
+
+    $ clans edit
+
+Not only is clans the most legit way to waste time on the internet,
+but it is also a useful tool for:
 
   - automatically backing up your plan
   - scheduling a plan update for a later time
   - emailing yourself when new planlove arrives
-  - much much more
+
+and much much more. No Limits™!
 
 
 Contents

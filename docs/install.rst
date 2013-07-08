@@ -8,21 +8,21 @@ development repository using Mercurial_.
 Installing from source repo
 ---------------------------
 
-To check out and install ``clans`` in a single step, use pip_::
+To check out and install clans in a single step, use pip_:
+
+.. code-block:: console
 
     $ pip install --user -e hg+https://bitbucket.org/tkb/clans#egg=clans
 
+This installs clans, along with several of its dependencies.
 If you omit ``--user``, you may need to prefix this with ``sudo``.
 This flag is unnecessary if you have some other means of organizing
 python modules in your home directory (e.g., working in a virtualenv_).
 
-If you don't have them already, install the following dependencies::
-
-    $ pip install beautifulsoup
-    $ pip install appdirs
-
 As an optional step, install Sphinx_ so that you can build the
-documentation::
+documentation:
+
+.. code-block:: console
 
     $ pip install sphinx
 
@@ -36,7 +36,9 @@ Staying up to date
 
 In the installation step, you created an editable clone of the
 repository in your home directory at ``$HOME/src/clans``. To update to
-the latest version, change to this directory and do::
+the latest version, change to this directory and do:
+
+.. code-block:: console
 
     $ hg pull
     $ hg update

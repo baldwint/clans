@@ -33,7 +33,9 @@ configuration file:
 .. _config-username:
 
 To set your username, create the ``[login]`` section and add a
-``username`` entry::
+``username`` entry:
+
+.. code-block:: ini
 
     [login]
     username=baldwint
@@ -45,7 +47,9 @@ every time I use clans.
 
 I'm also accustomed to passing ``--format color`` when I read plans. I
 can avoid passing this every time by setting ``format=color`` in the
-``[clans]`` section. I add the following::
+``[clans]`` section. I add the following:
+
+.. code-block:: ini
 
     [clans]
     format=color

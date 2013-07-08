@@ -111,8 +111,8 @@ would like to share settings.
       .. _`selective sync`: https://www.dropbox.com/help/175/en
 
 
-Using clans with an alternate Plans
------------------------------------
+Using an alternate Plans server
+-------------------------------
 
 By default, clans communicates with the installation of Plans running
 at http://www.grinnellplans.com/. It can also talk to other

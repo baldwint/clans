@@ -1,11 +1,15 @@
 Usage
 =====
 
-To get an overview of available Clans commands, run:: 
+To get an overview of available clans commands, run:
+
+.. code-block:: console
 
     $ clans --help
 
-To get help on a specific subcommand, like ``edit``, run::
+To get help on a specific subcommand, like ``edit``, run:
+
+.. code-block:: console
 
     $ clans edit --help
 
@@ -23,7 +27,9 @@ the GrinnellPlans server:
     --logout                          Log out before quitting.
 
 By default, you must specify your username with ``-u`` for every
-``clans`` incantation::
+``clans`` incantation:
+
+.. code-block:: console
 
     $ clans -u baldwint read portland
 
@@ -50,19 +56,25 @@ In addition, all commands accept a ``--help`` option.
 Reading Plans
 -------------
 
-To see what's new on your autoread list::
+To see what's new on your autoread list:
+
+.. code-block:: console
 
     $ clans list
 
 This returns a list of plans on your autoread lists that have been
 updated since you last read them.
 
-To read a plan, use the ``read`` subcommand::
+To read a plan, use the ``read`` subcommand:
+
+.. code-block:: console
 
     $ clans read <planname>
 
 This displays the contents of the specified plan in a pager application in
-HTML format. It's normally easier to read plain text, though::
+HTML format. It's normally easier to read plain text, though:
+
+.. code-block:: console
 
     $ clans read <planname> --format text
 
@@ -73,33 +85,41 @@ Run ``clans read --help`` for a list of available formatters. You can
 Searching Plans and Quicklove
 -----------------------------
 
-To search plans, use::
+To search plans, use:
+
+.. code-block:: console
 
     $ clans search <term>
 
 This returns a lists of plans containing the search term, and a little
 context. To restrict search to a planlove, use the ``--love``
-flag::
+flag:
+
+.. code-block:: console
 
     $ clans search --love <planname>
 
-Searching for love of your own username ("quicklove") gets a shortcut::
+Searching for love of your own username ("quicklove") gets a shortcut:
+
+.. code-block:: console
 
     $ clans love
 
 Editing Plans
 -------------
 
-To edit your own plan::
+To edit your own plan:
+
+.. code-block:: console
 
     $ clans edit
 
 This opens your plan for editing in a text editor.
 Clans decides which editor to use based on the following:
 
- 1. The ``editor`` value configured in clans.cfg
+ 1. The ``editor`` value configured in the ``[clans]`` section of ``clans.cfg``
  2. Failing that, the value of the ``$EDITOR`` environment variable
- 3. Failing that, ``less``.
+ 3. Failing that, ``pico``.
 
 To submit your update, save and close the file. To cancel the update,
 quit from the editor without saving.
