@@ -4,3 +4,5 @@ syntax: glob
 *.swp
 *.pyc
 docs/_build
+.coverage
+htmlcov
