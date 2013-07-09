@@ -223,7 +223,7 @@ class PlansConnection(object):
             autofinger[name] = group['usernames']
         return autofinger
 
-    def read_plan(self, plan, formatted=True):
+    def read_plan(self, plan):
         """
         Retrieve the contents of the specified plan.
 
@@ -241,10 +241,6 @@ class PlansConnection(object):
             alert = soup.find('div', {'class': 'alertmessage'})
             msg = self._parse_message(alert)
             raise PlansError(msg['title'])
-        if not formatted:
-            # return raw beautifulsoup objects
-            # (complete with wrapper <div>)
-            return header, text
         # convert header html into a python dictionary
         header_dict = {}
         for key in ('username', 'planname'):
