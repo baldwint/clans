@@ -75,14 +75,13 @@ def post_search(cs, results):
 
     # load stored planlove
     try:
-        oldlove = json.load(open(lovelog, 'r'),
-                object_hook=LoveState.from_json)
+        fl = open(lovelog, 'r')
     except IOError:
         # no log file
         oldlove = {}
-    except ValueError:
-        # file exists, but is empty
-        oldlove = {}
+    else:
+        # ValueError would occur here if the JSON parse fails
+        oldlove = json.load(fl, object_hook=LoveState.from_json)
 
     newlove = {}
     now = datetime.utcnow()
@@ -130,7 +129,8 @@ def post_search(cs, results):
                     ls.unread = False
 
     # store log
-    json.dump(newlove, open(lovelog, 'w'), cls=LoveEncoder)
+    with open(lovelog, 'w') as fl:
+        json.dump(newlove, fl, cls=LoveEncoder)
 
     # TODO: option to hoard deleted love
 
