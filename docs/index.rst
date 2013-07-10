@@ -50,6 +50,7 @@ Contents
    install
    usage
    configuration
+   extensions
    cookbook
 
 
