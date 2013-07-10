@@ -62,6 +62,8 @@ class TextFormatter(RawFormatter):
     REGEX_LOVE = r'<a href=[^\s]* class="planlove">(.+?)</a>'
     REGEX_SUB = r'<p class="sub">(.+?)</p>'
 
+    hr = '\n' + 70*'=' + '\n'
+
     def filter_html(self, html):
         """
         format plan html as plain text.
@@ -75,10 +77,12 @@ class TextFormatter(RawFormatter):
         html = re.sub(r'<i>(.+?)</i>', r'\1', html)
         html = re.sub(self.REGEX_LOVE, r'\1', html)
         html = re.sub(re.compile(self.REGEX_SUB, flags=re.DOTALL), r'\1', html)
-        html = re.sub(r'<hr ?/?>', '\n' + 70*'=' + '\n', html)
+        html = re.sub(r'<hr ?/?>', self.hr, html)
         return html
 
 class ColorFormatter(TextFormatter):
+
+    hr = '\n' + cr.Fore.RED + 70*'='+ cr.Fore.RESET  + '\n'
 
     def format_plan(self, **kwargs):
         color_headers = [(cr.Style.BRIGHT + k + cr.Style.NORMAL, v)
@@ -92,19 +96,13 @@ class ColorFormatter(TextFormatter):
         format html for display in the terminal, with colors.
 
         """
-        html = re.sub(r'<br ?/?>', '\n', html)
-        html = re.sub(r'&quot;', '"', html)
-        html = re.sub(r'&gt;', '>', html)
-        html = re.sub(r'&lt;', '<', html)
-        html = re.sub(r'<b>(.+?)</b>',
+        html = re.sub(r'(<b>.+?</b>)',
                 cr.Style.BRIGHT + r'\1' + cr.Style.NORMAL, html)
-        html = re.sub(r'<i>(.+?)</i>',
+        html = re.sub(r'(<i>.+?</i>)',
                 cr.Style.DIM + r'\1' + cr.Style.NORMAL, html)
-        html = re.sub(re.compile(self.REGEX_SUB, flags=re.DOTALL), r'\1', html)
-        html = re.sub(r'<hr ?/?>',
-                '\n' + cr.Fore.RED + 70*'=' + cr.Fore.RESET + '\n', html)
         html = re.sub(self.REGEX_LOVE,
                 cr.Style.BRIGHT + cr.Fore.BLUE + \
                 r'\1' + cr.Style.NORMAL + cr.Fore.RESET, html)
+        html = super(ColorFormatter, self).filter_html(html)
         return html
 
