@@ -69,7 +69,7 @@ To enable this extension, add to ``clans.cfg``:
 With this line enabled, three new flags are added to ``clans edit``:
 
 
-      -b [FILE], --backup [FILE]
+      -b FILE, --backup FILE
                             Backup existing plan to file before editing. To print
                             to stdout, omit filename.
       -s FILE, --save FILE  Save a local copy of edited plan before submitting.
