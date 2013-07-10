@@ -28,6 +28,11 @@ def post_load_commands(cs):
                metavar='FILE',
                default=config.get('save_edit', False),
                help='Save a local copy of edited plan before submitting.')
+    cs.commands["edit"].add_argument(
+               '--skip-update', dest='skip_update',
+               action='store_true', default=False,
+               help="Don't update the plan or open it for editing.")
+
 
 def post_get_edit_text(cs, plan_text):
     # store a copy of the edited plan.
@@ -45,6 +50,11 @@ def post_get_edit_text(cs, plan_text):
         fp = open(cs.args.backup_file, 'w')
         fp.write(plan_text.encode('utf8'))
         fp.close()
+
+    if cs.args.skip_update:
+        # this aborts the rest of the edit command
+        sys.exit()
+
 
 def pre_set_edit_text(cs, edited):
     # check to see if plan was edited.

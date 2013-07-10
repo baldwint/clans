@@ -124,9 +124,6 @@ def edit(pc, cs):
 
     cs.hook('post_get_edit_text', plan_text)
 
-    if cs.args.skip_update:
-        return
-
     if cs.args.source_file:
         # read input from file
         with open(cs.args.source_file, 'r') as source:
@@ -340,10 +337,6 @@ class ClansSession(object):
             default=False, metavar='FILE',
             help="Replace plan with the contents of FILE. "
             "Skips interactive editing.")
-        commands["edit"].add_argument(
-            '--skip-update', dest='skip_update',
-            action='store_true', default=False,
-            help="Don't update the plan or open it for editing.")
 
         # read parser
         commands.add_command(
@@ -425,14 +418,16 @@ def main():
                   file=sys.stderr)
             sys.exit(1)
 
-    # pass execution to the subcommand
-    cs.args.func(pc, cs)
-
-    if cs.args.logout:
-        os.unlink(cookie.filename)
-    else:
-        # save cookie
-        cookie.save()
+    try:
+        # pass execution to the subcommand
+        cs.args.func(pc, cs)
+    finally:
+        # do this part always, even if subcommand fails
+        if cs.args.logout:
+            os.unlink(cookie.filename)
+        else:
+            # save cookie
+            cookie.save()
 
 if __name__ == '__main__':
     main()
