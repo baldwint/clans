@@ -116,22 +116,37 @@ def with_formatter(func):
     Decorator for subcommands that use a formatter.
 
     """
-    # func takes pc, cs, fmt
+    # func takes only cs as positional, all others kwarg
     @wraps(func)
-    def formatted(pc, cs):
+    def formatted(cs, **kwargs):
         fmt = formatters[cs.args.fmt]()
-        func(pc, cs, fmt=fmt)
+        func(cs, fmt=fmt, **kwargs)
     return formatted
+
+def with_plans(func):
+    """
+    Decorator for subcommands that connect to plans.
+
+    """
+    # func takes only cs as positional, all others kwarg
+    @wraps(func)
+    def connected(cs, **kwargs):
+        pc = cs.make_plans_connection()
+        func(cs, pc=pc, **kwargs)
+    return connected
 
 # -----------
 # SUBCOMMANDS
 # -----------
 
-# these are functions that take two agruments:
-#  - a PlansConnection instance
+# these are functions that take one argument:
 #  - a ClansSession instance
 
-def edit(pc, cs):
+# decorators consume additional arguments for common tasks
+# (connecting to plans, loading a formatter)
+
+@with_plans
+def edit(cs, pc):
     """ plan-editing command """
     plan_text, md5 = pc.get_edit_text(plus_hash=True)
 
@@ -168,7 +183,8 @@ def edit(pc, cs):
                   " was stored in %s" % bakfile, file=sys.stderr)
 
 @with_formatter
-def read(pc, cs, fmt):
+@with_plans
+def read(cs, pc, fmt):
     """ plan-reading command """
     try:
         header, plan = pc.read_plan(cs.args.plan)
@@ -181,14 +197,16 @@ def read(pc, cs, fmt):
 
 
 @with_formatter
-def autoread(pc, cs, fmt):
+@with_plans
+def autoread(cs, pc, fmt):
     """ autoread list command """
     results = pc.get_autofinger()
     fmt.print_autoread(results)
 
 
 @with_formatter
-def love(pc, cs, fmt):
+@with_plans
+def love(cs, pc, fmt):
     """ quicklove command """
     results = pc.search_plans(pc.username, planlove=True)
     cs.hook('post_search', results)
@@ -196,14 +214,15 @@ def love(pc, cs, fmt):
 
 
 @with_formatter
-def search(pc, cs, fmt):
+@with_plans
+def search(cs, pc, fmt):
     """ search command """
     results = pc.search_plans(cs.args.term, planlove=cs.args.love)
     cs.hook('post_search', results)
     fmt.print_search_results(results)
 
 
-def config(pc, cs):
+def config(cs):
     """ config command """
     if cs.args.profile_dir:
         print(cs.profile_dir)
@@ -419,9 +438,7 @@ class ClansSession(object):
         pc = PlansConnection(self.cookie,
                              base_url=self.config.get('login', 'url'))
 
-        if self.args.func in (config,):
-            pass           # no login is required
-        elif pc.plans_login():
+        if pc.plans_login():
             pass           # we're still logged in
         else:
             # we're not logged in, prompt for password if necessary
@@ -461,12 +478,9 @@ def main():
     # initialize clans session
     cs = ClansSession()
 
-    # connect to plans
-    pc = cs.make_plans_connection()
-
     try:
         # pass execution to the subcommand
-        cs.args.func(pc, cs)
+        cs.args.func(cs)
     finally:
         # do this part always, even if subcommand fails
         cs.finish()
