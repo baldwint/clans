@@ -7,7 +7,7 @@ reported by:
 
 .. code-block:: console
 
-    $ clans --help
+    $ clans config --dir
 
 You can go directly to editing the configuration file with:
 

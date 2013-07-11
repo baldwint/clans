@@ -194,7 +194,10 @@ def search(pc, cs):
 
 def config(pc, cs):
     """ config command """
-    subprocess.call([cs.config.get('clans', 'editor'), cs.config_loc])
+    if cs.args.profile_dir:
+        print(cs.profile_dir)
+    else:
+        subprocess.call([cs.config.get('clans', 'editor'), cs.config_loc])
 
 # -------------
 # CLANS SESSION
@@ -327,7 +330,7 @@ class ClansSession(object):
 
         # main parser: has subcommands for everything
         commands = CommandSet(
-            description= __doc__ + "\n\nprofile directory:\n  " + self.profile_dir,
+            description= __doc__,
             parents=[global_parser],
             formatter_class=argparse.RawTextHelpFormatter)
 
@@ -383,6 +386,10 @@ class ClansSession(object):
             " behavior of the client."
             " (Not to be confused with Plans preferences!)",
             help="Edit clans configuration file.")
+        commands["config"].add_argument(
+            '--dir', dest='profile_dir',
+            action='store_true', default=False,
+            help="Print the path to the clans profile directory.")
 
         return commands
 

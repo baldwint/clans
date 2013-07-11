@@ -84,14 +84,13 @@ newlove read state, etc.). By symlinking this directory into your
 Dropbox, the configuration file and all other data can be shared by
 your clans installations.
 
-The profile directory location is reported by ``clans --help``.
-On Mac OS X, this turns out to be ``~/Library/Application\
-Support/clans``. Move it, and leave a symlink in its place:
+The profile directory location is reported by ``clans config --dir``.
+Move it, and leave a symlink in its place:
 
 .. code-block:: console
 
-    $ mv -r ~/Library/Application\ Support/clans ~/Dropbox/clansdata
-    $ ln -s ~/Dropbox/clansdata ~/Library/Application\ Support/clans
+    $ mv -r "`clans config --dir`" ~/Dropbox/clansdata
+    $ ln -s ~/Dropbox/clansdata "`clans config --dir`"
 
 Then repeat the second step on any synced computer with which you
 would like to share settings.
