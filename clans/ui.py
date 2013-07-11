@@ -217,13 +217,11 @@ class ClansSession(object):
     """
 
     def __init__(self):
-        # persistent data storage location
-        self.dirs = appdirs.AppDirs(appname='clans', appauthor='baldwint')
-
         # profile folder: either set by CLANS_DIR environment
         # variable, or the standard user data directory for this OS
         self.profile_dir = (os.environ.get('CLANS_DIR', '') or
-                            self.dirs.user_data_dir)
+                            appdirs.user_data_dir(appname='clans',
+                                                  appauthor='baldwint'))
 
         # config file location: in data directory
         self.config_loc = os.path.join(self.profile_dir, 'clans.cfg')
