@@ -402,6 +402,52 @@ class ClansSession(object):
 
         return commands
 
+    def make_plans_connection(self):
+        """
+        Connects to plans, prompting for passwords if necessary
+
+        """
+        # create a cookie
+        self.cookie = cookielib.LWPCookieJar(
+            os.path.join(self.profile_dir, '%s.cookie' % self.username))
+        try:
+            self.cookie.load()  # fails with IOError if it does not exist
+        except IOError:
+            pass                # no cookie saved for this user
+
+        # create plans connection using cookie
+        pc = PlansConnection(self.cookie,
+                             base_url=self.config.get('login', 'url'))
+
+        if self.args.func in (config,):
+            pass           # no login is required
+        elif pc.plans_login():
+            pass           # we're still logged in
+        else:
+            # we're not logged in, prompt for password if necessary
+            password = (self.args.password or
+                        getpass("[%s]'s password: " % self.username))
+            success = pc.plans_login(self.username, password)
+            if not success:
+                print('Failed to log in as [%s].' % self.username,
+                      file=sys.stderr)
+                sys.exit(1)
+
+        return pc
+
+    def finish(self):
+        """
+        Cookie-related cleanup.
+
+        Either save the updated cookie, or delete it to log out
+
+        """
+        if self.args.logout:
+            os.unlink(self.cookie.filename)
+        else:
+            # save cookie
+            self.cookie.save()
+
 # -------------
 # MAIN FUNCTION
 # -------------
@@ -415,41 +461,15 @@ def main():
     # initialize clans session
     cs = ClansSession()
 
-    # create a cookie
-    cookie = cookielib.LWPCookieJar(
-        os.path.join(cs.profile_dir, '%s.cookie' % cs.username))
-    try:
-        cookie.load()  # this will fail with IOError if it does not exist
-    except IOError:
-        pass           # no cookie saved for this user
-
-    # create plans connection using cookie
-    pc = PlansConnection(cookie, base_url=cs.config.get('login', 'url'))
-
-    if cs.args.func in (config,):
-        pass           # no login is required
-    elif pc.plans_login():
-        pass           # we're still logged in
-    else:
-        # we're not logged in, prompt for password if necessary
-        password = (cs.args.password or
-                    getpass("[%s]'s password: " % cs.username))
-        success = pc.plans_login(cs.username, password)
-        if not success:
-            print('Failed to log in as [%s].' % cs.username,
-                  file=sys.stderr)
-            sys.exit(1)
+    # connect to plans
+    pc = cs.make_plans_connection()
 
     try:
         # pass execution to the subcommand
         cs.args.func(pc, cs)
     finally:
         # do this part always, even if subcommand fails
-        if cs.args.logout:
-            os.unlink(cookie.filename)
-        else:
-            # save cookie
-            cookie.save()
+        cs.finish()
 
 if __name__ == '__main__':
     main()
