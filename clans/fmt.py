@@ -75,6 +75,7 @@ class TextFormatter(RawFormatter):
         html = re.sub(r'&quot;', '"', html)
         html = re.sub(r'&gt;', '>', html)
         html = re.sub(r'&lt;', '<', html)
+        html = re.sub(r'&amp;', '&', html)
         html = re.sub(r'<b>(.+?)</b>', r'\1', html)
         html = re.sub(r'<i>(.+?)</i>', r'\1', html)
         html = re.sub(self.REGEX_LOVE, r'\1', html)
