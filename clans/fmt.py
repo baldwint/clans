@@ -59,10 +59,12 @@ class RawFormatter(object):
 
 class TextFormatter(RawFormatter):
 
-    REGEX_LOVE = r'<a href=[^\s]* class="planlove">(.+?)</a>'
+    REGEX_LOVE = r'<a href="[^\s]*" class="planlove">(.+?)</a>'
+    REGEX_LINK = r'<a href="([^\s]*)" class="onplan">(.+?)</a>'
     REGEX_SUB = r'<p class="sub">(.+?)</p>'
 
     hr = '\n' + 70*'=' + '\n'
+    a  = r'[\1|\2]'
 
     def filter_html(self, html):
         """
@@ -76,6 +78,7 @@ class TextFormatter(RawFormatter):
         html = re.sub(r'<b>(.+?)</b>', r'\1', html)
         html = re.sub(r'<i>(.+?)</i>', r'\1', html)
         html = re.sub(self.REGEX_LOVE, r'\1', html)
+        html = re.sub(self.REGEX_LINK, self.a, html)
         html = re.sub(re.compile(self.REGEX_SUB, flags=re.DOTALL), r'\1', html)
         html = re.sub(r'<hr ?/?>', self.hr, html)
         return html
@@ -83,6 +86,8 @@ class TextFormatter(RawFormatter):
 class ColorFormatter(TextFormatter):
 
     hr = '\n' + cr.Fore.RED + 70*'='+ cr.Fore.RESET  + '\n'
+    a  = r'[%s\1%s|%s\2%s]' % (cr.Fore.GREEN, cr.Fore.RESET,
+                               cr.Fore.MAGENTA, cr.Fore.RESET)
 
     def format_plan(self, **kwargs):
         color_headers = [(cr.Style.BRIGHT + k + cr.Style.NORMAL, v)
