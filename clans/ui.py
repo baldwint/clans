@@ -157,7 +157,11 @@ def edit(pc, cs):
 
 def read(pc, cs):
     """ plan-reading command """
-    header, plan = pc.read_plan(cs.args.plan)
+    try:
+        header, plan = pc.read_plan(cs.args.plan)
+    except PlansError as e:
+        print(e, file=sys.stderr)
+        sys.exit(1)
 
     formatter = formatters[cs.args.fmt]()
     plan = formatter.filter_html(plan)
