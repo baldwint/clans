@@ -410,7 +410,9 @@ def main():
     # create plans connection using cookie
     pc = PlansConnection(cookie, base_url=cs.config.get('login', 'url'))
 
-    if pc.plans_login():
+    if cs.args.func in (config,):
+        pass           # no login is required
+    elif pc.plans_login():
         pass           # we're still logged in
     else:
         # we're not logged in, prompt for password if necessary
