@@ -109,6 +109,19 @@ formatters = {
         'color': clans.fmt.ColorFormatter,
         }
 
+from functools import wraps
+
+def with_formatter(func):
+    """
+    Decorator for subcommands that use a formatter.
+
+    """
+    # func takes pc, cs, fmt
+    @wraps(func)
+    def formatted(pc, cs):
+        fmt = formatters[cs.args.fmt]()
+        func(pc, cs, fmt=fmt)
+    return formatted
 
 # -----------
 # SUBCOMMANDS
@@ -154,8 +167,8 @@ def edit(pc, cs):
             print("A copy of your unsubmitted edit"
                   " was stored in %s" % bakfile, file=sys.stderr)
 
-
-def read(pc, cs):
+@with_formatter
+def read(pc, cs, fmt):
     """ plan-reading command """
     try:
         header, plan = pc.read_plan(cs.args.plan)
@@ -163,33 +176,31 @@ def read(pc, cs):
         print(e, file=sys.stderr)
         sys.exit(1)
 
-    formatter = formatters[cs.args.fmt]()
-    plan = formatter.filter_html(plan)
-
-    pager(formatter.format_plan(plan=plan, **header))
+    plan = fmt.filter_html(plan)
+    pager(fmt.format_plan(plan=plan, **header))
 
 
-def autoread(pc, cs):
+@with_formatter
+def autoread(pc, cs, fmt):
     """ autoread list command """
     results = pc.get_autofinger()
-    formatter = formatters[cs.args.fmt]()
-    formatter.print_autoread(results)
+    fmt.print_autoread(results)
 
 
-def love(pc, cs):
+@with_formatter
+def love(pc, cs, fmt):
     """ quicklove command """
     results = pc.search_plans(pc.username, planlove=True)
     cs.hook('post_search', results)
-    formatter = formatters[cs.args.fmt]()
-    formatter.print_search_results(results)
+    fmt.print_search_results(results)
 
 
-def search(pc, cs):
+@with_formatter
+def search(pc, cs, fmt):
     """ search command """
     results = pc.search_plans(cs.args.term, planlove=cs.args.love)
     cs.hook('post_search', results)
-    formatter = formatters[cs.args.fmt]()
-    formatter.print_search_results(results)
+    fmt.print_search_results(results)
 
 
 def config(pc, cs):
