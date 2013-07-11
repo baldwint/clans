@@ -24,8 +24,10 @@ class PlansPageParser(HTMLParser):
         if tag == 'body':
             # parse out id of body tag
             # (can use to identify page)
-            for key, value in attrs:
-                if key == 'id': self.page_id = value
+            self.page_id = dict(attrs).get('id', None)
+            if self.page_id is None:
+                # old interface <body> tag has no attrs
+                raise PlansError('Postmodern interface required')
         if tag == 'a':
             # parse out username to see who we're logged in as.
             # amazingly, the only place this reliably appears
