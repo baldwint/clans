@@ -142,6 +142,14 @@ class TestEditing(PlanChangingTestCase):
         self.editandcheck(u'Non-breaking \xa0\xa0 spaces!')
         self.editandcheck(u'Newline at the end\n')
 
+    @unittest.expectedFailure
+    def test_bad_html(self):
+        # BS3 screws things up by correcting bad HTML in a textarea
+        # field (even though it ignores HTML in there)
+        self.editandcheck(u'</b')              # fails
+        self.editandcheck(u'</b> &waffles')    # fails
+        self.editandcheck(u'chicken &waffles') # succeeds for some reason
+
     def test_unicode(self):
         self.editandcheck(u'Non-breaking \u00a0\u00a0 spaces!')
         self.editandcheck(u'Black \u2605 star')
