@@ -3,7 +3,7 @@ Installation
 
 ``clans`` is still in development, and there have been no versioned
 releases. To use it, you will need to check out a copy from the
-development repository using Mercurial_.
+development repository using Git_.
 
 Installing from source repo
 ---------------------------
@@ -12,7 +12,7 @@ To check out and install clans in a single step, use pip_:
 
 .. code-block:: console
 
-    $ pip install --user -e hg+https://bitbucket.org/tkb/clans#egg=clans
+    $ pip install --user -e git+/path/to/clans.git#egg=clans
 
 This installs clans, along with several of its dependencies.
 If you omit ``--user``, you may need to prefix this with ``sudo``.
@@ -26,26 +26,25 @@ documentation:
 
     $ pip install sphinx
 
-.. _Mercurial: http://mercurial.selenic.com/
-.. _pip: http://mercurial.selenic.com/
+.. _Git: http://git-scm.com/
+.. _pip: http://www.pip-installer.org/
 .. _virtualenv: http://www.virtualenv.org/
 .. _Sphinx: http://sphinx-doc.org
 
 Staying up to date
 ------------------
 
-In the installation step, you created an editable clone of the
+In the installation step, pip created an editable clone of the
 repository in your home directory at ``$HOME/src/clans``. To update to
 the latest version, change to this directory and do:
 
 .. code-block:: console
 
-    $ hg pull
-    $ hg update
+    $ git pull
 
 You can make your own changes to clans by editing the python
 source code in this folder. You can keep track of your changes
-by committing to the existing Mercurial repo.
+by committing to the existing Git repo.
 
 Contributing your changes to clans
 ----------------------------------
@@ -53,15 +52,14 @@ Contributing your changes to clans
 If you make modifications to clans, you may wish to contribute your
 improvements to the project.
 
-Create a Bitbucket account and fork the main clans repo. In your local
-development copy, edit ``.hg/hgrc`` and change the line that reads::
+The first step is to publish your modifications. To do this, fork the
+project on GitHub and add it as a remote in your local copy:
 
-    default = https://bitbucket.org/tkb/clans
+.. code-block:: console
 
-to::
+    $ git remote add myfork https://github.com/your_username/clans.git
 
-    default = ssh://hg@bitbucket.org/your_username/clans
-
-You can now publish your modifications using ``hg push``. When you're
-ready to submit your changes, open a pull request on Bitbucket.
-
+Now you can publish changes you made locally using ``git push myfork
+master`` (although it is often a good idea to work in branches other
+than ``master``). To submit your changes for review, open a pull
+request on GitHub.

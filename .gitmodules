@@ -1,0 +1,3 @@
+[submodule "armstrong_sphinx"]
+    path = docs/_themes/armstrong_sphinx
+    url = git://github.com/armstrong/armstrong_sphinx.git
