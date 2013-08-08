@@ -13,10 +13,34 @@ else:
 import clans.fmt
 import sys
 
+#TODO: TestRaw, TestColor
+
 class TestText(unittest.TestCase):
 
     def setUp(self):
         self.fmt = clans.fmt.TextFormatter() 
+
+    # plan format test
+
+    def test_format_plan(self):
+        headers = {
+                'lastupdated': 'Mon August 5th 2013, 1:22 PM',
+                'lastlogin': 'Wed August 7th 2013, 3:42 AM',
+                'username': 'username',
+                'planname': 'clever catchphrase',
+                }
+        plan = 'this is my plan with the html filtered out\n'
+        text = self.fmt.format_plan(plan = plan, **headers)
+        expect = """\
+Username: username
+Last Updated: Mon August 5th 2013, 1:22 PM
+Last Login: Wed August 7th 2013, 3:42 AM
+Name: clever catchphrase
+
+this is my plan with the html filtered out
+"""
+        self.assertEqual(expect, text)
+
 
     # filter_html tests
 
@@ -71,13 +95,66 @@ break"""
     def test_print_list(self):
         self.fmt.print_list(['one', 'two', 'three', 'four'])
         output = sys.stdout.getvalue()
-        expect = """\
+        expect = u"""\
  - one
  - two
  - three
  - four
 """
         self.assertEqual(expect, output)
+
+    def test_print_search_results(self):
+        results = [
+                ('plan1', 1, ['snip one <b>term</b> context',]),
+                ('plan2', 2, ['snip one <b>term</b> context',
+                              'snip two <b>term</b> context']),
+                ('plan3', 2, ['snip <b>term</b> twice <b>term</b> twice',])
+                ]
+        self.fmt.print_search_results(results)
+        output = sys.stdout.getvalue()
+        expect = u"""\
+[plan1]: 1
+
+ - snip one term context
+
+[plan2]: 2
+
+ - snip one term context
+ - snip two term context
+
+[plan3]: 2
+
+ - snip term twice term twice
+
+"""
+        self.assertEqual(expect, output)
+
+    def test_print_autoread(self):
+        autoread = {
+                'Level 1': ['bff', 'interesting', 'funny', 'gorp'],
+                'Level 2': ['roommate', 'rando'],
+                'Level 3': ['meh',],
+                }
+        self.fmt.print_autoread(autoread)
+        output = sys.stdout.getvalue()
+        expect = u"""\
+Level 1:
+ - bff
+ - interesting
+ - funny
+ - gorp
+
+Level 2:
+ - roommate
+ - rando
+
+Level 3:
+ - meh
+
+"""
+        self.assertEqual(expect, output)
+
+
 
 if __name__ == "__main__":
     unittest.main(buffer=True)
