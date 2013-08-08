@@ -8,7 +8,7 @@ import sys
 import tempfile
 import subprocess
 from pydoc import pager
-from clans.client import PlansConnection, PlansError
+from clans.scraper import PlansConnection, PlansError
 import getpass as getpass_mod
 import argparse
 import re

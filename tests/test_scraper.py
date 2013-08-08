@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Unit tests for :mod:`clans.client`.
+Unit tests for :mod:`clans.scraper`.
 
 """
 
@@ -10,12 +10,12 @@ if sys.version_info < (2,7):
 else:
     import unittest
 
-from clans.client import PlansConnection
+from clans.scraper import PlansConnection
 import subprocess
 import cookielib
 import pdb
 from hashlib import md5
-from clans.client import PlansError
+from clans.scraper import PlansError
 import MySQLdb
 
 TEST_URL = 'http://localhost/~tkb/phplans'
