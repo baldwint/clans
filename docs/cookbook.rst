@@ -133,7 +133,7 @@ the ``CLANS_DIR`` environment variable to control which one clans uses.
     $ nano localhost.clansprofile/clans.cfg
 
 You can name this directory whatever you want (It doesn't have to have a
-``.clansprofile`` extension, that just helps me remember what it is).
+``.clansprofile`` extension, but this helps me remember what it is).
 In this new ``clans.cfg`` file, define the location of the development
 server and whatever other settings you want to use:
 

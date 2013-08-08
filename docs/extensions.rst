@@ -2,8 +2,8 @@ Extensions
 ==========
 
 Clans has a hook-based extension framework for adding features on the
-client side. Several extensions are already built in, and just need to
-be enabled in ``clans.cfg``.
+client side. Several extensions are already built in, and can
+be enabled by editing ``clans.cfg``.
 
 To enable a built-in extension, such as ``newlove``, edit the
 ``[extensions]`` section of the configuration file with a line like:
@@ -98,9 +98,9 @@ To avoid specifying ``-b`` and ``-s`` flags all the time, add to
 and your plan will be backed up to these files every time you edit.
 Keep in mind that these files will only store the most recent copy of
 your plan. To keep editions going back several edits, you will need to
-backup the backup with some other software. I just place them in a
-folder where they are automatically backed up with the rest of my
-system files.
+backup the backup with some other software. My computer regularly
+backs up my home folder, so I put them in there and they get backed up
+with everything else.
 
 The ``--skip-update`` flag forces ``clans edit`` to quit before
 opening an interactive editor. When used in combination with ``-b``,
