@@ -459,7 +459,9 @@ class ClansSession(object):
         Either save the updated cookie, or delete it to log out
 
         """
-        if self.args.logout:
+        if not hasattr(self, 'cookie'):
+            return  # no plans connection was made
+        elif self.args.logout:
             os.unlink(self.cookie.filename)
         else:
             # save cookie
