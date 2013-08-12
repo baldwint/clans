@@ -105,7 +105,22 @@ from StringIO import StringIO
 
 class TestFileFormat(unittest.TestCase):
 
-    eg_encoded = '{"un1": {"snip1": {"timestamp": "2013-05-01T03:26:56Z", "unread": false, "love": true}}, "un2": {"snip2": {"timestamp": "2013-07-01T03:46:56Z", "unread": false, "love": true}}}'
+    eg_encoded = """{
+  "un1": {
+    "snip1": {
+      "timestamp": "2013-05-01T03:26:56Z", 
+      "unread": false, 
+      "love": true
+    }
+  }, 
+  "un2": {
+    "snip2": {
+      "timestamp": "2013-07-01T03:46:56Z", 
+      "unread": false, 
+      "love": true
+    }
+  }
+}"""
     eg_decoded = {
             "un1": {
                 "snip1": {
@@ -149,7 +164,7 @@ class TestFileFormat(unittest.TestCase):
         log = copy.deepcopy(self.eg_decoded)
         newlove._save_log(log, fl)
         fl.seek(0)
-        self.assertEqual(fl.read(), self.eg_encoded)
+        self.assertMultiLineEqual(fl.read(), self.eg_encoded)
         # the dict should not have been modified
         self.assertDictEqual(log, self.eg_decoded)
 

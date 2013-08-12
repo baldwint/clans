@@ -45,7 +45,7 @@ def _load_log(fl):
     return json.load(fl, object_hook=convert_dates)
 
 def _save_log(newlove, fl):
-    json.dump(newlove, fl, cls=DatetimeEncoder)
+    json.dump(newlove, fl, cls=DatetimeEncoder, indent=2)
 
 def _rebuild_log(log, results, timestamp=None):
     """
