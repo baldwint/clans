@@ -48,6 +48,7 @@ class TestNewlove(unittest.TestCase):
         self.assertDictEqual(log, left)
 
 from StringIO import StringIO
+import copy
 
 class TestFileFormat(unittest.TestCase):
 
@@ -68,6 +69,22 @@ class TestFileFormat(unittest.TestCase):
                     }
                 }
             }
+    eg_flattened = [
+            {
+                "lover": "un1",
+                "text": "snip1",
+                "timestamp": datetime.datetime(2013, 5, 1, 3, 26, 56),
+                "unread": False,
+                "love": True
+                },
+            {
+                "lover": "un2",
+                "text": "snip2",
+                "timestamp": datetime.datetime(2013, 7, 1, 3, 46, 56),
+                "unread": False,
+                "love": True
+                }
+            ]
 
     def test_decode(self):
         fl = StringIO(self.eg_encoded)
@@ -76,9 +93,19 @@ class TestFileFormat(unittest.TestCase):
 
     def test_encode(self):
         fl = StringIO()
-        newlove._save_log(self.eg_decoded, fl)
+        log = copy.deepcopy(self.eg_decoded)
+        newlove._save_log(log, fl)
         fl.seek(0)
         self.assertEqual(fl.read(), self.eg_encoded)
+        # the dict should not have been modified
+        self.assertDictEqual(log, self.eg_decoded)
+
+    def test_flatten(self):
+        log = copy.deepcopy(self.eg_decoded)
+        flattened = newlove._flatten_log(log)
+        self.assertListEqual(flattened, self.eg_flattened)
+        # the dict should not have been modified
+        self.assertDictEqual(log, self.eg_decoded)
 
 
 if __name__ == "__main__":

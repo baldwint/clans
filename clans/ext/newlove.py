@@ -78,6 +78,25 @@ def _rebuild_log(log, results, timestamp=None):
 
     return newlog
 
+def _flatten_log(log):
+    """
+    Convert the nested-dict log format to a list of lovestate dicts.
+
+    The log is typically dictionaries of read/unread information,
+    in a doubly-nested dictionary indexed by the plan name and the
+    snippet. This converts that structure into a list of those dicts,
+    where the former indices (plan name and snippet) are added as
+    two extra entries to that dictionary.
+
+    """
+    flattened = []
+    for un, snips in log.iteritems():
+        for snip, lovestate in snips.iteritems():
+            # make a copy when flattening
+            lovestate = dict(lover=un, text=snip, **lovestate)
+            flattened.append(lovestate)
+    return flattened
+
 def post_search(cs, results):
     # if this is a non-planlove search, skip
     if cs.args.func.__name__ == 'love':
@@ -114,12 +133,7 @@ def post_search(cs, results):
     # if newlove flags are thrown, modify the displayed results
     if cs.args.time:
         # flatten nested dicts
-        flattened = []
-        for un, snips in newlove.iteritems():
-            for snip, lovestate in snips.iteritems():
-                # make a copy when flattening
-                lovestate = dict(lover=un, text=snip, **lovestate)
-                flattened.append(lovestate)
+        flattened = _flatten_log(newlove)
 
         # order by time
         flattened.sort(key = lambda lovestate: lovestate['timestamp'])
