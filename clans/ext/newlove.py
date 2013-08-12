@@ -117,8 +117,8 @@ def post_search(cs, results):
         flattened = []
         for un, snips in newlove.iteritems():
             for snip, lovestate in snips.iteritems():
-                lovestate['lover'] = un
-                lovestate['text'] = snip
+                # make a copy when flattening
+                lovestate = dict(lover=un, text=snip, **lovestate)
                 flattened.append(lovestate)
 
         # order by time
