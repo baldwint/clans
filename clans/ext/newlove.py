@@ -97,6 +97,39 @@ def _flatten_log(log):
             flattened.append(lovestate)
     return flattened
 
+def modify_results(results, log, order_by_time=False, only_show_new=False):
+    """
+    Modify the result list, in-place, to time-order or filter what is shown.
+
+    This takes a ``results`` list reference (as is passed to the
+    post_search hook) and uses the data in ``log`` to either weed out
+    results marked as read (if ``only_show_new`` is True), order the
+    results by the timestamp (if ``order_by_time`` is True), or both.
+
+    If neither of these is True (default), result list is not modified.
+
+    """
+    if order_by_time:
+        # flatten nested dicts
+        flattened = _flatten_log(log)
+
+        # order by time
+        flattened.sort(key = lambda lovestate: lovestate['timestamp'])
+
+        # replace search results by time-ordered quicklove
+        del results[:]
+        for lovestate in flattened:
+            if only_show_new and not lovestate['unread']:
+                continue
+            note = lovestate['timestamp'].strftime(date_fmt)
+            results.append((lovestate['lover'], note, [lovestate['text'],]))
+
+    elif only_show_new:
+        # don't change order, just hide snips we've seen before
+        for un, count, snips in results:
+            unread = [snip for snip in snips if log[un][snip]['unread']]
+            snips[:] = unread
+
 def post_search(cs, results):
     # if this is a non-planlove search, skip
     if cs.args.func.__name__ == 'love':
@@ -131,26 +164,9 @@ def post_search(cs, results):
     newlove = _rebuild_log(oldlove, results)
 
     # if newlove flags are thrown, modify the displayed results
-    if cs.args.time:
-        # flatten nested dicts
-        flattened = _flatten_log(newlove)
-
-        # order by time
-        flattened.sort(key = lambda lovestate: lovestate['timestamp'])
-
-        # replace search results by time-ordered quicklove
-        del results[:]
-        for lovestate in flattened:
-            if cs.args.new and not lovestate['unread']:
-                continue
-            note = lovestate['timestamp'].strftime(date_fmt)
-            results.append((lovestate['lover'], note, [lovestate['text'],]))
-
-    elif cs.args.new:
-        # don't change order, just hide snips we've seen before
-        for un, count, snips in results:
-            unread = [snip for snip in snips if newlove[un][snip]['unread']]
-            snips[:] = unread
+    modify_results(results, newlove,
+                   order_by_time=cs.args.time,
+                   only_show_new=cs.args.new)
 
     # mark all planlove as read
     if not cs.args.keepunread:

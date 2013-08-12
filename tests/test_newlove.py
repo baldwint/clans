@@ -12,6 +12,7 @@ else:
 
 import clans.ext.newlove as newlove
 import datetime
+import copy
 
 class TestNewlove(unittest.TestCase):
 
@@ -47,8 +48,60 @@ class TestNewlove(unittest.TestCase):
         # love was only added, so original log should be empty
         self.assertDictEqual(log, left)
 
+class TestModifyResult(unittest.TestCase):
+
+    def setUp(self):
+        new = datetime.datetime(2013, 8, 4, 3, 26, 50)
+        old = datetime.datetime(2013, 6, 1, 22, 28, 36)
+        older = datetime.datetime(2012, 5, 1, 13, 36, 56)
+        self.log    =  {'un1': {'result1': dict(timestamp=old, unread=False)},
+                        'un2': {'result2': dict(timestamp=older, unread=False),
+                                'result3': dict(timestamp=new, unread=True)}}
+        self.result = [('un1', 1, ['result1',]),
+                       ('un2', 2, ['result2', 'result3'])]
+
+    def test_no_options(self):
+        result = copy.deepcopy(self.result)
+        log = copy.deepcopy(self.log)
+        # test with no options: nothing should be modified
+        newlove.modify_results(result, log)
+        self.assertEqual(result, self.result)
+        self.assertDictEqual(log, self.log)
+
+    def test_result_filtering(self):
+        filtered_result = [('un1', 1, []),
+                           ('un2', 2, ['result3',])]
+        result = copy.deepcopy(self.result)
+        log = copy.deepcopy(self.log)
+        # test to filter out old stuff
+        newlove.modify_results(result, log, only_show_new=True)
+        self.assertNotEqual(result, self.result) # should be in-place modified
+        self.assertDictEqual(log, self.log)      # should be left alone
+        self.assertListEqual(result, filtered_result)
+
+    def test_result_ordering(self):
+        ordered_result  = [('un2', '2012-05-01T13:36:56Z', ['result2',]),
+                           ('un1', '2013-06-01T22:28:36Z', ['result1',]),
+                           ('un2', '2013-08-04T03:26:50Z', ['result3',])]
+        # order by time
+        result = copy.deepcopy(self.result)
+        log = copy.deepcopy(self.log)
+        newlove.modify_results(result, log, order_by_time=True)
+        self.assertNotEqual(result, self.result) # should be in-place modified
+        self.assertDictEqual(log, self.log)      # should be left alone
+        self.assertListEqual(result, ordered_result)
+
+    def test_both(self):
+        both_result     = [('un2', '2013-08-04T03:26:50Z', ['result3',]),]
+        # order by time AND show only new result
+        result = copy.deepcopy(self.result)
+        log = copy.deepcopy(self.log)
+        newlove.modify_results(result, log, order_by_time=True, only_show_new=True)
+        self.assertNotEqual(result, self.result) # should be in-place modified
+        self.assertDictEqual(log, self.log)      # should be left alone
+        self.assertListEqual(result, both_result)
+
 from StringIO import StringIO
-import copy
 
 class TestFileFormat(unittest.TestCase):
 
