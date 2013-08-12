@@ -149,7 +149,7 @@ def post_search(cs, results):
     elif cs.args.new:
         # don't change order, just hide snips we've seen before
         for un, count, snips in results:
-            unread = [snip for snip in snips if newlove[un][snip].unread]
+            unread = [snip for snip in snips if newlove[un][snip]['unread']]
             snips[:] = unread
 
     # mark all planlove as read
