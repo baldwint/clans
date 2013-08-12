@@ -51,6 +51,33 @@ class LoveEncoder(json.JSONEncoder):
                     }
         return json.JSONEncoder.default(self, obj)
 
+def _rebuild_log(log, results):
+    """
+    Given results of a search, build an updated version of the log.
+
+    This builds and returns a new log containing only entries present
+    in ``results``. Results not previously seen are datestamped with
+    the current time; others are passed through unmodified.
+
+    This function also modifies the original log by deleting entries
+    that it finds in the results. When it completes, the original log
+    can be used as an index of results deleted since the original log
+    was built.
+    
+    """
+    newlog = {}
+    now = datetime.utcnow()
+
+    # rebuild log
+    for un, num, snips in results:
+        old_snips = log.get(un, {})
+        new_snips = {}
+        for snip in snips:
+            new_snips[snip] = old_snips.pop(snip, LoveState(now))
+        newlog[un] = new_snips
+
+    return newlog
+
 def post_search(cs, results):
     # if this is a non-planlove search, skip
     if cs.args.func.__name__ == 'love':
@@ -83,16 +110,7 @@ def post_search(cs, results):
         # ValueError would occur here if the JSON parse fails
         oldlove = json.load(fl, object_hook=LoveState.from_json)
 
-    newlove = {}
-    now = datetime.utcnow()
-
-    # rebuild log
-    for un, num, snips in results:
-        old_snips = oldlove.get(un, {})
-        new_snips = {}
-        for snip in snips:
-            new_snips[snip] = old_snips.pop(snip, LoveState(now))
-        newlove[un] = new_snips
+    newlove = _rebuild_log(oldlove, results)
 
     # if newlove flags are thrown, modify the displayed results
     if cs.args.time:
