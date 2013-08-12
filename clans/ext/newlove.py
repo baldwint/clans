@@ -26,30 +26,26 @@ def post_load_commands(cs):
 date_fmt = '%Y-%m-%dT%H:%M:%SZ'
         # dodgy; writing 'Z' (UTC) doesn't make it true
 
-class LoveState(object):
-    """ Encapsulates read state of active love. """
-    def __init__(self, timestamp, unread=True, deleted=False):
-        self.timestamp = timestamp  # date and time snippet first observed
-        self.unread = unread        # whether love has marked read by lovee
+def convert_dates(dic):
+    """ If a dict has a key named 'timestamp', convert to datetimes """
+    if 'timestamp' in dic:
+        timestamp = datetime.strptime(dic.pop('timestamp'), date_fmt)
+        dic['timestamp'] = timestamp
+    return dic
 
-    @classmethod
-    def from_json(cls, dic):
-        love = dic.pop('love', False)
-        if not love:
-            return dic
-        else:
-            timestamp = datetime.strptime(dic.pop('timestamp'), date_fmt)
-            return cls(timestamp, **dic)
-
-class LoveEncoder(json.JSONEncoder):
-    """ Handles encoding of the read state as JSON """
+class DatetimeEncoder(json.JSONEncoder):
+    """ Handles encoding of datetimes as ISO 8601 format text in JSON """
     def default(self, obj):
-        if isinstance(obj, LoveState):
-            return {'love': True,
-                    'timestamp': obj.timestamp.strftime(date_fmt),
-                    'unread': obj.unread,
-                    }
+        if isinstance(obj, datetime):
+            return obj.strftime(date_fmt)
         return json.JSONEncoder.default(self, obj)
+
+def _load_log(fl):
+    # ValueError would occur here if the JSON parse fails
+    return json.load(fl, object_hook=convert_dates)
+
+def _save_log(newlove, fl):
+    json.dump(newlove, fl, cls=DatetimeEncoder)
 
 def _rebuild_log(log, results):
     """
@@ -73,7 +69,8 @@ def _rebuild_log(log, results):
         old_snips = log.get(un, {})
         new_snips = {}
         for snip in snips:
-            new_snips[snip] = old_snips.pop(snip, LoveState(now))
+            new_snips[snip] = old_snips.pop(snip,
+                    dict(timestamp=now, unread=True))
         newlog[un] = new_snips
 
     return newlog
@@ -107,8 +104,7 @@ def post_search(cs, results):
         # no log file
         oldlove = {}
     else:
-        # ValueError would occur here if the JSON parse fails
-        oldlove = json.load(fl, object_hook=LoveState.from_json)
+        oldlove = _load_log(fl)
 
     newlove = _rebuild_log(oldlove, results)
 
@@ -117,21 +113,21 @@ def post_search(cs, results):
         # flatten nested dicts
         flattened = []
         for un, snips in newlove.iteritems():
-            for snip, ls in snips.iteritems():
-                ls.lover = un
-                ls.text = snip
-                flattened.append(ls)
+            for snip, lovestate in snips.iteritems():
+                lovestate['lover'] = un
+                lovestate['text'] = snip
+                flattened.append(lovestate)
 
         # order by time
-        flattened.sort(key = lambda ls: ls.timestamp)
+        flattened.sort(key = lambda lovestate: lovestate['timestamp'])
 
         # replace search results by time-ordered quicklove
         del results[:]
-        for ls in flattened:
-            if cs.args.new and not ls.unread:
+        for lovestate in flattened:
+            if cs.args.new and not lovestate['unread']:
                 continue
-            note = ls.timestamp.strftime(date_fmt)
-            results.append((ls.lover, note, [ls.text,]))
+            note = lovestate['timestamp'].strftime(date_fmt)
+            results.append((lovestate['lover'], note, [lovestate['text'],]))
 
     elif cs.args.new:
         # don't change order, just hide snips we've seen before
@@ -142,13 +138,13 @@ def post_search(cs, results):
     # mark all planlove as read
     if not cs.args.keepunread:
         for dic in newlove.values():
-            for ls in dic.values():
-                if ls.unread:
-                    ls.unread = False
+            for lovestate in dic.values():
+                if lovestate['unread']:
+                    lovestate['unread'] = False
 
     # store log
     with open(lovelog, 'w') as fl:
-        json.dump(newlove, fl, cls=LoveEncoder)
+        _save_log(newlove, fl)
 
     # TODO: option to hoard deleted love
 
