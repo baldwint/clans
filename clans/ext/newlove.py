@@ -47,13 +47,14 @@ def _load_log(fl):
 def _save_log(newlove, fl):
     json.dump(newlove, fl, cls=DatetimeEncoder)
 
-def _rebuild_log(log, results):
+def _rebuild_log(log, results, timestamp=None):
     """
     Given results of a search, build an updated version of the log.
 
     This builds and returns a new log containing only entries present
-    in ``results``. Results not previously seen are datestamped with
-    the current time; others are passed through unmodified.
+    in ``results``. Results not previously seen are timestamped with
+    the given time; others are passed through unmodified. If no
+    timestamp is specified, the current time is used.
 
     This function also modifies the original log by deleting entries
     that it finds in the results. When it completes, the original log
@@ -62,7 +63,9 @@ def _rebuild_log(log, results):
     
     """
     newlog = {}
-    now = datetime.utcnow()
+
+    if timestamp is None:
+        timestamp = datetime.utcnow()
 
     # rebuild log
     for un, num, snips in results:
@@ -70,7 +73,7 @@ def _rebuild_log(log, results):
         new_snips = {}
         for snip in snips:
             new_snips[snip] = old_snips.pop(snip,
-                    dict(timestamp=now, unread=True))
+                    dict(timestamp=timestamp, unread=True))
         newlog[un] = new_snips
 
     return newlog
