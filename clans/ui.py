@@ -246,11 +246,12 @@ class ClansSession(object):
 
     """
 
-    def __init__(self):
-        # profile folder: either set by CLANS_DIR environment
-        # variable, or the standard user data directory for this OS
-        self.profile_dir = (os.environ.get('CLANS_DIR', '') or
-                            appdirs.user_data_dir(appname='clans',
+    def __init__(self, profile_dir=None):
+        # profile folder: either passed directly (for testing only),
+        # set by CLANS_DIR environment variable, or the standard user
+        # data directory for this OS
+        self.profile_dir = profile_dir or (os.environ.get('CLANS_DIR', '')
+                                or appdirs.user_data_dir(appname='clans',
                                                   appauthor='baldwint'))
 
         # config file location: in data directory
@@ -264,12 +265,24 @@ class ClansSession(object):
         # let extensions modify command list
         self.hook('post_load_commands')
 
+    def run(self, argv=None):
+        """
+        Clans main function, run with specified arguments
+
+        """
         # get command line arguments
-        self.args = self.commands.main.parse_args()
+        self.args = self.commands.main.parse_args(argv)
 
         # let command line args override equivalent config file settings
         self.username = (self.args.username or
                          self.config.get('login', 'username'))
+
+        try:
+            # pass execution to the subcommand
+            self.args.func(self)
+        finally:
+            # do this part always, even if subcommand fails
+            self.finish()
 
     def _load_config(self):
         # set config file defaults
@@ -467,25 +480,9 @@ class ClansSession(object):
             # save cookie
             self.cookie.save()
 
-# -------------
-# MAIN FUNCTION
-# -------------
-
-
 def main():
-    """
-    Initializes ClansSession, connects to plans, then calls subcommand.
-
-    """
-    # initialize clans session
     cs = ClansSession()
-
-    try:
-        # pass execution to the subcommand
-        cs.args.func(cs)
-    finally:
-        # do this part always, even if subcommand fails
-        cs.finish()
+    cs.run()
 
 if __name__ == '__main__':
     main()
