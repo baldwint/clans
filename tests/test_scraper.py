@@ -330,6 +330,12 @@ class TestRead(DbTestCase):
         self.assertEqual(plan_header['username'], self.un)
         self.assertEqual(html_plan, plan_in_db)
 
+    def test_nonexistent(self):
+        # this test doesn't need db but whatever
+        with self.assertRaises(PlansError):
+            # nonexistent plan
+            plan_header, html_plan = self.pc.read_plan('foobar')
+
 class TestSearch(PlanChangingTestCase):
     """
     tests that words written or planlove given in edits turns up in
