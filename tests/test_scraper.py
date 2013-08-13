@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
-Unit tests for :mod:`clans.scraper`.
+Integration tests for :mod:`clans.scraper`, and the parts of
+GrinnellPlans that this module provides a scrAPI for.
 
 """
 
@@ -24,6 +25,10 @@ TEST_URL = 'http://localhost/~tkb/phplans'
 # FALSE in Plans.php. Otherwise, PHP debug messages will be tacked on
 # to the top of pages, which will confuse the clans parser.
 
+# For authentication tests, a valid plans username/password is needed
+USERNAME = 'baldwint'
+PASSWORD = 'password'
+
 # certain tests will access the database directly.
 TEST_DB = {'host':   'localhost',
            'db':     'plans',
@@ -35,35 +40,35 @@ class TestAuth(unittest.TestCase):
     def test_login(self):
         self.pc = PlansConnection(base_url = TEST_URL)
         # we should not be admitted if we give the wrong password
-        self.assertFalse(self.pc.plans_login('baldwint', 'wrong_password'))
-        self.assertNotEqual('baldwint', self.pc.username)
+        self.assertFalse(self.pc.plans_login(USERNAME, 'wrong_password'))
+        self.assertNotEqual(USERNAME, self.pc.username)
         # we should be admitted if we provide the correct one
-        self.assertTrue(self.pc.plans_login('baldwint', 'password'))
-        self.assertEqual('baldwint', self.pc.username)
+        self.assertTrue(self.pc.plans_login(USERNAME, PASSWORD))
+        self.assertEqual(USERNAME, self.pc.username)
         # once we are logged in, plans_login always returns true
-        self.assertTrue(self.pc.plans_login('baldwint', ''))
-        self.assertEqual('baldwint', self.pc.username)
+        self.assertTrue(self.pc.plans_login(USERNAME, ''))
+        self.assertEqual(USERNAME, self.pc.username)
         # even if we give a bad username
         self.assertTrue(self.pc.plans_login('foobar', ''))
-        self.assertEqual('baldwint', self.pc.username)
+        self.assertEqual(USERNAME, self.pc.username)
 
     def test_cookie(self):
         oreo = cookielib.LWPCookieJar()
         # log in to create a good cookie
         pc = PlansConnection(oreo, base_url = TEST_URL)
-        pc.plans_login('baldwint', 'password')
+        pc.plans_login(USERNAME, PASSWORD)
         # end session
         del pc
         # but we should remain logged in if we provide the cookie
         pc = PlansConnection(oreo, base_url = TEST_URL)
-        self.assertTrue(pc.plans_login('baldwint', ''))
+        self.assertTrue(pc.plans_login(USERNAME, ''))
 
 class LoggedInTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.un = 'baldwint'
+        self.un = USERNAME
         self.pc = PlansConnection(base_url = TEST_URL)
-        self.pc.plans_login(self.un, 'password')
+        self.pc.plans_login(self.un, PASSWORD)
 
 class TestEdit(LoggedInTestCase):
 
