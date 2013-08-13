@@ -19,7 +19,7 @@ TEST_DATA = {
                 'lastlogin': 'Wed August 7th 2013, 3:42 AM',
                 'username': 'username',
                 'planname': 'clever catchphrase',
-                'plan': 'this is my plan with the html filtered out\n'
+                'plan': 'this is my plan\n'
                 },
         'test_br_stripping': "one<br>two<br/>three<br />four",
         'test_html_escapes': "I develop in a &quot;quick &amp; dirty&quot; &lt;style&gt;",
@@ -44,12 +44,12 @@ TEST_DATA = {
                 ],
         }
 
-class TestText(unittest.TestCase):
+class TestRaw(unittest.TestCase):
 
     def setUp(self):
-        self.fmt = clans.fmt.TextFormatter() 
+        self.fmt = clans.fmt.RawFormatter()
 
-    # plan format test
+    # plan format test: a header, two newlines, then the plan.
 
     def test_format_plan(self):
         data = TEST_DATA['test_format_plan']
@@ -60,10 +60,70 @@ Last Updated: Mon August 5th 2013, 1:22 PM
 Last Login: Wed August 7th 2013, 3:42 AM
 Name: clever catchphrase
 
-this is my plan with the html filtered out
+this is my plan
 """
         self.assertEqual(expect, text)
 
+    # other tests
+
+    def test_print_list(self):
+        lst = TEST_DATA['test_print_list']
+        self.fmt.print_list(lst)
+        output = sys.stdout.getvalue()
+        expect = u"""\
+ - one
+ - two
+ - three
+ - four
+"""
+        self.assertEqual(expect, output)
+
+    def test_print_search_results(self):
+        results = TEST_DATA['test_print_search_results']
+        self.fmt.print_search_results(results)
+        output = sys.stdout.getvalue()
+        expect = u"""\
+[plan1]: 1
+
+ - snip one <b>term</b> context
+
+[plan2]: 2
+
+ - snip one <b>term</b> context
+ - snip two <b>term</b> context
+
+[plan3]: 2
+
+ - snip <b>term</b> twice <b>term</b> twice
+
+"""
+        self.assertEqual(expect, output)
+
+    def test_print_autoread(self):
+        autoread = TEST_DATA['test_print_autoread']
+        self.fmt.print_autoread(autoread)
+        output = sys.stdout.getvalue()
+        expect = u"""\
+Level 1:
+ - bff
+ - interesting
+ - funny
+ - gorp
+
+Level 2:
+ - roommate
+ - rando
+
+Level 3:
+ - meh
+
+"""
+        self.assertEqual(expect, output)
+
+class TestText(TestRaw):
+
+    def setUp(self):
+        self.fmt = clans.fmt.TextFormatter()
 
     # filter_html tests
 
@@ -112,20 +172,6 @@ break"""
         text = self.fmt.filter_html(html)
         self.assertEqual(expect, text)
 
-    # other tests
-
-    def test_print_list(self):
-        lst = TEST_DATA['test_print_list']
-        self.fmt.print_list(lst)
-        output = sys.stdout.getvalue()
-        expect = u"""\
- - one
- - two
- - three
- - four
-"""
-        self.assertEqual(expect, output)
-
     def test_print_search_results(self):
         results = TEST_DATA['test_print_search_results']
         self.fmt.print_search_results(results)
@@ -147,27 +193,6 @@ break"""
 """
         self.assertEqual(expect, output)
 
-    def test_print_autoread(self):
-        autoread = TEST_DATA['test_print_autoread']
-        self.fmt.print_autoread(autoread)
-        output = sys.stdout.getvalue()
-        expect = u"""\
-Level 1:
- - bff
- - interesting
- - funny
- - gorp
-
-Level 2:
- - roommate
- - rando
-
-Level 3:
- - meh
-
-"""
-        self.assertEqual(expect, output)
-
 class TestColor(TestText):
 
     def setUp(self):
@@ -184,7 +209,7 @@ class TestColor(TestText):
 %sLast Login%s: Wed August 7th 2013, 3:42 AM
 %sName%s: clever catchphrase
 
-this is my plan with the html filtered out
+this is my plan
 """ % (('\x1b[1m', '\x1b[22m') * 4)
         self.assertEqual(expect, text)
 
