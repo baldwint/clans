@@ -80,9 +80,11 @@ class TestEdit(LoggedInTestCase):
         new, new_hashsum = self.pc.get_edit_text(plus_hash=True)
         self.assertEqual(new[:len(hello)], hello)
         # try to change back, with wrong hashsum
-        with self.assertRaises(PlansError):
+        with self.assertRaises(PlansError) as cm:
             # md5 mismatch error
             result = self.pc.set_edit_text(orig, hashsum)
+        self.assertIn('Your plan was edited from another instance '
+                'of the edit page', cm.exception.message)
         # edit again, undoing
         result = self.pc.set_edit_text(orig, new_hashsum)
         self.assertTrue("Plan changed successfully" in str(result))
@@ -172,9 +174,10 @@ class TestEditing(PlanChangingTestCase):
         # which have a max length of 16777215 chars.
         # however, the max length warning triggers at much lower values.
         phrase = 'fu' * 35000 # about 107%
-        with self.assertRaises(PlansError):
+        with self.assertRaises(PlansError) as cm:
             # plan too long error
             result = self.pc.set_edit_text(phrase, self.hashnum)
+        self.assertIn('plan is too long', cm.exception.message)
 
 class TestMD5(PlanChangingTestCase):
 
@@ -332,9 +335,10 @@ class TestRead(DbTestCase):
 
     def test_nonexistent(self):
         # this test doesn't need db but whatever
-        with self.assertRaises(PlansError):
+        with self.assertRaises(PlansError) as cm:
             # nonexistent plan
             plan_header, html_plan = self.pc.read_plan('foobar')
+        self.assertIn('No such user', cm.exception.message)
 
 class TestSearch(PlanChangingTestCase):
     """
