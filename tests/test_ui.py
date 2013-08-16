@@ -11,11 +11,49 @@ if sys.version_info < (2,7):
 else:
     import unittest
 
+if sys.version_info >= (3,3):
+    import unittest.mock as mock
+else:
+    import mock
+
 import clans.ui
 import tempfile
 import sys
 import os
 import shutil
+
+
+class SubprocessMocked(unittest.TestCase):
+
+    def setUp(self):
+        # monkey patch subprocess with a mock
+        # this excludes external processes from the SUT
+        self.real_subprocess = clans.ui.subprocess
+        clans.ui.subprocess = mock.Mock()
+
+    def tearDown(self):
+        # fix monkey patch
+        clans.ui.subprocess = self.real_subprocess
+
+class TestExternalEditor(SubprocessMocked):
+
+    def test_specify_editor(self):
+        orig = """hi there"""
+        edited = clans.ui.external_editor(orig, 'foo')
+        args, kwargs = clans.ui.subprocess.call.call_args
+        editor_used, tmpfile_at = args[0]
+        self.assertEqual(editor_used, 'foo')
+        self.assertEqual(edited, orig)
+
+    def test_edit_works(self):
+        orig = """hi there"""
+        def insult_user(arglist):
+            editor_used, tmpfile = arglist
+            with open(tmpfile, 'a') as fl:
+                fl.write(" loser")
+        clans.ui.subprocess.call.side_effect = insult_user
+        edited = clans.ui.external_editor(orig, 'foo')
+        self.assertEqual(edited, "hi there loser")
 
 class WithClansdir(unittest.TestCase):
 

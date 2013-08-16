@@ -5,7 +5,11 @@ import sys
 
 # build dependency list
 reqs = ['appdirs', 'BeautifulSoup', 'colorama']
-extras = {'tests': ['MySQL-python', 'coverage']}
+extras = {'tests': ['MySQL-python', 'coverage'],
+          'docs':  ['sphinx',]}
+
+if sys.version_info < (3,3):
+    extras['tests'].append('mock')
 
 if sys.version_info >= (3,):
     sys.stderr.write("Clans does not support Python 3 yet\n")
