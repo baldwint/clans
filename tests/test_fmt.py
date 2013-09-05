@@ -253,22 +253,22 @@ break"""
         self.fmt.print_search_results(results)
         output = sys.stdout.getvalue()
         expect = u"""\
-[plan1]: 1
+[{link}plan1{unlink}]: 1
 
- - snip one %sterm%s context
+ - snip one {bold}term{unbold} context
 
-[plan2]: 2
+[{link}plan2{unlink}]: 2
 
- - snip one %sterm%s context
- - snip two %sterm%s context
+ - snip one {bold}term{unbold} context
+ - snip two {bold}term{unbold} context
 
-[plan3]: 2
+[{link}plan3{unlink}]: 2
 
- - snip %sterm%s twice %sterm%s twice
+ - snip {bold}term{unbold} twice {bold}term{unbold} twice
 
-""" % (('\x1b[1m', '\x1b[22m') * 5)
+""".format(bold='\x1b[1m', unbold='\x1b[22m',
+           link='\x1b[1m\x1b[34m', unlink='\x1b[22m\x1b[39m')
         self.assertEqual(expect, output)
 
 if __name__ == "__main__":
     unittest.main(buffer=True)
-

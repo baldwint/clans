@@ -23,6 +23,9 @@ class RawFormatter(object):
         read_fmt += "\n\n{plan}"
         return read_fmt.format(**kwargs)
 
+    def format_planlove(self, un):
+        return "[%s]" % un
+
     def print_list(self, items):
         """
         prints a list line by line
@@ -44,8 +47,9 @@ class RawFormatter(object):
 
         """
         for un, count, snips in results:
-            print((u"[{username}]: {0}\n"
-                ).format(count, username=un).encode('utf8'))
+            username = self.format_planlove(un)
+            print((u"{0}: {1}\n"
+                ).format(username, count).encode('utf8'))
             self.print_list(snips)
             print(u"")
 
@@ -96,6 +100,10 @@ class ColorFormatter(TextFormatter):
         read_fmt = '\n'.join( ': '.join(header) for header in color_headers)
         read_fmt += "\n\n{plan}"
         return read_fmt.format(**kwargs)
+
+    def format_planlove(self, un):
+        return "[" + cr.Style.BRIGHT + cr.Fore.BLUE + \
+                un + cr.Style.NORMAL + cr.Fore.RESET + "]"
 
     def filter_html(self, html):
         """
