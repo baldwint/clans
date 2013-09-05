@@ -25,9 +25,16 @@ TEST_URL = 'http://localhost/~tkb/phplans'
 # FALSE in Plans.php. Otherwise, PHP debug messages will be tacked on
 # to the top of pages, which will confuse the clans parser.
 
-# For authentication tests, a valid plans username/password is needed
+# For some tests, a few username/password pairs valid on the testing
+# server are needed
 USERNAME = 'baldwint'
 PASSWORD = 'password'
+
+USERNAME_2 = 'gorp'     # for now, this user is required to have
+PASSWORD_2 = 'password' # USERNAME_1 on her autoread with a level of 1.
+                        # Future tests should set this
+
+NONEX = 'fobar'        # a nonexistent user
 
 # certain tests will access the database directly.
 TEST_DB = {'host':   'localhost',
@@ -49,7 +56,7 @@ class TestAuth(unittest.TestCase):
         self.assertTrue(self.pc.plans_login(USERNAME, ''))
         self.assertEqual(USERNAME, self.pc.username)
         # even if we give a bad username
-        self.assertTrue(self.pc.plans_login('foobar', ''))
+        self.assertTrue(self.pc.plans_login(NONEX, ''))
         self.assertEqual(USERNAME, self.pc.username)
 
     def test_cookie(self):
@@ -337,7 +344,7 @@ class TestRead(DbTestCase):
         # this test doesn't need db but whatever
         with self.assertRaises(PlansError) as cm:
             # nonexistent plan
-            plan_header, html_plan = self.pc.read_plan('foobar')
+            plan_header, html_plan = self.pc.read_plan(NONEX)
         self.assertIn('No such user', cm.exception.message)
 
 class TestSearch(PlanChangingTestCase):
@@ -354,6 +361,59 @@ class TestSearch(PlanChangingTestCase):
         result = self.pc.search_plans('gorp', planlove=True)
         plans_with_results = [tup[0] for tup in result]
         self.assertTrue(self.un in plans_with_results)
+
+class TestAutofinger(PlanChangingTestCase):
+    """
+    test autofinger adding etc.
+
+    """
+
+    def setUp(self):
+        super(TestAutofinger, self).setUp()
+        # we need a second user (don't edit this one's plan)
+        self.un2 = USERNAME_2
+        self.pc2 = PlansConnection(base_url = TEST_URL)
+        self.pc2.plans_login(self.un2, PASSWORD_2)
+
+    def test_get_autofinger(self):
+        self.pc2.read_plan(self.un) #clear read state
+        autofinger = self.pc2.get_autofinger()
+        unread = [un for level in autofinger.values() for un in level]
+        self.assertNotIn(self.un, unread) # read state should be empty
+        # now update user 1's plan
+        orig, hashsum = self.pc.get_edit_text(plus_hash=True)
+        result = self.pc.set_edit_text("hello world", hashsum)
+        # now user 1 should be on user 2's autofinger (level 1)
+        autofinger = self.pc2.get_autofinger()
+        self.assertIn(self.un, autofinger['Level 1'])
+        # now read the plan and it should be marked as read
+        self.pc2.read_plan(self.un)
+        autofinger = self.pc2.get_autofinger()
+        self.assertNotIn(self.un, autofinger['Level 1'])
+
+#    @unittest.skip # aspirational
+#    def test_autofinger_level(self):
+#        orig_level = self.pc2.get_autofinger_level(self.un)
+#        # put them on level 3, using integer
+#        self.pc2.set_autofinger_level(self.un, 3)
+#        level_now = self.pc2.get_autofinger_level(self.un)
+#        self.assertEqual("Level 3", level_now)
+#        # put them on level 1, using string
+#        self.pc2.set_autofinger_level(self.un, "Level 1")
+#        level_now = self.pc2.get_autofinger_level(self.un)
+#        self.assertEqual("Level 1", level_now)
+#        # remove them entirely
+#        self.pc2.set_autofinger_level(self.un, None)
+#        level_now = self.pc2.get_autofinger_level(self.un)
+#        self.assertIsNone(level_now)
+#        # now updates will not show up on any level
+#        orig, hashsum = self.pc.get_edit_text(plus_hash=True)
+#        result = self.pc.set_edit_text("no love", hashsum)
+#        autofinger = self.pc2.get_autofinger()
+#        unread = [un for level in autofinger.values() for un in level]
+#        self.assertNotIn(self.un, unread)
+#        # restore previous state
+#        self.pc2.set_autofinger_level(self.un, orig_level)
 
 if __name__ == "__main__":
     unittest.main()
