@@ -5,7 +5,7 @@ import sys
 
 # build dependency list
 reqs = ['appdirs', 'BeautifulSoup', 'colorama']
-extras = {'tests': ['MySQL-python', 'coverage'],
+extras = {'tests': ['MySQL-python', 'coverage', 'pytest', 'pytest-cov'],
           'docs':  ['sphinx',]}
 
 if sys.version_info < (3,3):

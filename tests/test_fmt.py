@@ -13,6 +13,17 @@ else:
 import clans.fmt
 import sys
 
+# NOTE: several of the tested functions write directly to stdout.
+# These are tested here by calling sys.stdout.getvalue() to obtain
+# what was printed. The 'real' stdout does not have this method, but
+# stringIO objects do. This means that certain tests will only pass if
+# the test runner is configured to run in a buffered mode, e.g.
+#
+# $ py.test --capture sys
+#
+# By default, py.test captures at the file descriptor level, which is
+# below the level at which these tests need stdout to be faked at.
+
 TEST_DATA = {
         'test_format_plan': {
                 'lastupdated': 'Mon August 5th 2013, 1:22 PM',
