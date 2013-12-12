@@ -183,6 +183,15 @@ break"""
         text = self.fmt.filter_html(html)
         self.assertEqual(expect, text)
 
+    def test_print_list_in_columns(self):
+        lst = TEST_DATA['test_print_list']
+        self.fmt.print_list(lst, columns=True)
+        output = sys.stdout.getvalue()
+        expect = u"""\
+one    two    three  four
+"""
+        self.assertEqual(expect, output)
+
     def test_print_search_results(self):
         results = TEST_DATA['test_print_search_results']
         self.fmt.print_search_results(results)

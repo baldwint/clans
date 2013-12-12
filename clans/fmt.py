@@ -7,6 +7,8 @@ from __future__ import print_function
 import re
 import colorama as cr
 #TODO only import these if needed
+from itertools import izip_longest
+import sys
 
 HEADERS = [('Username', '{username}'),
            ('Last Updated', '{lastupdated}'),
@@ -87,6 +89,29 @@ class TextFormatter(RawFormatter):
         html = re.sub(re.compile(self.REGEX_SUB, flags=re.DOTALL), r'\1', html)
         html = re.sub(r'<hr ?/?>', self.hr, html)
         return html
+
+    def print_list(self, items, columns=None):
+        """
+        print a list of text strings, formatting into columns
+
+        """
+        lst = list(items)
+        if not lst:
+            return # nothing to print
+        if columns is None:
+            columns = sys.stdout.isatty() # if printing to terminal
+        max_len = max(len(word) for word in lst) + 2 # padding
+        TERM_WIDTH = 80
+        ncols = TERM_WIDTH // max_len
+        if (not columns) or (ncols < 2):
+            # if we are piping output, or only one column,
+            # fall back to non-fancy formatting
+            RawFormatter.print_list(self, items)
+            return
+        args = [iter(lst)] * ncols
+        for group in izip_longest(fillvalue='', *args):
+            print("".join(word.ljust(max_len) for word in group).rstrip())
+
 
 class ColorFormatter(TextFormatter):
 
