@@ -82,6 +82,18 @@ this is my plan
         self.fmt.print_list(lst)
         output = sys.stdout.getvalue()
         expect = u"""\
+one
+two
+three
+four
+"""
+        self.assertEqual(expect, output)
+
+    def test_print_bulleted_list(self):
+        lst = TEST_DATA['test_print_list']
+        self.fmt.print_list(lst, bullets=True)
+        output = sys.stdout.getvalue()
+        expect = u"""\
  - one
  - two
  - three
@@ -116,17 +128,17 @@ this is my plan
         output = sys.stdout.getvalue()
         expect = u"""\
 Level 1:
- - bff
- - interesting
- - funny
- - gorp
+bff
+interesting
+funny
+gorp
 
 Level 2:
- - roommate
- - rando
+roommate
+rando
 
 Level 3:
- - meh
+meh
 
 """
         self.assertEqual(expect, output)

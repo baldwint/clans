@@ -28,7 +28,7 @@ class RawFormatter(object):
     def format_planlove(self, un):
         return "[%s]" % un
 
-    def print_list(self, items):
+    def print_list(self, items, bullets=False):
         """
         prints a list line by line
 
@@ -37,7 +37,9 @@ class RawFormatter(object):
         """
         for item in items:
             item = self.filter_html(item)
-            print((u" - {0}").format(item).encode('utf8'))
+            if bullets:
+                item = (u" - {0}").format(item)
+            print(item.encode('utf8'))
 
 
     def print_search_results(self, results):
@@ -52,7 +54,7 @@ class RawFormatter(object):
             username = self.format_planlove(un)
             print((u"{0}: {1}\n"
                 ).format(username, count).encode('utf8'))
-            self.print_list(snips)
+            self.print_list(snips, bullets=True)
             print(u"")
 
 
@@ -90,7 +92,7 @@ class TextFormatter(RawFormatter):
         html = re.sub(r'<hr ?/?>', self.hr, html)
         return html
 
-    def print_list(self, items, columns=None):
+    def print_list(self, items, columns=None, **kwargs):
         """
         print a list of text strings, formatting into columns
 
@@ -106,7 +108,7 @@ class TextFormatter(RawFormatter):
         if (not columns) or (ncols < 2):
             # if we are piping output, or only one column,
             # fall back to non-fancy formatting
-            RawFormatter.print_list(self, items)
+            RawFormatter.print_list(self, items, **kwargs)
             return
         args = [iter(lst)] * ncols
         for group in izip_longest(fillvalue='', *args):
