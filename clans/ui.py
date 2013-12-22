@@ -235,7 +235,7 @@ def config(cs):
 
 import ConfigParser
 import appdirs
-import imp
+import importlib
 
 
 class ClansSession(object):
@@ -320,12 +320,16 @@ class ClansSession(object):
             for name, path in self.config.items('extensions'):
                 try:
                     if path:
-                        mod = imp.load_source("clans_ext_%s" % name, path)
+                        # If configuration specifies a value,
+                        # take it as the importable module name
+                        mod = importlib.import_module(path)
                     else:
+                        # if no value is specified,
+                        # assume it is for a built-in extension
                         mod = __import__('clans.ext.%s' % name,
                                          fromlist='clans.ext')
                         assert mod.__name__ == 'clans.ext.%s' % name
-                except (ImportError, IOError):
+                except ImportError:
                     print('Failed to load extension "%s".' % name,
                           file=sys.stderr)
                 else:
