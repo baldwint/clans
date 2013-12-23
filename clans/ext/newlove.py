@@ -133,6 +133,31 @@ def modify_results(results, log, order_by_time=False, only_show_new=False):
 lovelog = None
 
 def pre_search(cs, term, planlove=False):
+    """
+    In this function, determine whether to track this search or not.
+
+    Track if:
+     - config file says to log all planlove searches
+     - config file says to log this specific planlove search
+     - absent any configured value, log our own planlove only
+
+    The config file format to log all planlove searches is:
+
+        [newlove]
+        log_love=
+
+    To log specific searches:
+
+        [newlove]
+        log_love=baldwint,gorp,climb
+
+    Absent a log_love directive, only searches for your own planlove
+    will be logged.
+
+    This also applies to non-planlove searches, using `log_search`
+    instead of `log_love`.
+
+    """
 
     global lovelog
 
@@ -141,9 +166,24 @@ def pre_search(cs, term, planlove=False):
     if cs.config.has_section('newlove'):
         config.update(dict(cs.config.items('newlove')))
 
-    if planlove and (term == cs.username):
+    suffix = 'love' if planlove else 'search'
+    thing = config.get('log_%s' % suffix, None)
+    if thing is None:
+        # no configured value (default)
+        # log only our own planlove
+        logging = bool(planlove and (term == cs.username))
+    elif thing is '':
+        # log_love=
+        # wildcard option; log everybody
+        logging = True
+    else:
+        # if a value is given, take it as a comma separated list
+        # of searches to log
+        logging = bool(term in thing.split(','))
+
+    if logging:
         # set location of log file (in app dir)
-        lovelog = '{term}.love'.format(term=term)
+        lovelog = '{term}.{suffix}'.format(term=term, suffix=suffix)
         lovelog = os.path.join(cs.profile_dir, lovelog)
 
 

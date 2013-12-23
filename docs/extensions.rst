@@ -51,6 +51,35 @@ Your planlove read state is stored in a JSON-formatted file called
 ``username.love``, in the clans profile directory. When love is
 deleted from plans, it is also removed from this file.
 
+Newlove for stalkers
+++++++++++++++++++++
+
+By default, the newlove extension only tracks planlove for the
+logged-in user, but it can be configured to track the planlove of
+others, as well as the results of non-planlove searches.
+
+To specify users to track newlove for, set the ``log_love`` value
+in the ``[newlove]`` part of ``clans.cfg``. Format it as a
+comma-separated list:
+
+.. code-block:: ini
+
+    [newlove]
+    log_love=baldwint,gorp,climb
+
+This overrides the default behavior (of tracking your own planlove
+only), so make sure this list includes yourself.
+
+To track everyone's planlove, leave ``log_love`` blank:
+
+.. code-block:: ini
+
+    [newlove]
+    log_love=
+
+Non-planlove searches can be tracked by specifying ``log_search`` in
+the same way.
+
 Backup
 ------
 
