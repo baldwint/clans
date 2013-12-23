@@ -130,26 +130,28 @@ def modify_results(results, log, order_by_time=False, only_show_new=False):
             unread = [snip for snip in snips if log[un][snip]['unread']]
             snips[:] = unread
 
-def post_search(cs, results):
-    # if this is a non-planlove search, skip
-    if cs.args.func.__name__ == 'love':
-        # quick love
-        un = cs.username
-    elif cs.args.func.__name__ == 'search':
-        #TODO: time-ordered searches
-        return
-    else:
-        return
+lovelog = None
+
+def pre_search(cs, term, planlove=False):
+
+    global lovelog
 
     # read configured options
-    # (none right now)
     config = {}
     if cs.config.has_section('newlove'):
         config.update(dict(cs.config.items('newlove')))
 
-    # set location of log file (in app dir)
-    lovelog = '{username}.love'.format(username=un)
-    lovelog = os.path.join(cs.profile_dir, lovelog)
+    if planlove and (term == cs.username):
+        # set location of log file (in app dir)
+        lovelog = '{term}.love'.format(term=term)
+        lovelog = os.path.join(cs.profile_dir, lovelog)
+
+
+def post_search(cs, results):
+
+    global lovelog
+    if lovelog is None:
+        return
 
     # load stored planlove
     try:
@@ -177,6 +179,7 @@ def post_search(cs, results):
     # store log
     with open(lovelog, 'w') as fl:
         _save_log(newlove, fl)
+        lovelog = None
 
     # TODO: option to hoard deleted love
 
