@@ -82,6 +82,17 @@ def pre_set_edit_text(cs, edited):
     assert storage['foo'] == 'bar'
     pass
 
+def pre_search(cs, term, planlove):
+    """
+    This hook is called before a (quicklove or regular) search, and is
+    passed the same arguments as is the search function:
+
+     - the search `term`
+     - `love`, a boolean of whether to restrict search to planlove
+
+    """
+    pass
+
 def post_search(cs, results):
     """
     This hook is called after a (quicklove or regular) search, and is

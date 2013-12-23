@@ -208,6 +208,7 @@ def autoread(cs, pc, fmt):
 @with_plans
 def love(cs, pc, fmt):
     """ quicklove command """
+    cs.hook('pre_search', pc.username, planlove=True)
     results = pc.search_plans(pc.username, planlove=True)
     cs.hook('post_search', results)
     fmt.print_search_results(results)
@@ -217,6 +218,7 @@ def love(cs, pc, fmt):
 @with_plans
 def search(cs, pc, fmt):
     """ search command """
+    cs.hook('pre_search', cs.args.term, planlove=cs.args.love)
     results = pc.search_plans(cs.args.term, planlove=cs.args.love)
     cs.hook('post_search', results)
     fmt.print_search_results(results)
