@@ -33,8 +33,8 @@ With this line enabled, three new flags are added to ``clans love``:
 
 
       -t, --time            Order results by time first seen.
-      -n, --new             Only show new planlove.
-      --keep-unread         Preserve read state of any new planlove.
+      -n, --new             Only show new results.
+      --keep-unread         Preserve read state of any new results.
 
 Now, ``clans love -n`` behaves roughly like the greasemonkey script:
 You will only see context snippets that have changed since the last

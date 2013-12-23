@@ -9,19 +9,36 @@ import json
 from datetime import datetime
 import os.path
 
+# extension globals
+lovelog = None
+config = {}
+
 def post_load_commands(cs):
-    cs.commands['love'].add_argument(
-               '-t', '--time', dest='time',
-               action='store_true', default=False,
-               help="Order results by time first seen.")
-    cs.commands['love'].add_argument(
-               '-n', '--new', dest='new',
-               action='store_true', default=False,
-               help="Only show new planlove.")
-    cs.commands['love'].add_argument(
-               '--keep-unread', dest='keepunread',
-               action='store_true', default=False,
-               help="Preserve read state of any new planlove.")
+
+    # read configured options into module-global dict
+    global config
+    if cs.config.has_section('newlove'):
+        config.update(dict(cs.config.items('newlove')))
+
+    extended_commands = ('love',)
+    if 'log_love' in config or 'log_search' in config:
+        # if configured to stalk, also add flags to clans search
+        extended_commands += ('search',)
+
+    for cmd in extended_commands:
+        cs.commands[cmd].add_argument(
+                   '-t', '--time', dest='time',
+                   action='store_true', default=False,
+                   help="Order results by time first seen.")
+        cs.commands[cmd].add_argument(
+                   '-n', '--new', dest='new',
+                   action='store_true', default=False,
+                   help="Only show new results.")
+        cs.commands[cmd].add_argument(
+                   '--keep-unread', dest='keepunread',
+                   action='store_true', default=False,
+                   help="Preserve read state of any new results.")
+
 
 date_fmt = '%Y-%m-%dT%H:%M:%SZ'
         # dodgy; writing 'Z' (UTC) doesn't make it true
@@ -130,7 +147,6 @@ def modify_results(results, log, order_by_time=False, only_show_new=False):
             unread = [snip for snip in snips if log[un][snip]['unread']]
             snips[:] = unread
 
-lovelog = None
 
 def pre_search(cs, term, planlove=False):
     """
@@ -160,11 +176,7 @@ def pre_search(cs, term, planlove=False):
     """
 
     global lovelog
-
-    # read configured options
-    config = {}
-    if cs.config.has_section('newlove'):
-        config.update(dict(cs.config.items('newlove')))
+    global config
 
     suffix = 'love' if planlove else 'search'
     thing = config.get('log_%s' % suffix, None)
