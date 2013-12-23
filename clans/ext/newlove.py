@@ -142,15 +142,14 @@ def post_search(cs, results):
         return
 
     # read configured options
+    # (none right now)
     config = {}
     if cs.config.has_section('newlove'):
         config.update(dict(cs.config.items('newlove')))
 
-    # determine lovelog location. in appdir by default, but can be
-    # set in config file. username expansion works there too!
-    lovelog = config.get('lovelog',
-            os.path.join(cs.profile_dir, '{username}.love')
-                ).format(username=un)
+    # set location of log file (in app dir)
+    lovelog = '{username}.love'.format(username=un)
+    lovelog = os.path.join(cs.profile_dir, lovelog)
 
     # load stored planlove
     try:
