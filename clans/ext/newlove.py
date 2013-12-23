@@ -13,6 +13,10 @@ import os.path
 lovelog = None
 config = {}
 
+class NewloveError(Exception):
+    """Errors related to the newlove extension."""
+    pass
+
 def post_load_commands(cs):
 
     # read configured options into module-global dict
@@ -197,6 +201,9 @@ def pre_search(cs, term, planlove=False):
         # set location of log file (in app dir)
         lovelog = '{term}.{suffix}'.format(term=term, suffix=suffix)
         lovelog = os.path.join(cs.profile_dir, lovelog)
+    elif cs.args.time or cs.args.new:
+        # not tracking, but --time or --new was passed
+        raise NewloveError("Not configured to track '%s'" % term)
 
 
 def post_search(cs, results):
