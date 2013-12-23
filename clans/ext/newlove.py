@@ -13,9 +13,11 @@ import os.path
 lovelog = None
 config = {}
 
+
 class NewloveError(Exception):
     """Errors related to the newlove extension."""
     pass
+
 
 def post_load_commands(cs):
 
@@ -31,21 +33,22 @@ def post_load_commands(cs):
 
     for cmd in extended_commands:
         cs.commands[cmd].add_argument(
-                   '-t', '--time', dest='time',
-                   action='store_true', default=False,
-                   help="Order results by time first seen.")
+            '-t', '--time', dest='time',
+            action='store_true', default=False,
+            help="Order results by time first seen.")
         cs.commands[cmd].add_argument(
-                   '-n', '--new', dest='new',
-                   action='store_true', default=False,
-                   help="Only show new results.")
+            '-n', '--new', dest='new',
+            action='store_true', default=False,
+            help="Only show new results.")
         cs.commands[cmd].add_argument(
-                   '--keep-unread', dest='keepunread',
-                   action='store_true', default=False,
-                   help="Preserve read state of any new results.")
+            '--keep-unread', dest='keepunread',
+            action='store_true', default=False,
+            help="Preserve read state of any new results.")
 
 
 date_fmt = '%Y-%m-%dT%H:%M:%SZ'
         # dodgy; writing 'Z' (UTC) doesn't make it true
+
 
 def convert_dates(dic):
     """ If a dict has a key named 'timestamp', convert to datetimes """
@@ -54,6 +57,7 @@ def convert_dates(dic):
         dic['timestamp'] = timestamp
     return dic
 
+
 class DatetimeEncoder(json.JSONEncoder):
     """ Handles encoding of datetimes as ISO 8601 format text in JSON """
     def default(self, obj):
@@ -61,12 +65,15 @@ class DatetimeEncoder(json.JSONEncoder):
             return obj.strftime(date_fmt)
         return json.JSONEncoder.default(self, obj)
 
+
 def _load_log(fl):
     # ValueError would occur here if the JSON parse fails
     return json.load(fl, object_hook=convert_dates)
 
+
 def _save_log(newlove, fl):
     json.dump(newlove, fl, cls=DatetimeEncoder, indent=2)
+
 
 def _rebuild_log(log, results, timestamp=None):
     """
@@ -81,7 +88,7 @@ def _rebuild_log(log, results, timestamp=None):
     that it finds in the results. When it completes, the original log
     can be used as an index of results deleted since the original log
     was built.
-    
+
     """
     newlog = {}
 
@@ -93,11 +100,12 @@ def _rebuild_log(log, results, timestamp=None):
         old_snips = log.get(un, {})
         new_snips = {}
         for snip in snips:
-            new_snips[snip] = old_snips.pop(snip,
-                    dict(timestamp=timestamp, unread=True))
+            new_snips[snip] = old_snips.pop(
+                snip, dict(timestamp=timestamp, unread=True))
         newlog[un] = new_snips
 
     return newlog
+
 
 def _flatten_log(log):
     """
@@ -118,6 +126,7 @@ def _flatten_log(log):
             flattened.append(lovestate)
     return flattened
 
+
 def modify_results(results, log, order_by_time=False, only_show_new=False):
     """
     Modify the result list, in-place, to time-order or filter what is shown.
@@ -135,7 +144,7 @@ def modify_results(results, log, order_by_time=False, only_show_new=False):
         flattened = _flatten_log(log)
 
         # order by time
-        flattened.sort(key = lambda lovestate: lovestate['timestamp'])
+        flattened.sort(key=lambda lovestate: lovestate['timestamp'])
 
         # replace search results by time-ordered quicklove
         del results[:]
@@ -143,7 +152,7 @@ def modify_results(results, log, order_by_time=False, only_show_new=False):
             if only_show_new and not lovestate['unread']:
                 continue
             note = lovestate['timestamp'].strftime(date_fmt)
-            results.append((lovestate['lover'], note, [lovestate['text'],]))
+            results.append((lovestate['lover'], note, [lovestate['text'], ]))
 
     elif only_show_new:
         # don't change order, just hide snips we've seen before
@@ -241,4 +250,3 @@ def post_search(cs, results):
         lovelog = None
 
     # TODO: option to hoard deleted love
-
