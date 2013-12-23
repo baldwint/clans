@@ -338,7 +338,7 @@ class ClansSession(object):
                     extensions[name] = mod
         return extensions
 
-    def hook(self, name, *args):
+    def hook(self, name, *args, **kwargs):
         """
         Call the method named ``name`` in every loaded extension.
 
@@ -346,7 +346,7 @@ class ClansSession(object):
         for ext_name, ext in self.extensions.iteritems():
             func = getattr(ext, name, None)
             if func is not None:
-                func(self, *args)
+                func(self, *args, **kwargs)
 
     def _load_commands(self):
         # define command line arguments
