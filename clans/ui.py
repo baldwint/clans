@@ -11,7 +11,7 @@ from pydoc import pager
 from clans.scraper import PlansConnection, PlansError
 import getpass as getpass_mod
 import argparse
-import re
+import clans.fmt
 
 if sys.version_info >= (2,7):
     from collections import OrderedDict
@@ -101,27 +101,8 @@ class CommandSet(dict):
         self[name] = parser
 
 
-import clans.fmt
-
-formatters = {
-        'raw': clans.fmt.RawFormatter,
-        'text': clans.fmt.TextFormatter,
-        'color': clans.fmt.ColorFormatter,
-        }
-
 from functools import wraps
 
-def with_formatter(func):
-    """
-    Decorator for subcommands that use a formatter.
-
-    """
-    # func takes only cs as positional, all others kwarg
-    @wraps(func)
-    def formatted(cs, **kwargs):
-        fmt = formatters[cs.args.fmt]()
-        func(cs, fmt=fmt, **kwargs)
-    return formatted
 
 def with_plans(func):
     """
@@ -144,6 +125,7 @@ def with_plans(func):
 
 # decorators consume additional arguments for common tasks
 # (connecting to plans, loading a formatter)
+
 
 @with_plans
 def edit(cs, pc):
@@ -182,10 +164,11 @@ def edit(cs, pc):
             print("A copy of your unsubmitted edit"
                   " was stored in %s" % bakfile, file=sys.stderr)
 
-@with_formatter
 @with_plans
-def read(cs, pc, fmt):
+def read(cs, pc, fmt=None):
     """ plan-reading command """
+    fmt = fmt or cs.make_formatter()
+
     try:
         header, plan = pc.read_plan(cs.args.plan)
     except PlansError as e:
@@ -196,28 +179,31 @@ def read(cs, pc, fmt):
     pager(fmt.format_plan(plan=plan, **header))
 
 
-@with_formatter
 @with_plans
-def autoread(cs, pc, fmt):
+def autoread(cs, pc, fmt=None):
     """ autoread list command """
+    fmt = fmt or cs.make_formatter()
+
     results = pc.get_autofinger()
     fmt.print_autoread(results)
 
 
-@with_formatter
 @with_plans
-def love(cs, pc, fmt):
+def love(cs, pc, fmt=None):
     """ quicklove command """
+    fmt = fmt or cs.make_formatter()
+
     cs.hook('pre_search', pc.username, planlove=True)
     results = pc.search_plans(pc.username, planlove=True)
     cs.hook('post_search', results)
     fmt.print_search_results(results)
 
 
-@with_formatter
 @with_plans
-def search(cs, pc, fmt):
+def search(cs, pc, fmt=None):
     """ search command """
+    fmt = fmt or cs.make_formatter()
+
     cs.hook('pre_search', cs.args.term, planlove=cs.args.love)
     results = pc.search_plans(cs.args.term, planlove=cs.args.love)
     cs.hook('post_search', results)
@@ -262,6 +248,7 @@ class ClansSession(object):
         # load config, extensions, and define command line args
         self.config = self._load_config()
         self.extensions = self._load_extensions()
+        self.formatters = self._load_formatters()
         self.commands = self._load_commands()
 
         # let extensions modify command list
@@ -338,6 +325,18 @@ class ClansSession(object):
                     extensions[name] = mod
         return extensions
 
+    def _load_formatters(self):
+        """
+        Load output formatters.
+
+        """
+        formatters = {
+            'raw': clans.fmt.RawFormatter,
+            'text': clans.fmt.TextFormatter,
+            'color': clans.fmt.ColorFormatter,
+            }
+        return formatters
+
     def hook(self, name, *args, **kwargs):
         """
         Call the method named ``name`` in every loaded extension.
@@ -372,7 +371,7 @@ class ClansSession(object):
         filter_parser.add_argument(
             '--format', dest='fmt',
             default=self.config.get('clans', 'format'),
-            choices=formatters,
+            choices=self.formatters,
             help="Display format to use")
 
         # main parser: has subcommands for everything
@@ -470,6 +469,15 @@ class ClansSession(object):
                 sys.exit(1)
 
         return pc
+
+    def make_formatter(self):
+        """
+        Initialize and return the appropriate output formatter.
+
+        """
+        Fmt = self.formatters[self.args.fmt]
+        fmt = Fmt()
+        return fmt
 
     def finish(self):
         """
