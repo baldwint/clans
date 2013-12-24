@@ -13,9 +13,9 @@ import getpass as getpass_mod
 import argparse
 import clans.fmt
 
-if sys.version_info >= (2,7):
+if sys.version_info >= (2, 7):
     from collections import OrderedDict
-elif sys.version_info >= (2,6):
+elif sys.version_info >= (2, 6):
     from ordereddict import OrderedDict
 else:
     sys.stderr.write('Clans requires Python 2.6 or 2.7')
@@ -39,10 +39,10 @@ def external_editor(text, editor=None, **kwargs):
     if 'text' not in kwargs:
         kwargs['text'] = True
 
-    if editor is None: # default to $EDITOR, or pico
+    if editor is None:  # default to $EDITOR, or pico
         editor = os.environ.get('EDITOR', 'pico')
 
-    fd, name = tempfile.mkstemp(**kwargs) # make tempfile
+    fd, name = tempfile.mkstemp(**kwargs)  # make tempfile
     try:
         # populate the temp file with original text.
         with os.fdopen(fd, 'w') as f:
@@ -235,9 +235,10 @@ class ClansSession(object):
         # profile folder: either passed directly (for testing only),
         # set by CLANS_DIR environment variable, or the standard user
         # data directory for this OS
-        self.profile_dir = profile_dir or (os.environ.get('CLANS_DIR', '')
-                                or appdirs.user_data_dir(appname='clans',
-                                                  appauthor='baldwint'))
+        self.profile_dir = profile_dir or (
+            os.environ.get('CLANS_DIR', '')
+            or appdirs.user_data_dir(appname='clans',
+                                     appauthor='baldwint'))
 
         # config file location: in data directory
         self.config_loc = os.path.join(self.profile_dir, 'clans.cfg')
@@ -373,7 +374,7 @@ class ClansSession(object):
 
         # main parser: has subcommands for everything
         commands = CommandSet(
-            description= __doc__,
+            description=__doc__,
             parents=[global_parser],
             formatter_class=argparse.RawTextHelpFormatter)
 
@@ -490,6 +491,7 @@ class ClansSession(object):
         else:
             # save cookie
             self.cookie.save()
+
 
 def main():
     cs = ClansSession()
