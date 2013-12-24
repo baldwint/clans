@@ -101,21 +101,6 @@ class CommandSet(dict):
         self[name] = parser
 
 
-from functools import wraps
-
-
-def with_plans(func):
-    """
-    Decorator for subcommands that connect to plans.
-
-    """
-    # func takes only cs as positional, all others kwarg
-    @wraps(func)
-    def connected(cs, **kwargs):
-        pc = cs.make_plans_connection()
-        func(cs, pc=pc, **kwargs)
-    return connected
-
 # -----------
 # SUBCOMMANDS
 # -----------
@@ -123,15 +108,26 @@ def with_plans(func):
 # these are functions that take one argument:
 #  - a ClansSession instance
 
-# decorators consume additional arguments for common tasks
-# (connecting to plans, loading a formatter)
+# the ClansSession instance is the `controller` type object, since it
+# knows all the configuration, extension, and command line argument
+# information. It knows how to initialize a PlansConnection (via
+# the `make_plans_connection` method) or an output formatter (via the
+# `make_formatter` method). These I think of as the `model` and `view`
+# type objects, respectively.
+
+# the pattern I follow below is to have subcommand functions take
+# PlansConnection and formatter type objects as optional keyword
+# arguments, and have the mandatory ClansSession argument initialize
+# those if they are not provided. This approach permits these objects
+# (or mock objects standing in for them) to be passed directly in
+# testing. This is called dependency injection
 
 
-@with_plans
-def edit(cs, pc):
+def edit(cs, pc=None):
     """ plan-editing command """
-    plan_text, md5 = pc.get_edit_text(plus_hash=True)
+    pc = pc or cs.make_plans_connection()
 
+    plan_text, md5 = pc.get_edit_text(plus_hash=True)
     cs.hook('post_get_edit_text', plan_text)
 
     if cs.args.source_file:
@@ -164,9 +160,10 @@ def edit(cs, pc):
             print("A copy of your unsubmitted edit"
                   " was stored in %s" % bakfile, file=sys.stderr)
 
-@with_plans
-def read(cs, pc, fmt=None):
+
+def read(cs, pc=None, fmt=None):
     """ plan-reading command """
+    pc = pc or cs.make_plans_connection()
     fmt = fmt or cs.make_formatter()
 
     try:
@@ -179,18 +176,18 @@ def read(cs, pc, fmt=None):
     pager(fmt.format_plan(plan=plan, **header))
 
 
-@with_plans
-def autoread(cs, pc, fmt=None):
+def autoread(cs, pc=None, fmt=None):
     """ autoread list command """
+    pc = pc or cs.make_plans_connection()
     fmt = fmt or cs.make_formatter()
 
     results = pc.get_autofinger()
     fmt.print_autoread(results)
 
 
-@with_plans
-def love(cs, pc, fmt=None):
+def love(cs, pc=None, fmt=None):
     """ quicklove command """
+    pc = pc or cs.make_plans_connection()
     fmt = fmt or cs.make_formatter()
 
     cs.hook('pre_search', pc.username, planlove=True)
@@ -199,9 +196,9 @@ def love(cs, pc, fmt=None):
     fmt.print_search_results(results)
 
 
-@with_plans
-def search(cs, pc, fmt=None):
+def search(cs, pc=None, fmt=None):
     """ search command """
+    pc = pc or cs.make_plans_connection()
     fmt = fmt or cs.make_formatter()
 
     cs.hook('pre_search', cs.args.term, planlove=cs.args.love)
