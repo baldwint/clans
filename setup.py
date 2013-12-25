@@ -18,7 +18,7 @@ if sys.version_info >= (3,):
 elif sys.version_info >= (2,7):
     pass
 elif sys.version_info >= (2,6):
-    reqs.extend(['argparse', 'ordereddict'])
+    reqs.extend(['argparse', 'ordereddict', 'importlib'])
     extras['tests'].append('unittest2')
 else:
     sys.stderr.write("Clans requires Python 2.6 or 2.7\n")
