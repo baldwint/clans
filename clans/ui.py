@@ -306,16 +306,12 @@ class ClansSession(object):
         if self.config.has_section('extensions'):
             for name, path in self.config.items('extensions'):
                 try:
-                    if path:
-                        # If configuration specifies a value,
-                        # take it as the importable module name
-                        mod = importlib.import_module(path)
-                    else:
+                    if not path:
                         # if no value is specified,
                         # assume it is for a built-in extension
-                        mod = __import__('clans.ext.%s' % name,
-                                         fromlist='clans.ext')
-                        assert mod.__name__ == 'clans.ext.%s' % name
+                        path = 'clans.ext.%s' % name
+                    mod = importlib.import_module(path)
+                    assert mod.__name__ == path
                 except ImportError:
                     print('Failed to load extension "%s".' % name,
                           file=sys.stderr)
