@@ -6,15 +6,13 @@ GrinnellPlans that this module provides a scrAPI for.
 """
 
 import sys
-if sys.version_info < (2,7):
+if sys.version_info < (2, 7):
     import unittest2 as unittest
 else:
     import unittest
 
 from clans.scraper import PlansConnection
-import subprocess
 import cookielib
-import pdb
 from hashlib import md5
 from clans.scraper import PlansError
 import MySQLdb
@@ -30,9 +28,9 @@ TEST_URL = 'http://localhost/~tkb/phplans'
 USERNAME = 'baldwint'
 PASSWORD = 'password'
 
-USERNAME_2 = 'gorp'     # for now, this user is required to have
-PASSWORD_2 = 'password' # USERNAME_1 on her autoread with a level of 1.
-                        # Future tests should set this
+USERNAME_2 = 'gorp'      # for now, this user is required to have
+PASSWORD_2 = 'password'  # USERNAME_1 on her autoread with a level of 1.
+                         # Future tests should set this
 
 NONEX = 'fobar'        # a nonexistent user
 
@@ -42,10 +40,11 @@ TEST_DB = {'host':   'localhost',
            'user':   'plans_dev',
            'passwd': 'plans_dev_password'}
 
+
 class TestAuth(unittest.TestCase):
 
     def test_login(self):
-        self.pc = PlansConnection(base_url = TEST_URL)
+        self.pc = PlansConnection(base_url=TEST_URL)
         # we should not be admitted if we give the wrong password
         self.assertFalse(self.pc.plans_login(USERNAME, 'wrong_password'))
         self.assertNotEqual(USERNAME, self.pc.username)
@@ -62,20 +61,22 @@ class TestAuth(unittest.TestCase):
     def test_cookie(self):
         oreo = cookielib.LWPCookieJar()
         # log in to create a good cookie
-        pc = PlansConnection(oreo, base_url = TEST_URL)
+        pc = PlansConnection(oreo, base_url=TEST_URL)
         pc.plans_login(USERNAME, PASSWORD)
         # end session
         del pc
         # but we should remain logged in if we provide the cookie
-        pc = PlansConnection(oreo, base_url = TEST_URL)
+        pc = PlansConnection(oreo, base_url=TEST_URL)
         self.assertTrue(pc.plans_login(USERNAME, ''))
+
 
 class LoggedInTestCase(unittest.TestCase):
 
     def setUp(self):
         self.un = USERNAME
-        self.pc = PlansConnection(base_url = TEST_URL)
+        self.pc = PlansConnection(base_url=TEST_URL)
         self.pc.plans_login(self.un, PASSWORD)
+
 
 class TestEdit(LoggedInTestCase):
 
@@ -91,7 +92,7 @@ class TestEdit(LoggedInTestCase):
             # md5 mismatch error
             result = self.pc.set_edit_text(orig, hashsum)
         self.assertIn('Your plan was edited from another instance '
-                'of the edit page', cm.exception.message)
+                      'of the edit page', cm.exception.message)
         # edit again, undoing
         result = self.pc.set_edit_text(orig, new_hashsum)
         self.assertTrue("Plan changed successfully" in str(result))
@@ -115,6 +116,7 @@ class TestEdit(LoggedInTestCase):
     def test_unicode_editing(self):
         self.prepend_and_remove(u"Non-breaking \xa0\xa0 spaces")
 
+
 class PlanChangingTestCase(LoggedInTestCase):
     """
     saves the original plan at the start of tests,
@@ -133,6 +135,7 @@ class PlanChangingTestCase(LoggedInTestCase):
         result = self.pc.set_edit_text(self.orig, ending_hash)
         self.assertTrue("Plan changed successfully" in str(result))
 
+
 class TestEditing(PlanChangingTestCase):
 
     def editandcheck(self, phrase):
@@ -145,7 +148,7 @@ class TestEditing(PlanChangingTestCase):
         result = self.pc.set_edit_text(phrase, self.hashnum)
         self.assertIn("Plan changed successfully", str(result))
         plan, server_hashnum = self.pc.get_edit_text(plus_hash=True)
-        self.hashnum = server_hashnum # for later cleanup
+        self.hashnum = server_hashnum  # for later cleanup
         self.assertEqual(phrase, plan)
 
     def test_editing(self):
@@ -161,9 +164,9 @@ class TestEditing(PlanChangingTestCase):
     def test_bad_html(self):
         # BS3 screws things up by correcting bad HTML in a textarea
         # field (even though it ignores HTML in there)
-        self.editandcheck(u'</b')              # fails
-        self.editandcheck(u'</b> &waffles')    # fails
-        self.editandcheck(u'chicken &waffles') # succeeds for some reason
+        self.editandcheck(u'</b')               # fails
+        self.editandcheck(u'</b> &waffles')     # fails
+        self.editandcheck(u'chicken &waffles')  # succeeds for some reason
 
     def test_unicode(self):
         self.editandcheck(u'Non-breaking \u00a0\u00a0 spaces!')
@@ -174,17 +177,18 @@ class TestEditing(PlanChangingTestCase):
     @unittest.expectedFailure
     def test_unicode_edge(self):
         #plans bug: truncating after some unicode characters
-        self.editandcheck(u'Pile of \U0001f4a9!') # poo
+        self.editandcheck(u'Pile of \U0001f4a9!')  # poo
 
     def test_long_plan(self):
         # on the server side, plans are MySQL mediumtext,
         # which have a max length of 16777215 chars.
         # however, the max length warning triggers at much lower values.
-        phrase = 'fu' * 35000 # about 107%
+        phrase = 'fu' * 35000  # about 107%
         with self.assertRaises(PlansError) as cm:
             # plan too long error
-            result = self.pc.set_edit_text(phrase, self.hashnum)
+            self.pc.set_edit_text(phrase, self.hashnum)
         self.assertIn('plan is too long', cm.exception.message)
+
 
 class TestMD5(PlanChangingTestCase):
 
@@ -192,7 +196,7 @@ class TestMD5(PlanChangingTestCase):
     def md5check(self, phrase):
         self.pc.set_edit_text(phrase, self.hashnum)
         plan, server_hashnum = self.pc.get_edit_text(plus_hash=True)
-        self.hashnum = server_hashnum # for later cleanup
+        self.hashnum = server_hashnum  # for later cleanup
         python_hashnum = md5(plan.encode('utf-8')).hexdigest()
         self.assertEqual(server_hashnum, python_hashnum)
 
@@ -204,12 +208,14 @@ class TestMD5(PlanChangingTestCase):
         self.md5check(u'Non-breaking \xa0\xa0 spaces!')
         self.md5check(u'Newline at the end\n')
 
+
 def psub(text):
     """
     Wraps some text in an annoying <p class="sub"> tag.
 
     """
     return '<p class="sub">%s</p>' % text
+
 
 class TestPlanspeak(PlanChangingTestCase):
     """
@@ -240,7 +246,7 @@ class TestPlanspeak(PlanChangingTestCase):
         examples = ['<b>hello world</b>',
                     '<i>hello world</i>',
                     '<tt>hello world</tt>',
-                   ]
+                    ]
         for orig in examples:
             text, html = self.planify(orig)
             self.assertEqual(orig, text)
@@ -285,7 +291,7 @@ class TestPlanspeak(PlanChangingTestCase):
     def test_planlove(self):
         orig = "May the [gorp] be with you."
         expect = ('May the [<a href="read.php?searchname=gorp"'
-                ' class="planlove">gorp</a>] be with you.')
+                  ' class="planlove">gorp</a>] be with you.')
         text, html = self.planify(orig)
         self.assertEqual(orig, text)
         self.assertEqual(psub(expect), html)
@@ -293,7 +299,7 @@ class TestPlanspeak(PlanChangingTestCase):
     def test_link(self):
         orig = "Where the hell is [http://grinnell.edu/|Grinnell]?"
         expect = ('Where the hell is <a href="http://grinnell.edu/"'
-        ' class="onplan">Grinnell</a>?')
+                  ' class="onplan">Grinnell</a>?')
         text, html = self.planify(orig)
         self.assertEqual(orig, text)
         self.assertEqual(psub(expect), html)
@@ -301,10 +307,11 @@ class TestPlanspeak(PlanChangingTestCase):
     def test_other_link(self):
         orig = "Where the hell is [http://grinnell.edu/]?"
         expect = ('Where the hell is <a href="http://grinnell.edu/"'
-        ' class="onplan">http://grinnell.edu/</a>?')
+                  ' class="onplan">http://grinnell.edu/</a>?')
         text, html = self.planify(orig)
         self.assertEqual(orig, text)
         self.assertEqual(psub(expect), html)
+
 
 class DbTestCase(LoggedInTestCase):
 
@@ -320,6 +327,7 @@ class DbTestCase(LoggedInTestCase):
                        "where username=%s", (un,))
         userid, = self.c.fetchone()
         return userid
+
 
 class TestRead(DbTestCase):
     """
@@ -347,6 +355,7 @@ class TestRead(DbTestCase):
             plan_header, html_plan = self.pc.read_plan(NONEX)
         self.assertIn('No such user', cm.exception.message)
 
+
 class TestSearch(PlanChangingTestCase):
     """
     tests that words written or planlove given in edits turns up in
@@ -356,11 +365,12 @@ class TestSearch(PlanChangingTestCase):
 
     def test_giving_planlove(self):
         text = ("No one doubts that [gorp] is among "
-            "the finest college outdoor programs.")
+                "the finest college outdoor programs.")
         self.pc.set_edit_text(text, self.hashnum)
         result = self.pc.search_plans('gorp', planlove=True)
         plans_with_results = [tup[0] for tup in result]
         self.assertTrue(self.un in plans_with_results)
+
 
 class TestAutofinger(PlanChangingTestCase):
     """
@@ -372,17 +382,17 @@ class TestAutofinger(PlanChangingTestCase):
         super(TestAutofinger, self).setUp()
         # we need a second user (don't edit this one's plan)
         self.un2 = USERNAME_2
-        self.pc2 = PlansConnection(base_url = TEST_URL)
+        self.pc2 = PlansConnection(base_url=TEST_URL)
         self.pc2.plans_login(self.un2, PASSWORD_2)
 
     def test_get_autofinger(self):
-        self.pc2.read_plan(self.un) #clear read state
+        self.pc2.read_plan(self.un)  # clear read state
         autofinger = self.pc2.get_autofinger()
         unread = [un for level in autofinger.values() for un in level]
-        self.assertNotIn(self.un, unread) # read state should be empty
+        self.assertNotIn(self.un, unread)  # read state should be empty
         # now update user 1's plan
         orig, hashsum = self.pc.get_edit_text(plus_hash=True)
-        result = self.pc.set_edit_text("hello world", hashsum)
+        self.pc.set_edit_text("hello world", hashsum)
         # now user 1 should be on user 2's autofinger (level 1)
         autofinger = self.pc2.get_autofinger()
         self.assertIn(self.un, autofinger['Level 1'])
@@ -417,4 +427,3 @@ class TestAutofinger(PlanChangingTestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

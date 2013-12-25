@@ -6,19 +6,18 @@ Unit tests for :mod:`clans.ui`.
 
 
 import sys
-if sys.version_info < (2,7):
+if sys.version_info < (2, 7):
     import unittest2 as unittest
 else:
     import unittest
 
-if sys.version_info >= (3,3):
+if sys.version_info >= (3, 3):
     import unittest.mock as mock
 else:
     import mock
 
 import clans.ui
 import tempfile
-import sys
 import os
 import shutil
 
@@ -35,6 +34,7 @@ class SubprocessMocked(unittest.TestCase):
         # fix monkey patch
         clans.ui.subprocess = self.real_subprocess
 
+
 class TestExternalEditor(SubprocessMocked):
 
     def test_specify_editor(self):
@@ -47,6 +47,7 @@ class TestExternalEditor(SubprocessMocked):
 
     def test_edit_works(self):
         orig = """hi there"""
+
         def insult_user(arglist):
             editor_used, tmpfile = arglist
             with open(tmpfile, 'a') as fl:
@@ -54,6 +55,7 @@ class TestExternalEditor(SubprocessMocked):
         clans.ui.subprocess.call.side_effect = insult_user
         edited = clans.ui.external_editor(orig, 'foo')
         self.assertEqual(edited, "hi there loser")
+
 
 class WithClansdir(unittest.TestCase):
 
@@ -64,6 +66,7 @@ class WithClansdir(unittest.TestCase):
     def tearDown(self):
         # remove temporary directory
         shutil.rmtree(self.clansdir)
+
 
 class TestSession(WithClansdir):
 
@@ -94,4 +97,3 @@ class TestSession(WithClansdir):
 
 if __name__ == "__main__":
     unittest.main()
-

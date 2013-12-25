@@ -15,13 +15,14 @@ HEADERS = [('Username', '{username}'),
            ('Last Login', '{lastlogin}'),
            ('Name', '{planname}')]
 
+
 class RawFormatter(object):
 
     def filter_html(self, html):
         return html
 
     def format_plan(self, **kwargs):
-        read_fmt = '\n'.join( ': '.join(header) for header in HEADERS)
+        read_fmt = '\n'.join(': '.join(header) for header in HEADERS)
         read_fmt += "\n\n{plan}"
         return read_fmt.format(**kwargs)
 
@@ -41,7 +42,6 @@ class RawFormatter(object):
                 item = (u" - {0}").format(item)
             print(item.encode('utf8'))
 
-
     def print_search_results(self, results):
         """
         prints search results to stdout.
@@ -53,10 +53,9 @@ class RawFormatter(object):
         for un, count, snips in results:
             username = self.format_planlove(un)
             print((u"{0}: {1}\n"
-                ).format(username, count).encode('utf8'))
+                   ).format(username, count).encode('utf8'))
             self.print_list(snips, bullets=True)
             print(u"")
-
 
     def print_autoread(self, results):
         for level in sorted(results.keys()):
@@ -72,7 +71,7 @@ class TextFormatter(RawFormatter):
     REGEX_SUB = r'<p class="sub">(.+?)</p>'
 
     hr = '\n' + 70*'=' + '\n'
-    a  = r'[\1|\2]'
+    a = r'[\1|\2]'
 
     def filter_html(self, html):
         """
@@ -99,10 +98,10 @@ class TextFormatter(RawFormatter):
         """
         lst = list(items)
         if not lst:
-            return # nothing to print
+            return  # nothing to print
         if columns is None:
-            columns = sys.stdout.isatty() # if printing to terminal
-        max_len = max(len(word) for word in lst) + 2 # padding
+            columns = sys.stdout.isatty()  # if printing to terminal
+        max_len = max(len(word) for word in lst) + 2  # padding
         TERM_WIDTH = 80
         ncols = TERM_WIDTH // max_len
         if (not columns) or (ncols < 2):
@@ -117,20 +116,20 @@ class TextFormatter(RawFormatter):
 
 class ColorFormatter(TextFormatter):
 
-    hr = '\n' + cr.Fore.RED + 70*'='+ cr.Fore.RESET  + '\n'
-    a  = r'[%s\1%s|%s\2%s]' % (cr.Fore.GREEN, cr.Fore.RESET,
-                               cr.Fore.MAGENTA, cr.Fore.RESET)
+    hr = '\n' + cr.Fore.RED + 70*'=' + cr.Fore.RESET + '\n'
+    a = r'[%s\1%s|%s\2%s]' % (cr.Fore.GREEN, cr.Fore.RESET,
+                              cr.Fore.MAGENTA, cr.Fore.RESET)
 
     def format_plan(self, **kwargs):
         color_headers = [(cr.Style.BRIGHT + k + cr.Style.NORMAL, v)
-                            for k,v in HEADERS]
-        read_fmt = '\n'.join( ': '.join(header) for header in color_headers)
+                         for k, v in HEADERS]
+        read_fmt = '\n'.join(': '.join(header) for header in color_headers)
         read_fmt += "\n\n{plan}"
         return read_fmt.format(**kwargs)
 
     def format_planlove(self, un):
         return "[" + cr.Style.BRIGHT + cr.Fore.BLUE + \
-                un + cr.Style.NORMAL + cr.Fore.RESET + "]"
+            un + cr.Style.NORMAL + cr.Fore.RESET + "]"
 
     def filter_html(self, html):
         """
@@ -138,12 +137,11 @@ class ColorFormatter(TextFormatter):
 
         """
         html = re.sub(r'(<b>.+?</b>)',
-                cr.Style.BRIGHT + r'\1' + cr.Style.NORMAL, html)
+                      cr.Style.BRIGHT + r'\1' + cr.Style.NORMAL, html)
         html = re.sub(r'(<i>.+?</i>)',
-                cr.Style.DIM + r'\1' + cr.Style.NORMAL, html)
+                      cr.Style.DIM + r'\1' + cr.Style.NORMAL, html)
         html = re.sub(self.REGEX_LOVE,
-                cr.Style.BRIGHT + cr.Fore.BLUE + \
-                r'\1' + cr.Style.NORMAL + cr.Fore.RESET, html)
+                      cr.Style.BRIGHT + cr.Fore.BLUE +
+                      r'\1' + cr.Style.NORMAL + cr.Fore.RESET, html)
         html = super(ColorFormatter, self).filter_html(html)
         return html
-

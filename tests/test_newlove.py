@@ -5,7 +5,7 @@ Unit tests for :mod:`clans.ext.newlove`.
 """
 
 import sys
-if sys.version_info < (2,7):
+if sys.version_info < (2, 7):
     import unittest2 as unittest
 else:
     import unittest
@@ -14,6 +14,7 @@ import clans.ext.newlove as newlove
 import datetime
 import copy
 
+
 class TestNewlove(unittest.TestCase):
 
     def test_love_added(self):
@@ -21,7 +22,7 @@ class TestNewlove(unittest.TestCase):
         now = datetime.datetime.utcnow()
         log    =  {'un1': {'result1': dict(timestamp=old, unread=False)},
                    'un2': {'result2': dict(timestamp=old, unread=False)}}
-        result = [('un1', 1, ['result1',]),
+        result = [('un1', 1, ['result1', ]),
                   ('un2', 2, ['result2', 'result3'])]
         expect =  {'un1': {'result1': dict(timestamp=old, unread=False)},
                    'un2': {'result2': dict(timestamp=old, unread=False),
@@ -37,8 +38,8 @@ class TestNewlove(unittest.TestCase):
         log    =  {'un1': {'result1': dict(timestamp=old, unread=False)},
                    'un2': {'result2': dict(timestamp=old, unread=False),
                            'result3': dict(timestamp=old, unread=False)}}
-        result = [('un1', 1, ['result1',]),
-                  ('un2', 2, ['result2',])]
+        result = [('un1', 1, ['result1', ]),
+                  ('un2', 2, ['result2', ])]
         expect =  {'un1': {'result1': dict(timestamp=old, unread=False)},
                    'un2': {'result2': dict(timestamp=old, unread=False)}}
         left   =  {'un1': {},
@@ -47,6 +48,7 @@ class TestNewlove(unittest.TestCase):
         self.assertDictEqual(expect, updated)
         # love was only added, so original log should be empty
         self.assertDictEqual(log, left)
+
 
 class TestModifyResult(unittest.TestCase):
 
@@ -57,7 +59,7 @@ class TestModifyResult(unittest.TestCase):
         self.log    =  {'un1': {'result1': dict(timestamp=old, unread=False)},
                         'un2': {'result2': dict(timestamp=older, unread=False),
                                 'result3': dict(timestamp=new, unread=True)}}
-        self.result = [('un1', 1, ['result1',]),
+        self.result = [('un1', 1, ['result1', ]),
                        ('un2', 2, ['result2', 'result3'])]
 
     def test_no_options(self):
@@ -70,38 +72,40 @@ class TestModifyResult(unittest.TestCase):
 
     def test_result_filtering(self):
         filtered_result = [('un1', 1, []),
-                           ('un2', 2, ['result3',])]
+                           ('un2', 2, ['result3', ])]
         result = copy.deepcopy(self.result)
         log = copy.deepcopy(self.log)
         # test to filter out old stuff
         newlove.modify_results(result, log, only_show_new=True)
-        self.assertNotEqual(result, self.result) # should be in-place modified
-        self.assertDictEqual(log, self.log)      # should be left alone
+        self.assertNotEqual(result, self.result)  # should be in-place modified
+        self.assertDictEqual(log, self.log)       # should be left alone
         self.assertListEqual(result, filtered_result)
 
     def test_result_ordering(self):
-        ordered_result  = [('un2', '2012-05-01T13:36:56Z', ['result2',]),
-                           ('un1', '2013-06-01T22:28:36Z', ['result1',]),
-                           ('un2', '2013-08-04T03:26:50Z', ['result3',])]
+        ordered_result = [('un2', '2012-05-01T13:36:56Z', ['result2', ]),
+                          ('un1', '2013-06-01T22:28:36Z', ['result1', ]),
+                          ('un2', '2013-08-04T03:26:50Z', ['result3', ])]
         # order by time
         result = copy.deepcopy(self.result)
         log = copy.deepcopy(self.log)
         newlove.modify_results(result, log, order_by_time=True)
-        self.assertNotEqual(result, self.result) # should be in-place modified
-        self.assertDictEqual(log, self.log)      # should be left alone
+        self.assertNotEqual(result, self.result)  # should be in-place modified
+        self.assertDictEqual(log, self.log)       # should be left alone
         self.assertListEqual(result, ordered_result)
 
     def test_both(self):
-        both_result     = [('un2', '2013-08-04T03:26:50Z', ['result3',]),]
+        both_result = [('un2', '2013-08-04T03:26:50Z', ['result3', ]), ]
         # order by time AND show only new result
         result = copy.deepcopy(self.result)
         log = copy.deepcopy(self.log)
-        newlove.modify_results(result, log, order_by_time=True, only_show_new=True)
-        self.assertNotEqual(result, self.result) # should be in-place modified
-        self.assertDictEqual(log, self.log)      # should be left alone
+        newlove.modify_results(result, log,
+                               order_by_time=True, only_show_new=True)
+        self.assertNotEqual(result, self.result)  # should be in-place modified
+        self.assertDictEqual(log, self.log)       # should be left alone
         self.assertListEqual(result, both_result)
 
 from StringIO import StringIO
+
 
 class TestFileFormat(unittest.TestCase):
 
@@ -122,37 +126,37 @@ class TestFileFormat(unittest.TestCase):
   }
 }"""
     eg_decoded = {
-            "un1": {
-                "snip1": {
-                    "timestamp": datetime.datetime(2013, 5, 1, 3, 26, 56),
-                    "unread": False,
-                    "love": True
-                    }
-                },
-            "un2": {
-                "snip2": {
-                    "timestamp": datetime.datetime(2013, 7, 1, 3, 46, 56),
-                    "unread": False,
-                    "love": True
-                    }
-                }
-            }
-    eg_flattened = [
-            {
-                "lover": "un1",
-                "text": "snip1",
+        "un1": {
+            "snip1": {
                 "timestamp": datetime.datetime(2013, 5, 1, 3, 26, 56),
                 "unread": False,
                 "love": True
-                },
-            {
-                "lover": "un2",
-                "text": "snip2",
+            }
+        },
+        "un2": {
+            "snip2": {
                 "timestamp": datetime.datetime(2013, 7, 1, 3, 46, 56),
                 "unread": False,
                 "love": True
                 }
-            ]
+            }
+        }
+    eg_flattened = [
+        {
+            "lover": "un1",
+            "text": "snip1",
+            "timestamp": datetime.datetime(2013, 5, 1, 3, 26, 56),
+            "unread": False,
+            "love": True
+            },
+        {
+            "lover": "un2",
+            "text": "snip2",
+            "timestamp": datetime.datetime(2013, 7, 1, 3, 46, 56),
+            "unread": False,
+            "love": True
+            }
+        ]
 
     def test_decode(self):
         fl = StringIO(self.eg_encoded)
@@ -178,4 +182,3 @@ class TestFileFormat(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

@@ -7,8 +7,8 @@ plan before and after editing.
 """
 
 import sys
-import os.path
 storage = {}
+
 
 def post_load_commands(cs):
     # read configured options
@@ -18,20 +18,20 @@ def post_load_commands(cs):
 
     # then add command line arguments
     cs.commands["edit"].add_argument(
-               '-b', '--backup', dest='backup_file',
-               nargs='?', metavar='FILE',
-               default=config.get('backup_file', False),
-               help="Backup existing plan to file before editing. "
-               "To print to stdout, omit filename.")
+        '-b', '--backup', dest='backup_file',
+        nargs='?', metavar='FILE',
+        default=config.get('backup_file', False),
+        help="Backup existing plan to file before editing. "
+        "To print to stdout, omit filename.")
     cs.commands["edit"].add_argument(
-               '-s', '--save', dest='save_edit',
-               metavar='FILE',
-               default=config.get('save_edit', False),
-               help='Save a local copy of edited plan before submitting.')
+        '-s', '--save', dest='save_edit',
+        metavar='FILE',
+        default=config.get('save_edit', False),
+        help='Save a local copy of edited plan before submitting.')
     cs.commands["edit"].add_argument(
-               '--skip-update', dest='skip_update',
-               action='store_true', default=False,
-               help="Don't update the plan or open it for editing.")
+        '--skip-update', dest='skip_update',
+        action='store_true', default=False,
+        help="Don't update the plan or open it for editing.")
 
 
 def post_get_edit_text(cs, plan_text):

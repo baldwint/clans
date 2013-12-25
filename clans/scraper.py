@@ -13,9 +13,11 @@ import BeautifulSoup as bs3
 from HTMLParser import HTMLParser
 from hashlib import md5
 
+
 class PlansError(Exception):
     """Exception raised when there is an error talking to plans."""
     pass
+
 
 class PlansPageParser(HTMLParser):
     """HTML parser for GrinnellPlans pages."""
@@ -54,6 +56,7 @@ class PlansPageParser(HTMLParser):
 #              PLANS SCRAPEY-I
 # get it? like "api" except... oh, never mind
 # -------------------------------------------
+
 
 class PlansConnection(object):
     """
@@ -109,7 +112,7 @@ class PlansConnection(object):
 
         """
         kind = soup.attrMap[u'class']
-        title  = soup.findChild().text
+        title = soup.findChild().text
         body = ''.join(t.text for t in soup.findChildren()[1:])
         message = dict(kind=kind, title=title, body=body)
         for val in message.values():
@@ -130,12 +133,12 @@ class PlansConnection(object):
         # if un/pw are not provided or are otherwise bad.
         login_info = {'username': username,
                       'password': password,
-                        'submit': 'Login' }
+                      'submit': 'Login'}
         response = self._get_page('index.php', post=login_info)
         # if login is successful, we'll be redirected to home
         success = response.geturl()[-9:] == '/home.php'
         if success:
-            self.parser.feed(response.read()) # parse out username
+            self.parser.feed(response.read())  # parse out username
             self.username = self.parser.username
         return success
 
@@ -186,9 +189,9 @@ class PlansConnection(object):
 
         """
         newtext = newtext.encode('utf8')
-        edit_info = {         'plan': newtext,
+        edit_info = {'plan': newtext,
                      'edit_text_md5': md5,
-                            'submit': 'Change Plan' }
+                     'submit': 'Change Plan'}
         html = self._get_page('edit.php', post=edit_info).read()
         soup = bs3.BeautifulSoup(html, fromEncoding='utf-8')
         alert = soup.find('div', {'class': 'alertmessage'})
@@ -247,20 +250,20 @@ class PlansConnection(object):
         header_dict = {}
         for key in ('username', 'planname'):
             content = header.find(
-                        'li', {'class': key}
-                    ).find(
-                        'span', {'class': 'value'}
-                    ).contents
+                'li', {'class': key}
+                ).find(
+                'span', {'class': 'value'}
+                ).contents
             value = str(content[0]) if len(content) > 0 else None
             header_dict[key] = value
         for key in ('lastupdated', 'lastlogin'):
             content = header.find(
-                        'li', {'class': key}
-                    ).find(
-                        'span', {'class': 'value'}
-                    ).find(
-                        'span', {'class': 'long'}
-                    ).contents
+                'li', {'class': key}
+                ).find(
+                'span', {'class': 'value'}
+                ).find(
+                'span', {'class': 'long'}
+                ).contents
             value = str(content[0]) if len(content) > 0 else None
             header_dict[key] = value
         plan = ''.join(str(el) for el in text.contents[1:])
@@ -301,7 +304,7 @@ class PlansConnection(object):
         # results are grouped by the plan
         # on which the result was found
         user_groups = results.findAll(
-                'div', {'class': 'result_user_group'})
+            'div', {'class': 'result_user_group'})
         resultlist = []
         for group in user_groups:
             user = group.find('a', {'class': 'planlove'}).contents[0]
@@ -314,4 +317,3 @@ class PlansConnection(object):
                 snippets.append(snip)
             resultlist.append((unicode(user), int(count), snippets))
         return resultlist
-

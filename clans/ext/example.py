@@ -26,6 +26,7 @@ storage = {}
 # of course, this variable only lasts as long as clans is running. To
 # store data between runtimes, you'll need to write out to files.
 
+
 def post_load_commands(cs):
     """
     This hook is called right after the standard commands and
@@ -56,6 +57,7 @@ def post_load_commands(cs):
     #TODO: extensions need access to global_parser
     pass
 
+
 def post_get_edit_text(cs, plan_text):
     """
     This hook is called during plan editing, after the edit text has
@@ -68,6 +70,7 @@ def post_get_edit_text(cs, plan_text):
     # for kicks, demonstrate storing variables
     storage['foo'] = 'bar'
     pass
+
 
 def pre_set_edit_text(cs, edited):
     """
@@ -82,6 +85,7 @@ def pre_set_edit_text(cs, edited):
     assert storage['foo'] == 'bar'
     pass
 
+
 def pre_search(cs, term, planlove):
     """
     This hook is called before a (quicklove or regular) search, and is
@@ -92,6 +96,7 @@ def pre_search(cs, term, planlove):
 
     """
     pass
+
 
 def post_search(cs, results):
     """

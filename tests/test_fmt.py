@@ -5,7 +5,7 @@ Unit tests for :mod:`clans.fmt`.
 """
 
 import sys
-if sys.version_info < (2,7):
+if sys.version_info < (2, 7):
     import unittest2 as unittest
 else:
     import unittest
@@ -25,35 +25,40 @@ import sys
 # below the level at which these tests need stdout to be faked at.
 
 TEST_DATA = {
-        'test_format_plan': {
-                'lastupdated': 'Mon August 5th 2013, 1:22 PM',
-                'lastlogin': 'Wed August 7th 2013, 3:42 AM',
-                'username': 'username',
-                'planname': 'clever catchphrase',
-                'plan': 'this is my plan\n'
-                },
-        'test_br_stripping': "one<br>two<br/>three<br />four",
-        'test_html_escapes': "I develop in a &quot;quick &amp; dirty&quot; &lt;style&gt;",
-        'test_tag_stripping': "This is <b>bold</b> and <i>italic</i>",
-        'test_link_formatting': '<a href="http://www.facebook.com/" class="onplan">my favorite website</a>',
-        'test_love_formatting': '[<a href="read.php?searchname=gorp" class="planlove">GORP</a>]',
-        'test_love_formatting': '[<a href="read.php?searchname=gorp" class="planlove">GORP</a>]',
-        'test_psub_formatting': '<p class="sub">we all live in a yellow</p>',
-        'test_hr_formatting': """I need a clean
+    'test_format_plan': {
+        'lastupdated': 'Mon August 5th 2013, 1:22 PM',
+        'lastlogin': 'Wed August 7th 2013, 3:42 AM',
+        'username': 'username',
+        'planname': 'clever catchphrase',
+        'plan': 'this is my plan\n'
+        },
+    'test_br_stripping': "one<br>two<br/>three<br />four",
+    'test_html_escapes': ("I develop in a &quot;quick &amp; dirty&quot; "
+                          "&lt;style&gt;"),
+    'test_tag_stripping': "This is <b>bold</b> and <i>italic</i>",
+    'test_link_formatting': ('<a href="http://www.facebook.com/" '
+                             'class="onplan">my favorite website</a>'),
+    'test_love_formatting': ('[<a href="read.php?searchname=gorp" '
+                             'class="planlove">GORP</a>]'),
+    'test_love_formatting': ('[<a href="read.php?searchname=gorp" '
+                             'class="planlove">GORP</a>]'),
+    'test_psub_formatting': '<p class="sub">we all live in a yellow</p>',
+    'test_hr_formatting': """I need a clean
 <hr>break""",
-        'test_print_list': ['one', 'two', 'three', 'four'],
-        'test_print_autoread': {
-                'Level 1': ['bff', 'interesting', 'funny', 'gorp'],
-                'Level 2': ['roommate', 'rando'],
-                'Level 3': ['meh',],
-                },
-        'test_print_search_results': [
-                ('plan1', 1, ['snip one <b>term</b> context',]),
-                ('plan2', 2, ['snip one <b>term</b> context',
-                              'snip two <b>term</b> context']),
-                ('plan3', 2, ['snip <b>term</b> twice <b>term</b> twice',])
-                ],
-        }
+    'test_print_list': ['one', 'two', 'three', 'four'],
+    'test_print_autoread': {
+        'Level 1': ['bff', 'interesting', 'funny', 'gorp'],
+        'Level 2': ['roommate', 'rando'],
+        'Level 3': ['meh', ],
+        },
+    'test_print_search_results': [
+        ('plan1', 1, ['snip one <b>term</b> context', ]),
+        ('plan2', 2, ['snip one <b>term</b> context',
+                      'snip two <b>term</b> context']),
+        ('plan3', 2, ['snip <b>term</b> twice <b>term</b> twice', ])
+        ],
+    }
+
 
 class TestRaw(unittest.TestCase):
 
@@ -143,6 +148,7 @@ meh
 """
         self.assertEqual(expect, output)
 
+
 class TestText(TestRaw):
 
     def setUp(self):
@@ -225,6 +231,7 @@ one    two    three  four
 """
         self.assertEqual(expect, output)
 
+
 class TestColor(TestText):
 
     def setUp(self):
@@ -245,7 +252,6 @@ this is my plan
 """ % (('\x1b[1m', '\x1b[22m') * 4)
         self.assertEqual(expect, text)
 
-
     # filter_html tests
 
     def test_tag_stripping(self):
@@ -257,14 +263,15 @@ this is my plan
 
     def test_link_formatting(self):
         html = TEST_DATA['test_link_formatting']
-        expect = '[\x1b[32mhttp://www.facebook.com/\x1b[39m|\x1b[35mmy favorite website\x1b[39m]'
+        expect = ('[\x1b[32mhttp://www.facebook.com/\x1b[39m|\x1b[35m'
+                  'my favorite website\x1b[39m]')
         # green for the link, magenta for the link text
         text = self.fmt.filter_html(html)
         self.assertEqual(expect, text)
 
     def test_love_formatting(self):
         html = TEST_DATA['test_love_formatting']
-        expect = '[\x1b[1m\x1b[34mGORP\x1b[22m\x1b[39m]' # blue and bold
+        expect = '[\x1b[1m\x1b[34mGORP\x1b[22m\x1b[39m]'  # blue and bold
         text = self.fmt.filter_html(html)
         self.assertEqual(expect, text)
 

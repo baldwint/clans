@@ -7,17 +7,17 @@ import sys
 reqs = ['appdirs', 'BeautifulSoup', 'colorama']
 extras = {'tests': ['MySQL-python', 'coverage',
                     'pytest', 'pytest-cov', 'tox'],
-          'docs':  ['sphinx',]}
+          'docs':  ['sphinx', ]}
 
-if sys.version_info < (3,3):
+if sys.version_info < (3, 3):
     extras['tests'].append('mock')
 
 if sys.version_info >= (3,):
     sys.stderr.write("Clans does not support Python 3 yet\n")
     sys.exit(1)
-elif sys.version_info >= (2,7):
+elif sys.version_info >= (2, 7):
     pass
-elif sys.version_info >= (2,6):
+elif sys.version_info >= (2, 6):
     reqs.extend(['argparse', 'ordereddict', 'importlib'])
     extras['tests'].append('unittest2')
 else:
@@ -34,5 +34,5 @@ setup(name='clans',
       install_requires=reqs,
       extras_require=extras,
       packages=['clans', 'clans.ext'],
-      scripts=['bin/clans',],
-     )
+      scripts=['bin/clans', ],
+      )

@@ -120,9 +120,9 @@ To avoid specifying ``-b`` and ``-s`` flags all the time, add to
 
 .. code-block:: ini
 
-    [backup]                                                                    
-    backup_file=/path/to/plan_backup.txt                        
-    save_edit=/path/to/edited_plan.txt                        
+    [backup]
+    backup_file=/path/to/plan_backup.txt
+    save_edit=/path/to/edited_plan.txt
 
 and your plan will be backed up to these files every time you edit.
 Keep in mind that these files will only store the most recent copy of

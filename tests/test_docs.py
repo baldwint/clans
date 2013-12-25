@@ -5,13 +5,13 @@ A test to make sure the documentation isn't condescending as all hell
 """
 
 import sys
-if sys.version_info < (2,7):
+if sys.version_info < (2, 7):
     import unittest2 as unittest
 else:
     import unittest
 
 import os
-from io import StringIO
+
 
 class TestCondescension(unittest.TestCase):
 
@@ -31,15 +31,14 @@ class TestCondescension(unittest.TestCase):
                     texts[fn] = fl.read().decode('utf8')
 
         # loop over and make lower case
-        for k,v in texts.iteritems():
+        for k, v in texts.iteritems():
             texts[k] = v.lower()
-            
         self.texts = texts
 
     def should_not_contain(self, phrase):
         for fn, text in self.texts.iteritems():
             self.assertNotIn(phrase, text,
-                    msg='%s contains "%s"' % (fn, phrase))
+                             msg='%s contains "%s"' % (fn, phrase))
 
     def test_simply(self):
         self.should_not_contain(u'simply')
@@ -49,4 +48,3 @@ class TestCondescension(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
