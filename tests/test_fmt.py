@@ -36,6 +36,8 @@ TEST_DATA = {
     'test_html_escapes': ("I develop in a &quot;quick &amp; dirty&quot; "
                           "&lt;style&gt;"),
     'test_tag_stripping': "This is <b>bold</b> and <i>italic</i>",
+    'test_underline':  ('This is <span '
+                         'class="underline">underlined</span><!--u-->'),
     'test_link_formatting': ('<a href="http://www.facebook.com/" '
                              'class="onplan">my favorite website</a>'),
     'test_love_formatting': ('[<a href="read.php?searchname=gorp" '
@@ -174,6 +176,12 @@ class TestText(TestRaw):
         text = self.fmt.filter_html(html)
         self.assertEqual(expect, text)
 
+    def test_underline(self):
+        html = TEST_DATA['test_underline']
+        expect = 'This is underlined'
+        text = self.fmt.filter_html(html)
+        self.assertEqual(expect, text)
+
     def test_link_formatting(self):
         html = TEST_DATA['test_link_formatting']
         expect = '[http://www.facebook.com/|my favorite website]'
@@ -258,6 +266,12 @@ this is my plan
         html = TEST_DATA['test_tag_stripping']
         expect = "This is \x1b[1mbold\x1b[22m and \x1b[2mitalic\x1b[22m"
         # italic is actually 'dim', bold 'bright'
+        text = self.fmt.filter_html(html)
+        self.assertEqual(expect, text)
+
+    def test_underline(self):
+        html = TEST_DATA['test_underline']
+        expect = 'This is \x1b[4munderlined\x1b[0m'
         text = self.fmt.filter_html(html)
         self.assertEqual(expect, text)
 

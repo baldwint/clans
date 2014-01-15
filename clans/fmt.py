@@ -10,6 +10,9 @@ import colorama as cr
 from itertools import izip_longest
 import sys
 
+#in colorama, add support for underlining
+cr.Style.UNDERLINE = '\x1b[4m'
+
 HEADERS = [('Username', '{username}'),
            ('Last Updated', '{lastupdated}'),
            ('Last Login', '{lastlogin}'),
@@ -69,6 +72,7 @@ class TextFormatter(RawFormatter):
     REGEX_LOVE = r'<a href="[^\s]*" class="planlove">(.+?)</a>'
     REGEX_LINK = r'<a href="([^\s]*)" class="onplan">(.+?)</a>'
     REGEX_SUB = r'<p class="sub">(.+?)</p>'
+    REGEX_UL = r'<span class="underline">(.+?)</span><!--u-->'
 
     hr = '\n' + 70*'=' + '\n'
     a = r'[\1|\2]'
@@ -85,6 +89,7 @@ class TextFormatter(RawFormatter):
         html = re.sub(r'&amp;', '&', html)
         html = re.sub(r'<b>(.+?)</b>', r'\1', html)
         html = re.sub(r'<i>(.+?)</i>', r'\1', html)
+        html = re.sub(self.REGEX_UL,   r'\1', html)
         html = re.sub(self.REGEX_LOVE, r'\1', html)
         html = re.sub(self.REGEX_LINK, self.a, html)
         html = re.sub(re.compile(self.REGEX_SUB, flags=re.DOTALL), r'\1', html)
@@ -140,6 +145,8 @@ class ColorFormatter(TextFormatter):
                       cr.Style.BRIGHT + r'\1' + cr.Style.NORMAL, html)
         html = re.sub(r'(<i>.+?</i>)',
                       cr.Style.DIM + r'\1' + cr.Style.NORMAL, html)
+        html = re.sub(self.REGEX_UL,  # Style.NORMAL doesn't reset underline
+                      cr.Style.UNDERLINE + r'\1' + cr.Style.RESET_ALL, html)
         html = re.sub(self.REGEX_LOVE,
                       cr.Style.BRIGHT + cr.Fore.BLUE +
                       r'\1' + cr.Style.NORMAL + cr.Fore.RESET, html)
