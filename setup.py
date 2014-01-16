@@ -5,7 +5,7 @@ import sys
 
 # build dependency list
 reqs = ['appdirs', 'BeautifulSoup', 'colorama']
-extras = {'tests': ['MySQL-python', 'coverage',
+extras = {'tests': ['pymysql', 'coverage',
                     'pytest', 'pytest-cov', 'tox'],
           'docs':  ['sphinx', ]}
 

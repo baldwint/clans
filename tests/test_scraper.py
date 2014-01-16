@@ -15,7 +15,7 @@ from clans.scraper import PlansConnection
 import cookielib
 from hashlib import md5
 from clans.scraper import PlansError
-import MySQLdb
+import pymysql  # use either pymysql or MySQLdb here
 
 TEST_URL = 'http://localhost/~tkb/phplans'
 # when using a local PHP-Plans development server to test clans,
@@ -317,7 +317,7 @@ class DbTestCase(LoggedInTestCase):
 
     def setUp(self):
         super(DbTestCase, self).setUp()
-        self.db = MySQLdb.connect(**TEST_DB)
+        self.db = pymysql.connect(**TEST_DB)
         self.c = self.db.cursor()
 
     def find_userid(self, un=None):
