@@ -1,3 +1,4 @@
 #!/bin/bash
 
-py.test --capture sys --cov clans --cov-report html
+# the $@ passes flags through
+py.test --capture sys --cov clans --cov-report html $@
