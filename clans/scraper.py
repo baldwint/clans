@@ -9,9 +9,10 @@ import urlparse
 import cookielib
 import urllib2
 import json
-import BeautifulSoup as bs3
+import bs4
 from HTMLParser import HTMLParser
 from hashlib import md5
+import re
 
 
 class PlansError(Exception):
@@ -111,7 +112,7 @@ class PlansConnection(object):
         Returns a dictionary of the message parameters.
 
         """
-        kind = soup.attrMap[u'class']
+        kind, = soup.attrs[u'class']
         title = soup.findChild().text
         body = ''.join(t.text for t in soup.findChildren()[1:])
         message = dict(kind=kind, title=title, body=body)
@@ -156,7 +157,7 @@ class PlansConnection(object):
         # This will fail hard if plans ever serves invalid UTF-8.
         html = html.decode('utf-8')
         # parse out existing plan
-        soup = bs3.BeautifulSoup(html, fromEncoding='utf-8')
+        soup = bs4.BeautifulSoup(html, 'html5lib')
         plan = soup.find('textarea')
         if plan is None:
             raise PlansError("Couldn't get edit text, are we logged in?")
@@ -193,7 +194,7 @@ class PlansConnection(object):
                      'edit_text_md5': md5,
                      'submit': 'Change Plan'}
         html = self._get_page('edit.php', post=edit_info).read()
-        soup = bs3.BeautifulSoup(html, fromEncoding='utf-8')
+        soup = bs4.BeautifulSoup(html, "html5lib")
         alert = soup.find('div', {'class': 'alertmessage'})
         info = soup.find('div', {'class': 'infomessage'})
         if alert is not None:
@@ -238,7 +239,7 @@ class PlansConnection(object):
         """
         get = {'searchname': plan}
         response = self._get_page('read.php', get=get)
-        soup = bs3.BeautifulSoup(response.read(), fromEncoding='utf-8')
+        soup = bs4.BeautifulSoup(response.read(), from_encoding='utf-8')
         header = soup.find('div', {'id': 'header'})
         text = soup.find('div', {'class': 'plan_text'})
         if text is None or header is None:
@@ -270,8 +271,11 @@ class PlansConnection(object):
         # we want to return the plan formatted *exactly* how it is
         # formatted when served, but our parser will correct <hr> and
         # <br> to self closing tags. This manually corrects them back.
-        plan = plan.replace('<br />', '<br>')
-        plan = plan.replace('<hr />', '<hr>')
+        plan = plan.replace('<br/>', '<br>')
+        plan = plan.replace('<hr/>', '<hr>')
+        # put attributes in the right order because I have OCD
+        plan = re.sub(r'<a class="([^\s]*)" href="([^\s]*)">',
+                      r'<a href="\2" class="\1">', plan)
         # to avoid playing whack-a-mole, we should configure the
         # parser to not do this, or else treat contents of
         # <div class="plan_text"> tags as plain text
@@ -299,7 +303,7 @@ class PlansConnection(object):
         get = {'mysearch': term,
                'planlove': int(bool(planlove))}
         response = self._get_page('search.php', get=get)
-        soup = bs3.BeautifulSoup(response.read(), fromEncoding='utf-8')
+        soup = bs4.BeautifulSoup(response.read(), from_encoding='utf-8')
         results = soup.find('ul', {'id': 'search_results'})
         # results are grouped by the plan
         # on which the result was found
