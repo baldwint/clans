@@ -239,7 +239,7 @@ class PlansConnection(object):
         """
         get = {'searchname': plan}
         response = self._get_page('read.php', get=get)
-        soup = bs4.BeautifulSoup(response.read(), from_encoding='utf-8')
+        soup = bs4.BeautifulSoup(response.read(), 'html5lib')
         header = soup.find('div', {'id': 'header'})
         text = soup.find('div', {'class': 'plan_text'})
         if text is None or header is None:
@@ -303,7 +303,7 @@ class PlansConnection(object):
         get = {'mysearch': term,
                'planlove': int(bool(planlove))}
         response = self._get_page('search.php', get=get)
-        soup = bs4.BeautifulSoup(response.read(), from_encoding='utf-8')
+        soup = bs4.BeautifulSoup(response.read(), 'html5lib')
         results = soup.find('ul', {'id': 'search_results'})
         # results are grouped by the plan
         # on which the result was found
