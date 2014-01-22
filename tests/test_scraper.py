@@ -159,8 +159,6 @@ class TestEditing(PlanChangingTestCase):
         self.editandcheck(u'Non-breaking \xa0\xa0 spaces!')
         self.editandcheck(u'Newline at the end\n')
 
-    @unittest.expectedFailure
-    @unittest.skip
     def test_leading_newline(self):
         # https://code.google.com/p/grinnellplans/issues/detail?id=260
         self.editandcheck(u'\nNewline at the beginning')
@@ -183,6 +181,8 @@ class TestEditing(PlanChangingTestCase):
         #plans bug: truncating after some unicode characters
         self.editandcheck(u'Pile of \U0001f4a9!')  # poo
 
+    @unittest.expectedFailure
+    @unittest.skip
     def test_long_plan(self):
         # on the server side, plans are MySQL mediumtext,
         # which have a max length of 16777215 chars.
