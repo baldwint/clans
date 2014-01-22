@@ -165,6 +165,9 @@ class PlansConnection(object):
             # prepending the empty string somehow prevents BS from
             # escaping all the HTML characters (weird)
             assert type(plan) == unicode
+            # ignore leading newline
+            assert plan[0] == '\n'
+            plan = plan[1:]
         if plus_hash:
             # parse out plan md5
             self.parser.feed(html)
