@@ -165,8 +165,6 @@ class TestEditing(PlanChangingTestCase):
         # https://code.google.com/p/grinnellplans/issues/detail?id=260
         self.editandcheck(u'\nNewline at the beginning')
 
-    @unittest.expectedFailure
-    @unittest.skip
     def test_bad_html(self):
         # BS3 screws things up by correcting bad HTML in a textarea
         # field (even though it ignores HTML in there)
