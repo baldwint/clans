@@ -13,9 +13,9 @@ else:
 
 from clans.scraper import PlansConnection
 import cookielib
-from hashlib import md5
 from clans.scraper import PlansError
 import pymysql  # use either pymysql or MySQLdb here
+from clans.util import plans_md5
 
 TEST_URL = 'http://localhost/~tkb/phplans'
 # when using a local PHP-Plans development server to test clans,
@@ -110,7 +110,7 @@ class TestEdit(LoggedInTestCase):
     def test_md5_existing(self):
         # this just tests md5 on the existing plan data
         plan, server_hashnum = self.pc.get_edit_text(plus_hash=True)
-        python_hashnum = md5(plan.encode('utf8')).hexdigest()
+        python_hashnum = plans_md5(plan)
         self.assertEqual(server_hashnum, python_hashnum)
 
     def test_unicode_editing(self):
@@ -158,6 +158,7 @@ class TestEditing(PlanChangingTestCase):
         self.editandcheck("<hr>contact info blah blah<hr>")
         self.editandcheck(u'Non-breaking \xa0\xa0 spaces!')
         self.editandcheck(u'Newline at the end\n')
+        self.editandcheck(u'Newline in\nthe middle')
 
     def test_leading_newline(self):
         # https://code.google.com/p/grinnellplans/issues/detail?id=260
@@ -201,7 +202,7 @@ class TestMD5(PlanChangingTestCase):
         self.pc.set_edit_text(phrase, self.hashnum)
         plan, server_hashnum = self.pc.get_edit_text(plus_hash=True)
         self.hashnum = server_hashnum  # for later cleanup
-        python_hashnum = md5(plan.encode('utf-8')).hexdigest()
+        python_hashnum = plans_md5(plan)
         self.assertEqual(server_hashnum, python_hashnum)
 
     def test_md5(self):
