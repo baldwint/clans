@@ -11,7 +11,7 @@ import urllib2
 import json
 import BeautifulSoup as bs3
 from HTMLParser import HTMLParser
-from hashlib import md5
+from .util import plans_md5
 
 
 class PlansError(Exception):
@@ -173,7 +173,7 @@ class PlansConnection(object):
             self.parser.feed(html)
             md5sum = self.parser.edit_text_md5
             # also, explicitly compute the hash, for kicks
-            assert md5sum == md5(plan.encode('utf8')).hexdigest()
+            assert md5sum == plans_md5(plan)
             # verify that username has not changed
             assert self.username == self.parser.username
             return plan, md5sum
