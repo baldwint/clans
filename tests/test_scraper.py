@@ -138,18 +138,24 @@ class PlanChangingTestCase(LoggedInTestCase):
 
 class TestEditing(PlanChangingTestCase):
 
-    def editandcheck(self, phrase):
+    def editandcheck(self, phrase, expect=None):
         """
         Sets plan edit-text to the phrase given,
         then opens it for editing again to make
         sure it is still there.
 
+        If we expect the edit-text to have been
+        changed (pretty much only [date] does this),
+        set `expect` to what we expect to find.
+
         """
+        if expect is None:
+            expect = phrase
         result = self.pc.set_edit_text(phrase, self.hashnum)
         self.assertIn("Plan changed successfully", str(result))
         plan, server_hashnum = self.pc.get_edit_text(plus_hash=True)
         self.hashnum = server_hashnum  # for later cleanup
-        self.assertEqual(phrase, plan)
+        self.assertEqual(expect, plan)
 
     def test_editing(self):
         self.editandcheck(u'plain text')
