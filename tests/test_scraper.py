@@ -160,6 +160,12 @@ class TestEditing(PlanChangingTestCase):
         self.editandcheck(u'Newline at the end\n')
         self.editandcheck(u'Newline in\nthe middle')
 
+    @unittest.expectedFailure
+    @unittest.skip
+    def test_windows_newline(self):
+        # html5lib strips these
+        self.editandcheck(u'Linefeed\r\nnewline')
+
     def test_leading_newline(self):
         # https://code.google.com/p/grinnellplans/issues/detail?id=260
         self.editandcheck(u'\nNewline at the beginning')

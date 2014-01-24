@@ -11,6 +11,7 @@ from clans import util
     (u'Non-breaking \xa0\xa0 spaces!', u'a454725521eff14835d6c5d79e23998d'),
     (u'Newline at the end\n', u'c5628b1e47bcf016ba500b68e5bbe809'),
     (u'Newline in\nthe middle', u'8ca659f3e07dc3073b0fc87ec67e8454'),
+    (u'Linefeed\r\nnewline', u'3e5ad339a8329429027960e549edcba9'),
     (u'\nNewline at the beginning', u'5324cc62896fd6ac2478e9c32df53df9'),
     (u'Non-breaking \xa0\xa0 spaces!', u'a454725521eff14835d6c5d79e23998d'),
     (u'Black \u2605 star', u'7b2c53532dce380bf22c94e24683da14'),
