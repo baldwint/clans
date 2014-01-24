@@ -163,16 +163,24 @@ class TestEditing(PlanChangingTestCase):
         self.editandcheck("<b>so excited</b>")
         self.editandcheck("<hr>contact info blah blah<hr>")
         self.editandcheck(u'Non-breaking \xa0\xa0 spaces!')
-        self.editandcheck(u'Newline at the end\n')
-        self.editandcheck(u'Newline in\nthe middle')
 
-    def test_windows_newline(self):
-        # html5lib strips these
-        self.editandcheck(u'Linefeed\r\nnewline')
+    def test_newlines(self):
+        # We should coerce to CRLF line endings, per the spec:
+        # http://www.w3.org/TR/REC-html40/interact/forms.html#h-17.13.4
+        # The Plans server does no conversion of newlines, but
+        # browsers always use CRLF when submitting the contents of a
+        # <textarea> tag. This makes it the de facto line ending
+        # standard for plans.
+        self.editandcheck(u'Newline at the end\n',
+                expect=u'Newline at the end\r\n')
+        self.editandcheck(u'Newline in\nthe middle',
+                expect=u'Newline in\r\nthe middle')
+        self.editandcheck(u'Newline at the end\r\n')
+        self.editandcheck(u'Newline in\r\nthe middle')
 
     def test_leading_newline(self):
         # https://code.google.com/p/grinnellplans/issues/detail?id=260
-        self.editandcheck(u'\nNewline at the beginning')
+        self.editandcheck(u'\r\nNewline at the beginning')
 
     @unittest.expectedFailure
     @unittest.skip
@@ -223,7 +231,7 @@ class TestMD5(PlanChangingTestCase):
         self.md5check("<b>so excited</b>")
         self.md5check("<hr>contact info blah blah<hr>")
         self.md5check(u'Non-breaking \xa0\xa0 spaces!')
-        self.md5check(u'Newline at the end\n')
+        self.md5check(u'Newline at the end\r\n')
 
 
 def psub(text):
@@ -254,10 +262,12 @@ class TestPlanspeak(PlanChangingTestCase):
         self.assertEqual(psub(orig), html)
 
     def test_multiline(self):
-        orig = 'hello\nworld'
+        orig = 'hello\r\nworld'
         text, html = self.planify(orig)
         self.assertEqual(orig, text)
-        self.assertEqual(psub('hello<br>world'), html)
+        self.assertEqual(psub('hello\n<br>world'), html)
+        # In reality, plans returns 'hello\r<br>world',
+        # but that's weird, and our parser converts to '\n'
 
     def test_allowed_html(self):
         examples = ['<b>hello world</b>',
@@ -351,6 +361,9 @@ class TestRead(DbTestCase):
     The read_plan method should return plan text
     as it is formatted in the database
 
+    One exception to this rule: plan html uses CR line endings,
+    and clans converts these to LF endings
+
     """
 
     # this might fail because beautifulsoup doesn't preserve syntactically
@@ -363,7 +376,7 @@ class TestRead(DbTestCase):
         plan_in_db, = self.c.fetchone()
         plan_header, html_plan = self.pc.read_plan(self.un)
         self.assertEqual(plan_header['username'], self.un)
-        self.assertEqual(html_plan, plan_in_db)
+        self.assertEqual(html_plan, plan_in_db.replace('\r', '\n'))
 
     def test_nonexistent(self):
         # this test doesn't need db but whatever

@@ -11,7 +11,7 @@ import urllib2
 import json
 import BeautifulSoup as bs3
 from HTMLParser import HTMLParser
-from .util import plans_md5
+from .util import plans_md5, convert_endings
 
 
 class PlansError(Exception):
@@ -168,6 +168,8 @@ class PlansConnection(object):
             # ignore leading newline
             assert plan[0] == '\n'
             plan = plan[1:]
+            # convert to CRLF line endings
+            plan = convert_endings(plan, 'CRLF')
         if plus_hash:
             # parse out plan md5
             self.parser.feed(html)
@@ -191,6 +193,8 @@ class PlansConnection(object):
         Returns info message.
 
         """
+        # convert to CRLF line endings
+        newtext = convert_endings(newtext, 'CRLF')
         newtext = newtext.encode('utf8')
         edit_info = {'plan': newtext,
                      'edit_text_md5': md5,
@@ -270,6 +274,8 @@ class PlansConnection(object):
             value = str(content[0]) if len(content) > 0 else None
             header_dict[key] = value
         plan = ''.join(str(el) for el in text.contents[1:])
+        # Plans mixes '\r' with '\n', and BS3 doesn't fix this
+        plan = convert_endings(plan, 'LF')
         # we want to return the plan formatted *exactly* how it is
         # formatted when served, but our parser will correct <hr> and
         # <br> to self closing tags. This manually corrects them back.
