@@ -20,5 +20,21 @@ from clans import util
         u'38748f0c1a9d1a97e36fb50f2ea29039'),
     (u'Pile of \U0001f4a9!', u'206f15e259a0216f1818ff230c339dc4'),
 ])
-def test_endings(data, hash):
+def test_hashes(data, hash):
     assert util.plans_md5(data) == hash
+
+
+@pytest.mark.parametrize('lf,cr,crlf', [
+    (u'hello\nworld\n', u'hello\rworld\r', u'hello\r\nworld\r\n'),
+    (u'hello\n\nworld', u'hello\r\rworld', u'hello\r\n\r\nworld'),
+])
+def test_convert_endings(lf, cr, crlf):
+    assert lf == util.convert_endings(cr, 'LF')
+    assert lf == util.convert_endings(lf, 'LF')
+    assert lf == util.convert_endings(crlf, 'LF')
+    assert cr == util.convert_endings(cr, 'CR')
+    assert cr == util.convert_endings(lf, 'CR')
+    assert cr == util.convert_endings(crlf, 'CR')
+    assert crlf == util.convert_endings(cr, 'CRLF')
+    assert crlf == util.convert_endings(lf, 'CRLF')
+    assert crlf == util.convert_endings(crlf, 'CRLF')
