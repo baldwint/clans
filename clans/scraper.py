@@ -45,13 +45,6 @@ class PlansPageParser(HTMLParser):
                 # find username in submission content using brackets
                 start, stop = comment.index('['), comment.index(']')
                 self.username = comment[start + 1:stop]
-        if tag == 'input':
-            # parse edit text md5 from input tag.
-            # in the current plans implementation,
-            # the syntax is < > and not < />
-            attrs = dict(attrs)
-            if attrs.get('name') == 'edit_text_md5':
-                self.edit_text_md5 = attrs['value']
 
 # -------------------------------------------
 #              PLANS SCRAPEY-I
@@ -170,8 +163,8 @@ class PlansConnection(object):
             plan = convert_endings(plan, 'CRLF')
         if plus_hash:
             # parse out plan md5
-            self.parser.feed(html)
-            md5sum = self.parser.edit_text_md5
+            md5sum = soup.find('input',
+                    attrs={'name': 'edit_text_md5'}).attrs['value']
             # also, explicitly compute the hash, for kicks
             assert md5sum == plans_md5(plan)
             # verify that username has not changed
