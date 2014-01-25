@@ -173,7 +173,7 @@ def read(cs, pc=None, fmt=None):
         sys.exit(1)
 
     plan = fmt.filter_html(plan)
-    pager(fmt.format_plan(plan=plan, **header))
+    pager(fmt.format_plan(plan=plan, **header).encode('utf8'))
 
 
 def autoread(cs, pc=None, fmt=None):

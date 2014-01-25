@@ -25,7 +25,7 @@ class RawFormatter(object):
         return html
 
     def format_plan(self, **kwargs):
-        read_fmt = '\n'.join(': '.join(header) for header in HEADERS)
+        read_fmt = u'\n'.join(': '.join(header) for header in HEADERS)
         read_fmt += "\n\n{plan}"
         return read_fmt.format(**kwargs)
 
@@ -128,7 +128,7 @@ class ColorFormatter(TextFormatter):
     def format_plan(self, **kwargs):
         color_headers = [(cr.Style.BRIGHT + k + cr.Style.NORMAL, v)
                          for k, v in HEADERS]
-        read_fmt = '\n'.join(': '.join(header) for header in color_headers)
+        read_fmt = u'\n'.join(': '.join(header) for header in color_headers)
         read_fmt += "\n\n{plan}"
         return read_fmt.format(**kwargs)
 
