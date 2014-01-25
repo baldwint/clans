@@ -246,15 +246,15 @@ class PlansConnection(object):
             raise PlansError(msg['title'])
         # convert header html into a python dictionary
         header_dict = {}
-        for key in (u'username', u'planname'):
+        for key in ('username', 'planname'):
             content = header.find(
                 'li', {'class': key}
                 ).find(
                 'span', {'class': 'value'}
                 ).contents
-            value = unicode(content[0]) if len(content) > 0 else None
+            value = str(content[0]) if len(content) > 0 else None
             header_dict[key] = value
-        for key in (u'lastupdated', u'lastlogin'):
+        for key in ('lastupdated', 'lastlogin'):
             content = header.find(
                 'li', {'class': key}
                 ).find(
@@ -262,9 +262,9 @@ class PlansConnection(object):
                 ).find(
                 'span', {'class': 'long'}
                 ).contents
-            value = unicode(content[0]) if len(content) > 0 else None
+            value = str(content[0]) if len(content) > 0 else None
             header_dict[key] = value
-        plan = ''.join(unicode(el) for el in text.contents[1:])
+        plan = ''.join(str(el) for el in text.contents[1:])
         # we want to return the plan formatted *exactly* how it is
         # formatted when served, but our parser will correct <hr> and
         # <br> to self closing tags. This manually corrects them back.
