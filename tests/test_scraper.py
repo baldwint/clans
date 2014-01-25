@@ -189,6 +189,12 @@ class TestEditing(PlanChangingTestCase):
         self.editandcheck(u'</b> &waffles')     # fails
         self.editandcheck(u'chicken &waffles')  # succeeds for some reason
 
+    def test_ampersands(self):
+        # BS3 would choke on ampersands in URLs, seemingly only
+        # when they were preceded by another ampersand
+        self.editandcheck(u'<b>Q&A</b>: Contact '
+                u'[http://www.website.com/page?=contact&query=string|me]')
+
     def test_unicode(self):
         self.editandcheck(u'Non-breaking \u00a0\u00a0 spaces!')
         self.editandcheck(u'Black \u2605 star')
