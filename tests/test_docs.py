@@ -10,6 +10,9 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
+if sys.version_info < (3,):
+    from io import open
+
 import os
 
 
@@ -27,7 +30,7 @@ class TestCondescension(unittest.TestCase):
             _, ext = os.path.splitext(fn)
             if ext in fts:
                 path = os.path.join(docdir, fn)
-                with open(path) as fl:
+                with open(path, 'r', encoding='utf8') as fl:
                     texts[fn] = fl.read() #.decode('utf8')
 
         # loop over and make lower case
@@ -41,10 +44,10 @@ class TestCondescension(unittest.TestCase):
                              msg='%s contains "%s"' % (fn, phrase))
 
     def test_simply(self):
-        self.should_not_contain(u'simply')
+        self.should_not_contain('simply')
 
     def test_just(self):
-        self.should_not_contain(u'just')
+        self.should_not_contain('just')
 
 if __name__ == "__main__":
     unittest.main()
