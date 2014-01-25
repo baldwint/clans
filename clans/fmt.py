@@ -4,11 +4,17 @@ Formatters (views) for clans
 """
 
 from __future__ import print_function, unicode_literals
+import sys
+
+#TODO only import these if needed
+if sys.version_info >= (3,3):
+    from itertools import zip_longest
+elif sys.version_info < 3:
+    #from itertools import izip_longest as zip_longest
+    pass
+
 import re
 import colorama as cr
-#TODO only import these if needed
-from itertools import izip_longest
-import sys
 
 #in colorama, add support for underlining
 cr.Style.UNDERLINE = '\x1b[4m'
@@ -43,7 +49,7 @@ class RawFormatter(object):
             item = self.filter_html(item)
             if bullets:
                 item = (u" - {0}").format(item)
-            print(item.encode('utf8'))
+            print(item) #.encode('utf8'))
 
     def print_search_results(self, results):
         """
@@ -56,13 +62,13 @@ class RawFormatter(object):
         for un, count, snips in results:
             username = self.format_planlove(un)
             print((u"{0}: {1}\n"
-                   ).format(username, count).encode('utf8'))
+                   ).format(username, count)) #.encode('utf8'))
             self.print_list(snips, bullets=True)
             print(u"")
 
     def print_autoread(self, results):
         for level in sorted(results.keys()):
-            print(u"{level}:".format(level=level).encode('utf8'))
+            print(u"{level}:".format(level=level)) #.encode('utf8'))
             self.print_list(results[level])
             print(u"")
 
@@ -116,7 +122,7 @@ class TextFormatter(RawFormatter):
             RawFormatter.print_list(self, items, **kwargs)
             return
         args = [iter(lst)] * ncols
-        for group in izip_longest(fillvalue='', *args):
+        for group in zip_longest(fillvalue='', *args):
             print("".join(word.ljust(max_len) for word in group).rstrip())
 
 

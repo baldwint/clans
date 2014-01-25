@@ -98,7 +98,7 @@ class TestEdit(LoggedInTestCase):
             # md5 mismatch error
             result = self.pc.set_edit_text(orig, hashsum)
         self.assertIn('Your plan was edited from another instance '
-                      'of the edit page', cm.exception.message)
+                      'of the edit page', repr(cm.exception))
         # edit again, undoing
         result = self.pc.set_edit_text(orig, new_hashsum)
         self.assertTrue("Plan changed successfully" in str(result))
@@ -222,7 +222,7 @@ class TestEditing(PlanChangingTestCase):
         with self.assertRaises(PlansError) as cm:
             # plan too long error
             self.pc.set_edit_text(phrase, self.hashnum)
-        self.assertIn('plan is too long', cm.exception.message)
+        self.assertIn('plan is too long', repr(cm.exception))
 
 
 class TestMD5(PlanChangingTestCase):
@@ -402,7 +402,7 @@ class TestRead(DbTestCase):
         with self.assertRaises(PlansError) as cm:
             # nonexistent plan
             plan_header, html_plan = self.pc.read_plan(NONEX)
-        self.assertIn('No such user', cm.exception.message)
+        self.assertIn('No such user', repr(cm.exception))
 
 
 class TestSearch(PlanChangingTestCase):

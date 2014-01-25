@@ -107,7 +107,7 @@ class PlansConnection(object):
             url = '?'.join((url, urlencode(get)))
         req = request.Request(url)
         if post is not None:
-            post = urlencode(post)
+            post = urlencode(post).encode('utf8')
         try:
             handle = self.opener.open(req, post)
         except URLError:
@@ -149,7 +149,7 @@ class PlansConnection(object):
         # if login is successful, we'll be redirected to home
         success = response.geturl()[-9:] == '/home.php'
         if success:
-            self.parser.feed(response.read())  # parse out username
+            self.parser.feed(response.read().decode('utf8'))  # parse out username
             self.username = self.parser.username
         return success
 
@@ -235,7 +235,7 @@ class PlansConnection(object):
         # in the old JSON API.
         get = {'task': 'autofingerlist'}
         response = self._get_page('api/1/index.php', get=get)
-        data = json.loads(response.read())
+        data = json.loads(response.read().decode('utf8'))
         # the returned JSON is crufty; clean it up
         autofinger = {}
         for group in data['autofingerList']:

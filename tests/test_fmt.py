@@ -11,7 +11,6 @@ else:
     import unittest
 
 import clans.fmt
-import sys
 
 # NOTE: several of the tested functions write directly to stdout.
 # These are tested here by calling sys.stdout.getvalue() to obtain

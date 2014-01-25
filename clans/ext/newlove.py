@@ -119,8 +119,8 @@ def _flatten_log(log):
 
     """
     flattened = []
-    for un, snips in log.iteritems():
-        for snip, lovestate in snips.iteritems():
+    for un, snips in log.items():
+        for snip, lovestate in snips.items():
             # make a copy when flattening
             lovestate = dict(lover=un, text=snip, **lovestate)
             flattened.append(lovestate)

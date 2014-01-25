@@ -104,7 +104,7 @@ class TestModifyResult(unittest.TestCase):
         self.assertDictEqual(log, self.log)       # should be left alone
         self.assertListEqual(result, both_result)
 
-from StringIO import StringIO
+from io import StringIO
 
 
 class TestFileFormat(unittest.TestCase):
