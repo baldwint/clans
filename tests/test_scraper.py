@@ -13,8 +13,8 @@ else:
 
 if sys.version_info >= (3,3):
     from http.cookiejar import LWPCookieJar
-elif sys.version_info < 3:
-    #from cookielib import LWPCookieJar
+elif sys.version_info < (3,):
+    from cookielib import LWPCookieJar
     pass
 
 import pymysql  # use either pymysql or MySQLdb here

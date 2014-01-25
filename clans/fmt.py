@@ -9,8 +9,8 @@ import sys
 #TODO only import these if needed
 if sys.version_info >= (3,3):
     from itertools import zip_longest
-elif sys.version_info < 3:
-    #from itertools import izip_longest as zip_longest
+elif sys.version_info < (3,):
+    from itertools import izip_longest as zip_longest
     pass
 
 import re

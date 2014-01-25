@@ -12,14 +12,14 @@ if sys.version_info >= (3,3):
     from urllib.error import URLError
     import urllib.request as request
     from html.parser import HTMLParser
-elif sys.version_info < 3:
-    #from urllib import urlencode
-    #from urlparse import urlparse, parse_qsl
-    #from cookielib import LWPCookieJar
-    #from urllib2 import URLError
-    #import urllib2 as request
-    #from HTMLParser import HTMLParser
-    #str = unicode
+elif sys.version_info < (3,):
+    from urllib import urlencode
+    from urlparse import urlparse, parse_qsl
+    from cookielib import LWPCookieJar
+    from urllib2 import URLError
+    import urllib2 as request
+    from HTMLParser import HTMLParser
+    str = unicode
     pass
 
 
