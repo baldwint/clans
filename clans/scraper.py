@@ -12,7 +12,7 @@ import json
 import bs4
 from HTMLParser import HTMLParser
 import re
-from .util import plans_md5
+from .util import plans_md5, convert_endings
 
 
 class PlansError(Exception):
@@ -166,6 +166,8 @@ class PlansConnection(object):
             # prepending the empty string somehow prevents BS from
             # escaping all the HTML characters (weird)
             assert type(plan) == unicode
+            # convert to CRLF line endings
+            plan = convert_endings(plan, 'CRLF')
         if plus_hash:
             # parse out plan md5
             self.parser.feed(html)
@@ -189,6 +191,8 @@ class PlansConnection(object):
         Returns info message.
 
         """
+        # convert to CRLF line endings
+        newtext = convert_endings(newtext, 'CRLF')
         newtext = newtext.encode('utf8')
         edit_info = {'plan': newtext,
                      'edit_text_md5': md5,
