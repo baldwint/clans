@@ -28,15 +28,15 @@ class TestCondescension(unittest.TestCase):
             if ext in fts:
                 path = os.path.join(docdir, fn)
                 with open(path) as fl:
-                    texts[fn] = fl.read().decode('utf8')
+                    texts[fn] = fl.read() #.decode('utf8')
 
         # loop over and make lower case
-        for k, v in texts.iteritems():
+        for k, v in texts.items():
             texts[k] = v.lower()
         self.texts = texts
 
     def should_not_contain(self, phrase):
-        for fn, text in self.texts.iteritems():
+        for fn, text in self.texts.items():
             self.assertNotIn(phrase, text,
                              msg='%s contains "%s"' % (fn, phrase))
 

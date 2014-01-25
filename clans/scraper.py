@@ -4,14 +4,29 @@ Provides client interface to Plans.
 
 """
 
-from urllib import urlencode
-import urlparse
-import cookielib
-import urllib2
+import sys
+if sys.version_info >= (3,3):
+    from urllib.parse import urlencode
+    from urllib.parse import urlparse, parse_qsl
+    from http.cookiejar import LWPCookieJar
+    from urllib.error import URLError
+    import urllib.request as request
+    from html.parser import HTMLParser
+elif sys.version_info < 3:
+    #from urllib import urlencode
+    #from urlparse import urlparse, parse_qsl
+    #from cookielib import LWPCookieJar
+    #from urllib2 import URLError
+    #import urllib2 as request
+    #from HTMLParser import HTMLParser
+    #str = unicode
+    pass
+
+
 import json
-import bs4
-from HTMLParser import HTMLParser
 import re
+import bs4
+
 from .util import plans_md5, convert_endings
 
 str = unicode
@@ -38,11 +53,11 @@ class PlansPageParser(HTMLParser):
             # amazingly, the only place this reliably appears
             # is in the bug report link at the bottom of every page.
             attrs = dict(attrs)
-            href = urlparse.urlparse(attrs.get('href'))
+            href = urlparse(attrs.get('href'))
             if (href.netloc == 'code.google.com'
                     and href.path == '/p/grinnellplans/issues/entry'):
                 # if this is the bug submission link
-                query = urlparse.parse_qsl(href.query)
+                query = parse_qsl(href.query)
                 comment = dict(query)['comment']
                 # find username in submission content using brackets
                 start, stop = comment.index('['), comment.index(']')
@@ -74,11 +89,11 @@ class PlansConnection(object):
         """
         self.base_url = base_url
         if cookiejar is None:
-            self.cookiejar = cookielib.LWPCookieJar()
+            self.cookiejar = LWPCookieJar()
         else:
             self.cookiejar = cookiejar
-        proc = urllib2.HTTPCookieProcessor(self.cookiejar)
-        self.opener = urllib2.build_opener(proc)
+        proc = request.HTTPCookieProcessor(self.cookiejar)
+        self.opener = request.build_opener(proc)
         self.parser = PlansPageParser()
         self.username = None
 
@@ -90,12 +105,12 @@ class PlansConnection(object):
         url = '/'.join((self.base_url, name))
         if get is not None:
             url = '?'.join((url, urlencode(get)))
-        req = urllib2.Request(url)
+        req = request.Request(url)
         if post is not None:
             post = urlencode(post)
         try:
             handle = self.opener.open(req, post)
-        except urllib2.URLError:
+        except URLError:
             err = "Check your internet connection. Plans could also be down."
             raise PlansError(err)
         return handle
@@ -112,7 +127,7 @@ class PlansConnection(object):
         body = ''.join(t.text for t in soup.findChildren()[1:])
         message = dict(kind=kind, title=title, body=body)
         for val in message.values():
-            assert type(val) == unicode
+            assert type(val) == str
         return message
 
     def plans_login(self, username='', password=''):
@@ -160,7 +175,7 @@ class PlansConnection(object):
             plan = u'' + plan.contents[0]
             # prepending the empty string somehow prevents BS from
             # escaping all the HTML characters (weird)
-            assert type(plan) == unicode
+            assert type(plan) == str
             # convert to CRLF line endings
             plan = convert_endings(plan, 'CRLF')
         if plus_hash:
@@ -316,9 +331,9 @@ class PlansConnection(object):
             snippetlist = group.findAll('li')
             snippets = []
             for li in snippetlist:
-                snip = ''.join(unicode(el) for el in li.find('span').contents)
+                snip = ''.join(str(el) for el in li.find('span').contents)
                 snippets.append(snip)
-            resultlist.append((unicode(user), int(count), snippets))
+            resultlist.append((str(user), int(count), snippets))
         return resultlist
 
     def planwatch(self, hours=12):

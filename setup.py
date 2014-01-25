@@ -13,8 +13,7 @@ if sys.version_info < (3, 3):
     extras['tests'].append('mock')
 
 if sys.version_info >= (3,):
-    sys.stderr.write("Clans does not support Python 3 yet\n")
-    sys.exit(1)
+    pass
 elif sys.version_info >= (2, 7):
     pass
 elif sys.version_info >= (2, 6):

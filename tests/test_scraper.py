@@ -11,10 +11,16 @@ if sys.version_info < (2, 7):
 else:
     import unittest
 
-from clans.scraper import PlansConnection
-import cookielib
-from clans.scraper import PlansError
+if sys.version_info >= (3,3):
+    from http.cookiejar import LWPCookieJar
+elif sys.version_info < 3:
+    #from cookielib import LWPCookieJar
+    pass
+
 import pymysql  # use either pymysql or MySQLdb here
+
+from clans.scraper import PlansConnection
+from clans.scraper import PlansError
 from clans.util import plans_md5
 
 TEST_URL = 'http://localhost/~tkb/phplans'
@@ -59,7 +65,7 @@ class TestAuth(unittest.TestCase):
         self.assertEqual(USERNAME, self.pc.username)
 
     def test_cookie(self):
-        oreo = cookielib.LWPCookieJar()
+        oreo = LWPCookieJar()
         # log in to create a good cookie
         pc = PlansConnection(oreo, base_url=TEST_URL)
         pc.plans_login(USERNAME, PASSWORD)

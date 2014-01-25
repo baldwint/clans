@@ -2,9 +2,20 @@
 """Command-line Plans."""
 
 from __future__ import print_function
-import cookielib
+
 import os
 import sys
+if sys.version_info >= (3,3):
+    from http.cookiejar import LWPCookieJar
+elif sys.version_info < 3:
+    #str = unicode
+    #from cookielib import LWPCookieJar
+    pass
+elif sys.version_info >= 3:
+    sys.stderr.write('Clans requires Python 3.3+')
+    sys.exit(1)
+
+
 import tempfile
 import subprocess
 import pydoc
@@ -148,7 +159,7 @@ def edit(cs, pc=None):
         editor = cs.config.get('clans', 'editor')
         edited = external_editor(plan_text, editor=editor, suffix='.plan')
 
-    assert type(edited) == unicode
+    assert type(edited) == str
     cs.hook('pre_set_edit_text', edited)
 
     edit_was_made = edited != plan_text
@@ -235,7 +246,12 @@ def config(cs):
 # CLANS SESSION
 # -------------
 
-import ConfigParser
+if sys.version_info >= (3,3):
+    from configparser import ConfigParser
+elif sys.version_info < 3:
+    #from ConfigParser import ConfigParser
+    pass
+
 import appdirs
 import importlib
 
@@ -290,7 +306,7 @@ class ClansSession(object):
 
     def _load_config(self):
         # set config file defaults
-        config = ConfigParser.ConfigParser()
+        config = ConfigParser()
         config.add_section('login')
         config.set('login', 'username', '')
         config.set('login', 'url', 'http://www.grinnellplans.com')
@@ -302,7 +318,7 @@ class ClansSession(object):
         # create profile directory if it doesn't exist
         try:
             # 0700 for secure-ish cookie storage.
-            os.makedirs(self.profile_dir, 0700)
+            os.makedirs(self.profile_dir, 0o700)
         except OSError:
             pass  # already exists
 
@@ -353,7 +369,7 @@ class ClansSession(object):
         Call the method named ``name`` in every loaded extension.
 
         """
-        for ext_name, ext in self.extensions.iteritems():
+        for ext_name, ext in self.extensions.items():
             func = getattr(ext, name, None)
             if func is not None:
                 func(self, *args, **kwargs)
@@ -466,7 +482,7 @@ class ClansSession(object):
 
         """
         # create a cookie
-        self.cookie = cookielib.LWPCookieJar(
+        self.cookie = LWPCookieJar(
             os.path.join(self.profile_dir, '%s.cookie' % self.username))
         try:
             self.cookie.load()  # fails with IOError if it does not exist
