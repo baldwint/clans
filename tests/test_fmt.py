@@ -33,6 +33,7 @@ TEST_DATA = {
         'plan': 'this is my plan\n'
         },
     'test_br_stripping': "one<br>two<br/>three<br />four",
+    'test_crlf_stripping': "one\ntwo\rthree\r\nfour",
     'test_html_escapes': ("I develop in a &quot;quick &amp; dirty&quot; "
                           "&lt;style&gt;"),
     'test_tag_stripping': "This is <b>bold</b> and <i>italic</i>",
@@ -164,6 +165,12 @@ class TestText(TestRaw):
         expect = "one\ntwo\nthree\nfour"
         self.assertEqual(expect, text)
 
+    def test_crlf_stripping(self):
+        html = TEST_DATA['test_crlf_stripping']
+        text = self.fmt.filter_html(html)
+        expect = "onetwothreefour"
+        self.assertEqual(expect, text)
+
     def test_html_escapes(self):
         html = TEST_DATA['test_html_escapes']
         text = self.fmt.filter_html(html)
@@ -203,7 +210,6 @@ class TestText(TestRaw):
     def test_hr_formatting(self):
         html = TEST_DATA['test_hr_formatting']
         expect = """I need a clean
-
 ======================================================================
 break"""
         text = self.fmt.filter_html(html)
@@ -292,7 +298,6 @@ this is my plan
     def test_hr_formatting(self):
         html = TEST_DATA['test_hr_formatting']
         expect = """I need a clean
-
 \x1b[31m======================================================================\x1b[39m
 break"""
         # red

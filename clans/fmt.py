@@ -82,6 +82,7 @@ class TextFormatter(RawFormatter):
         format plan html as plain text.
 
         """
+        html = html.replace('\n','').replace('\r','')
         html = re.sub(r'<br ?/?>', '\n', html)
         html = re.sub(r'&quot;', '"', html)
         html = re.sub(r'&gt;', '>', html)
