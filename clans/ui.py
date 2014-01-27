@@ -207,6 +207,15 @@ def search(cs, pc=None, fmt=None):
     fmt.print_search_results(results)
 
 
+def watch(cs, pc=None, fmt=None):
+    """ planwatch command """
+    pc = pc or cs.make_plans_connection()
+    fmt = fmt or cs.make_formatter()
+
+    results = pc.planwatch(cs.args.hours)
+    fmt.print_list([un for un,t in results])
+
+
 def config(cs):
     """ config command """
     if cs.args.profile_dir:
@@ -418,6 +427,16 @@ class ClansSession(object):
             '-l', '--love', dest='love',
             action='store_true', default=False,
             help="Restrict search to planlove.")
+
+        # watch parser
+        commands.add_command(
+            'watch', watch, parents=[global_parser, filter_parser],
+            description="See recently updated plans.",
+            help="See recently updated plans.",)
+        commands["watch"].add_argument(
+            'hours', type=int, nargs='?',
+            default=12, metavar='HOURS',
+            help="Specify how many hours' worth of plan updates to show.")
 
         # config parser
         commands.add_command(
