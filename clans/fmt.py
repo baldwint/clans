@@ -3,7 +3,7 @@ Formatters (views) for clans
 
 """
 
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 import re
 import colorama as cr
 #TODO only import these if needed

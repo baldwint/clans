@@ -14,6 +14,8 @@ from HTMLParser import HTMLParser
 import re
 from .util import plans_md5, convert_endings
 
+str = unicode
+
 
 class PlansError(Exception):
     """Exception raised when there is an error talking to plans."""
