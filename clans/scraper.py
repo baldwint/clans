@@ -147,10 +147,10 @@ class PlansConnection(object):
 
         """
         # grab edit page
-        html = self._get_page('edit.php').read()
-        # Convert to unicode.
+        response = self._get_page('edit.php')
+        # Read into a string, and convert to unicode.
         # This will fail hard if plans ever serves invalid UTF-8.
-        html = html.decode('utf-8')
+        html = response.read().decode('utf8')
         # parse out existing plan
         soup = bs4.BeautifulSoup(html, 'html5lib')
         plan = soup.find('textarea')
@@ -192,8 +192,8 @@ class PlansConnection(object):
         edit_info = {'plan': newtext,
                      'edit_text_md5': md5,
                      'submit': 'Change Plan'}
-        html = self._get_page('edit.php', post=edit_info).read()
-        soup = bs4.BeautifulSoup(html, "html5lib")
+        response = self._get_page('edit.php', post=edit_info)
+        soup = bs4.BeautifulSoup(response.read().decode('utf8'), "html5lib")
         alert = soup.find('div', {'class': 'alertmessage'})
         info = soup.find('div', {'class': 'infomessage'})
         if alert is not None:
