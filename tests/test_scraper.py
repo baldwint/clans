@@ -182,8 +182,6 @@ class TestEditing(PlanChangingTestCase):
         # https://code.google.com/p/grinnellplans/issues/detail?id=260
         self.editandcheck(u'\r\nNewline at the beginning')
 
-    @unittest.expectedFailure
-    @unittest.skip
     def test_bad_html(self):
         # BS3 screws things up by correcting bad HTML in a textarea
         # field (even though it ignores HTML in there)
@@ -191,8 +189,6 @@ class TestEditing(PlanChangingTestCase):
         self.editandcheck(u'</b> &waffles')     # fails
         self.editandcheck(u'chicken &waffles')  # succeeds for some reason
 
-    @unittest.expectedFailure
-    @unittest.skip
     def test_ampersands(self):
         # BS3 would choke on ampersands in URLs, seemingly only
         # when they were preceded by another ampersand
@@ -276,6 +272,12 @@ class TestPlanspeak(PlanChangingTestCase):
         self.assertEqual(psub('hello\n<br>world'), html)
         # In reality, plans returns 'hello\r<br>world',
         # but that's weird, and our parser converts to '\n'
+
+    def test_unicode(self):
+        orig = u"Non-breaking \xa0\xa0 spaces"
+        text, html = self.planify(orig)
+        self.assertEqual(orig, text)
+        self.assertEqual(psub(orig), html)
 
     def test_allowed_html(self):
         examples = ['<b>hello world</b>',
@@ -378,10 +380,13 @@ class TestRead(DbTestCase):
     # irrelevant details of html. I've compensated for the obvious
     # ones (<br> vs <br />, etc.) but more remain to be found #TODO
     def test_reading(self):
+        # TODO this currently just tests whatever's in the db at the
+        # time. we should parametrize around input data
         userid = self.find_userid()
         self.c.execute("select plan from plans "
                        "where user_id=%s", (userid,))
         plan_in_db, = self.c.fetchone()
+        plan_in_db = plan_in_db.decode('utf8')
         plan_header, html_plan = self.pc.read_plan(self.un)
         self.assertEqual(plan_header['username'], self.un)
         self.assertEqual(html_plan, plan_in_db.replace('\r', '\n'))
@@ -408,6 +413,19 @@ class TestSearch(PlanChangingTestCase):
         result = self.pc.search_plans('gorp', planlove=True)
         plans_with_results = [tup[0] for tup in result]
         self.assertTrue(self.un in plans_with_results)
+
+    def test_search_unicode(self):
+        term = u"bigPileof"
+        text = u"bigPileof \U0001f4a9"
+        expect = u"<b>bigPileof</b> \U0001f4a9"
+        self.pc.set_edit_text(text, self.hashnum)
+        result = self.pc.search_plans(term)
+        plans_with_results = [tup[0] for tup in result]
+        self.assertTrue(self.un in plans_with_results)
+        for un, n, snippets in result:
+            if un == self.un:
+                snippets_as_str = u''.join(snippets)
+                self.assertIn(expect, snippets_as_str)
 
 
 class TestPlanwatch(PlanChangingTestCase):

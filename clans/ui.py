@@ -7,7 +7,7 @@ import os
 import sys
 import tempfile
 import subprocess
-from pydoc import pager
+import pydoc
 from clans.scraper import PlansConnection, PlansError
 import getpass as getpass_mod
 import argparse
@@ -67,6 +67,14 @@ def getpass(*args, **kwargs):
         # http://bugs.python.org/issue11236 (2.6 only)
         raise KeyboardInterrupt('aborted by user')
     return password
+
+
+def pager(text):
+    """ unicode version of pager for py2 """
+    if sys.version_info < (3,):
+        # convert to bytestring
+        text = text.encode('utf8')
+    pydoc.pager(text)
 
 
 class CommandSet(dict):

@@ -4,7 +4,7 @@ from setuptools import setup
 import sys
 
 # build dependency list
-reqs = ['appdirs', 'BeautifulSoup', 'colorama']
+reqs = ['appdirs', 'beautifulsoup4', 'html5lib', 'colorama']
 extras = {'tests': ['pymysql', 'coverage',
                     'pytest', 'pytest-cov', 'tox'],
           'docs':  ['sphinx', ]}

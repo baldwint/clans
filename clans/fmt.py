@@ -3,7 +3,7 @@ Formatters (views) for clans
 
 """
 
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 import re
 import colorama as cr
 #TODO only import these if needed
@@ -82,6 +82,7 @@ class TextFormatter(RawFormatter):
         format plan html as plain text.
 
         """
+        html = html.replace('\n','').replace('\r','')
         html = re.sub(r'<br ?/?>', '\n', html)
         html = re.sub(r'&quot;', '"', html)
         html = re.sub(r'&gt;', '>', html)

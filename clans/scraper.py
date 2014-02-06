@@ -9,9 +9,12 @@ import urlparse
 import cookielib
 import urllib2
 import json
-import BeautifulSoup as bs3
+import bs4
 from HTMLParser import HTMLParser
+import re
 from .util import plans_md5, convert_endings
+
+str = unicode
 
 
 class PlansError(Exception):
@@ -44,13 +47,6 @@ class PlansPageParser(HTMLParser):
                 # find username in submission content using brackets
                 start, stop = comment.index('['), comment.index(']')
                 self.username = comment[start + 1:stop]
-        if tag == 'input':
-            # parse edit text md5 from input tag.
-            # in the current plans implementation,
-            # the syntax is < > and not < />
-            attrs = dict(attrs)
-            if attrs.get('name') == 'edit_text_md5':
-                self.edit_text_md5 = attrs['value']
 
 # -------------------------------------------
 #              PLANS SCRAPEY-I
@@ -111,7 +107,7 @@ class PlansConnection(object):
         Returns a dictionary of the message parameters.
 
         """
-        kind = soup.attrMap[u'class']
+        kind, = soup.attrs[u'class']
         title = soup.findChild().text
         body = ''.join(t.text for t in soup.findChildren()[1:])
         message = dict(kind=kind, title=title, body=body)
@@ -156,7 +152,7 @@ class PlansConnection(object):
         # This will fail hard if plans ever serves invalid UTF-8.
         html = html.decode('utf-8')
         # parse out existing plan
-        soup = bs3.BeautifulSoup(html, fromEncoding='utf-8')
+        soup = bs4.BeautifulSoup(html, 'html5lib')
         plan = soup.find('textarea')
         if plan is None:
             raise PlansError("Couldn't get edit text, are we logged in?")
@@ -165,15 +161,12 @@ class PlansConnection(object):
             # prepending the empty string somehow prevents BS from
             # escaping all the HTML characters (weird)
             assert type(plan) == unicode
-            # ignore leading newline
-            assert plan[0] == '\n'
-            plan = plan[1:]
             # convert to CRLF line endings
             plan = convert_endings(plan, 'CRLF')
         if plus_hash:
             # parse out plan md5
-            self.parser.feed(html)
-            md5sum = self.parser.edit_text_md5
+            md5sum = soup.find('input',
+                    attrs={'name': 'edit_text_md5'}).attrs['value']
             # also, explicitly compute the hash, for kicks
             assert md5sum == plans_md5(plan)
             # verify that username has not changed
@@ -200,7 +193,7 @@ class PlansConnection(object):
                      'edit_text_md5': md5,
                      'submit': 'Change Plan'}
         html = self._get_page('edit.php', post=edit_info).read()
-        soup = bs3.BeautifulSoup(html, fromEncoding='utf-8')
+        soup = bs4.BeautifulSoup(html, "html5lib")
         alert = soup.find('div', {'class': 'alertmessage'})
         info = soup.find('div', {'class': 'infomessage'})
         if alert is not None:
@@ -245,7 +238,7 @@ class PlansConnection(object):
         """
         get = {'searchname': plan}
         response = self._get_page('read.php', get=get)
-        soup = bs3.BeautifulSoup(response.read(), fromEncoding='utf-8')
+        soup = bs4.BeautifulSoup(response.read().decode('utf8'), 'html5lib')
         header = soup.find('div', {'id': 'header'})
         text = soup.find('div', {'class': 'plan_text'})
         if text is None or header is None:
@@ -274,13 +267,14 @@ class PlansConnection(object):
             value = str(content[0]) if len(content) > 0 else None
             header_dict[key] = value
         plan = ''.join(str(el) for el in text.contents[1:])
-        # Plans mixes '\r' with '\n', and BS3 doesn't fix this
-        plan = convert_endings(plan, 'LF')
         # we want to return the plan formatted *exactly* how it is
         # formatted when served, but our parser will correct <hr> and
         # <br> to self closing tags. This manually corrects them back.
-        plan = plan.replace('<br />', '<br>')
-        plan = plan.replace('<hr />', '<hr>')
+        plan = plan.replace('<br/>', '<br>')
+        plan = plan.replace('<hr/>', '<hr>')
+        # put attributes in the right order because I have OCD
+        plan = re.sub(r'<a class="([^\s]*)" href="([^\s]*)">',
+                      r'<a href="\2" class="\1">', plan)
         # to avoid playing whack-a-mole, we should configure the
         # parser to not do this, or else treat contents of
         # <div class="plan_text"> tags as plain text
@@ -308,7 +302,7 @@ class PlansConnection(object):
         get = {'mysearch': term,
                'planlove': int(bool(planlove))}
         response = self._get_page('search.php', get=get)
-        soup = bs3.BeautifulSoup(response.read(), fromEncoding='utf-8')
+        soup = bs4.BeautifulSoup(response.read().decode('utf8'), 'html5lib')
         results = soup.find('ul', {'id': 'search_results'})
         # results are grouped by the plan
         # on which the result was found
@@ -336,7 +330,7 @@ class PlansConnection(object):
         """
         post = {'mytime': str(hours)}
         response = self._get_page('planwatch.php', post=post)
-        soup = bs3.BeautifulSoup(response.read(), fromEncoding='utf-8')
+        soup = bs4.BeautifulSoup(response.read().decode('utf8'), 'html5lib')
         results = soup.find('ul', {'id': 'new_plan_list'})
         new_plans = results.findAll('div', {'class': 'newplan'})
         resultlist = []
