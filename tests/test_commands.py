@@ -67,3 +67,12 @@ def test_love(cs, pc, fmt):
     pc.search_plans.assert_called_with('foo', planlove=True)
     cs.hook.assert_called_with('post_search', l)
     fmt.print_search_results.assert_called_with(l)
+
+
+def test_watch(cs, pc, fmt):
+    l = list()
+    pc.planwatch.return_value = l
+
+    ui.watch(cs, pc, fmt)
+    #pc.planwatch.assert_called_with(hours=12)
+    fmt.print_list.assert_called_with(l)

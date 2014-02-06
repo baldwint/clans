@@ -428,6 +428,20 @@ class TestSearch(PlanChangingTestCase):
                 self.assertIn(expect, snippets_as_str)
 
 
+class TestPlanwatch(PlanChangingTestCase):
+    """
+    test plan watch etc.
+
+    """
+
+    def test_planwatch(self):
+        text = "doesn't matter"
+        self.pc.set_edit_text(text, self.hashnum)
+        result = self.pc.planwatch(hours=2)
+        uns = [un for un,timestamp in result]
+        self.assertTrue(self.un in uns)
+
+
 class TestAutofinger(PlanChangingTestCase):
     """
     test autofinger adding etc.

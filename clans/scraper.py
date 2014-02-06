@@ -320,3 +320,22 @@ class PlansConnection(object):
                 snippets.append(snip)
             resultlist.append((unicode(user), int(count), snippets))
         return resultlist
+
+    def planwatch(self, hours=12):
+        """
+        Return plans updated in the last ``hours`` hours.
+
+        The result is a list of (username, timestamp) 2-tuples.
+
+        """
+        post = {'mytime': str(hours)}
+        response = self._get_page('planwatch.php', post=post)
+        soup = bs4.BeautifulSoup(response.read().decode('utf8'), 'html5lib')
+        results = soup.find('ul', {'id': 'new_plan_list'})
+        new_plans = results.findAll('div', {'class': 'newplan'})
+        resultlist = []
+        for div in new_plans:
+            user = div.find('a', {'class': 'planlove'}).contents[0]
+            time = div.find('span').contents[0]
+            resultlist.append((user, time))
+        return resultlist
