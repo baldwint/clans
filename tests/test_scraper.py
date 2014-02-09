@@ -392,7 +392,6 @@ class TestRead(DbTestCase):
         self.c.execute("select plan from plans "
                        "where user_id=%s", (userid,))
         plan_in_db, = self.c.fetchone()
-        plan_in_db = plan_in_db.decode('utf8')
         plan_header, html_plan = self.pc.read_plan(self.un)
         self.assertEqual(plan_header['username'], self.un)
         self.assertEqual(html_plan, plan_in_db.replace('\r', '\n'))
