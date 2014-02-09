@@ -77,7 +77,8 @@ def _load_log(fl):
 
 
 def _save_log(newlove, fl):
-    fl.write(str(json.dumps(newlove, cls=DatetimeEncoder, indent=2)))
+    fl.write(str(json.dumps(newlove, cls=DatetimeEncoder,
+                            indent=2, sort_keys=True)))
 
 
 def _rebuild_log(log, results, timestamp=None):
@@ -124,8 +125,8 @@ def _flatten_log(log):
 
     """
     flattened = []
-    for un, snips in log.items():
-        for snip, lovestate in snips.items():
+    for un, snips in sorted(log.items()):
+        for snip, lovestate in sorted(snips.items()):
             # make a copy when flattening
             lovestate = dict(lover=un, text=snip, **lovestate)
             flattened.append(lovestate)

@@ -112,16 +112,16 @@ class TestFileFormat(unittest.TestCase):
     eg_encoded = u"""{
   "un1": {
     "snip1": {
+      "love": true, 
       "timestamp": "2013-05-01T03:26:56Z", 
-      "unread": false, 
-      "love": true
+      "unread": false
     }
   }, 
   "un2": {
     "snip2": {
+      "love": true, 
       "timestamp": "2013-07-01T03:46:56Z", 
-      "unread": false, 
-      "love": true
+      "unread": false
     }
   }
 }"""
