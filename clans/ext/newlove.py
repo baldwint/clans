@@ -8,6 +8,11 @@ Supports filtering for new planlove and ordering planlove by time.
 import json
 from datetime import datetime
 import os.path
+import sys
+import io
+
+if sys.version_info < (3,):
+    str = unicode
 
 # extension globals
 lovelog = None
@@ -68,11 +73,11 @@ class DatetimeEncoder(json.JSONEncoder):
 
 def _load_log(fl):
     # ValueError would occur here if the JSON parse fails
-    return json.load(fl, object_hook=convert_dates)
+    return json.loads(str(fl.read()), object_hook=convert_dates)
 
 
 def _save_log(newlove, fl):
-    json.dump(newlove, fl, cls=DatetimeEncoder, indent=2)
+    fl.write(str(json.dumps(newlove, cls=DatetimeEncoder, indent=2)))
 
 
 def _rebuild_log(log, results, timestamp=None):
@@ -223,7 +228,7 @@ def post_search(cs, results):
 
     # load stored planlove
     try:
-        fl = open(lovelog, 'r')
+        fl = io.open(lovelog, 'r', encoding='utf8')
     except IOError:
         # no log file
         oldlove = {}
@@ -245,7 +250,7 @@ def post_search(cs, results):
                     lovestate['unread'] = False
 
     # store log
-    with open(lovelog, 'w') as fl:
+    with io.open(lovelog, 'w', encoding='utf8') as fl:
         _save_log(newlove, fl)
         lovelog = None
 

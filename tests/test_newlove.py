@@ -13,6 +13,7 @@ else:
 import clans.ext.newlove as newlove
 import datetime
 import copy
+import io
 
 
 class TestNewlove(unittest.TestCase):
@@ -104,12 +105,11 @@ class TestModifyResult(unittest.TestCase):
         self.assertDictEqual(log, self.log)       # should be left alone
         self.assertListEqual(result, both_result)
 
-from io import StringIO
 
 
 class TestFileFormat(unittest.TestCase):
 
-    eg_encoded = """{
+    eg_encoded = u"""{
   "un1": {
     "snip1": {
       "timestamp": "2013-05-01T03:26:56Z", 
@@ -159,12 +159,12 @@ class TestFileFormat(unittest.TestCase):
         ]
 
     def test_decode(self):
-        fl = StringIO(self.eg_encoded)
+        fl = io.StringIO(self.eg_encoded)
         decoded = newlove._load_log(fl)
         self.assertDictEqual(decoded, self.eg_decoded)
 
     def test_encode(self):
-        fl = StringIO()
+        fl = io.StringIO()
         log = copy.deepcopy(self.eg_decoded)
         newlove._save_log(log, fl)
         fl.seek(0)
