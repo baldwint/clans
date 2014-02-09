@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import os
 import sys
+import io
 if sys.version_info >= (3,3):
     from http.cookiejar import LWPCookieJar
 elif sys.version_info < (3,):
@@ -56,19 +57,19 @@ def external_editor(text, editor=None, **kwargs):
     fd, name = tempfile.mkstemp(**kwargs)  # make tempfile
     try:
         # populate the temp file with original text.
-        with os.fdopen(fd, 'w') as f:
-            f.write(text.encode('utf8'))
+        with io.open(fd, 'w', encoding='utf8') as f:
+            f.write(text)
 
         # open in editor and wait for user to quit
         subprocess.call([editor, name])
 
         # retrieve edited text
-        with open(name) as f:
+        with io.open(name, 'r', encoding='utf8') as f:
             t = f.read()
     finally:
         os.unlink(name)
 
-    return t.decode('utf8')
+    return t
 
 
 def getpass(*args, **kwargs):
@@ -151,9 +152,8 @@ def edit(cs, pc=None):
 
     if cs.args.source_file:
         # read input from file
-        with open(cs.args.source_file, 'r') as source:
+        with io.open(cs.args.source_file, 'r', encoding='utf8') as source:
             edited = source.read()
-            edited = edited.decode('utf8')
     else:
         # open for external editing
         editor = cs.config.get('clans', 'editor')
@@ -174,8 +174,8 @@ def edit(cs, pc=None):
         except PlansError as err:
             print(err, file=sys.stderr)
             bakfile = '%s.plan.unsubmitted' % cs.username
-            with open(bakfile, 'w') as fl:
-                fl.write(edited.encode('utf8'))
+            with io.open(bakfile, 'w', encoding='utf8') as fl:
+                fl.write(edited)
             print("A copy of your unsubmitted edit"
                   " was stored in %s" % bakfile, file=sys.stderr)
 

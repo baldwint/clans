@@ -38,23 +38,23 @@ class SubprocessMocked(unittest.TestCase):
 class TestExternalEditor(SubprocessMocked):
 
     def test_specify_editor(self):
-        orig = """hi there"""
-        edited = clans.ui.external_editor(orig, 'foo')
+        orig = u"""hi there"""
+        edited = clans.ui.external_editor(orig, u'foo')
         args, kwargs = clans.ui.subprocess.call.call_args
         editor_used, tmpfile_at = args[0]
-        self.assertEqual(editor_used, 'foo')
+        self.assertEqual(editor_used, u'foo')
         self.assertEqual(edited, orig)
 
     def test_edit_works(self):
-        orig = """hi there"""
+        orig = u"""hi there"""
 
         def insult_user(arglist):
             editor_used, tmpfile = arglist
             with open(tmpfile, 'a') as fl:
-                fl.write(" loser")
+                fl.write(u" loser")
         clans.ui.subprocess.call.side_effect = insult_user
-        edited = clans.ui.external_editor(orig, 'foo')
-        self.assertEqual(edited, "hi there loser")
+        edited = clans.ui.external_editor(orig, u'foo')
+        self.assertEqual(edited, u"hi there loser")
 
 
 class WithClansdir(unittest.TestCase):
