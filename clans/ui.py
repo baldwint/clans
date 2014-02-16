@@ -57,14 +57,14 @@ def external_editor(text, editor=None, **kwargs):
     fd, name = tempfile.mkstemp(**kwargs)  # make tempfile
     try:
         # populate the temp file with original text.
-        with io.open(fd, 'w', encoding='utf8') as f:
+        with io.open(fd, 'w', encoding='utf8', newline='') as f:
             f.write(text)
 
         # open in editor and wait for user to quit
         subprocess.call([editor, name])
 
         # retrieve edited text
-        with io.open(name, 'r', encoding='utf8') as f:
+        with io.open(name, 'r', encoding='utf8', newline='') as f:
             t = f.read()
     finally:
         os.unlink(name)

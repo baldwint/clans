@@ -37,6 +37,11 @@ class SubprocessMocked(unittest.TestCase):
 
 class TestExternalEditor(SubprocessMocked):
 
+    def test_newlines_preserved(self):
+        orig = u"""hi there\nmultiple lines\r\ndifferent\rendings"""
+        edited = clans.ui.external_editor(orig, u'foo')
+        self.assertEqual(edited, orig)
+
     def test_specify_editor(self):
         orig = u"""hi there"""
         edited = clans.ui.external_editor(orig, u'foo')
