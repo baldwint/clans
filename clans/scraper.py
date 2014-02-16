@@ -330,6 +330,7 @@ class PlansConnection(object):
             snippets = []
             for li in snippetlist:
                 snip = ''.join(unicode(el) for el in li.find('span').contents)
+                snip = self._canonicalize_plantext(snip)
                 snippets.append(snip)
             resultlist.append((unicode(user), int(count), snippets))
         return resultlist

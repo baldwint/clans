@@ -427,6 +427,19 @@ class TestSearch(PlanChangingTestCase):
                 snippets_as_str = u''.join(snippets)
                 self.assertIn(expect, snippets_as_str)
 
+    def test_search_newline(self):
+        term = u"uniqueSearchTerm"
+        text = u"uniqueSearchTerm with\nnewlines"
+        expect = u"<b>uniqueSearchTerm</b> with\n<br>newlines"
+        self.pc.set_edit_text(text, self.hashnum)
+        result = self.pc.search_plans(term)
+        plans_with_results = [tup[0] for tup in result]
+        self.assertTrue(self.un in plans_with_results)
+        for un, n, snippets in result:
+            if un == self.un:
+                snippets_as_str = u''.join(snippets)
+                self.assertIn(expect, snippets_as_str)
+
 
 class TestPlanwatch(PlanChangingTestCase):
     """
