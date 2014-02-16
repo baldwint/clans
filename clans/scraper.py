@@ -115,6 +115,30 @@ class PlansConnection(object):
             assert type(val) == unicode
         return message
 
+    def _canonicalize_plantext(self, plan):
+        """
+        Modify reserialized plan text to match what was served.
+
+        For consistency, we want to return plan text *exactly* how it
+        is formatted when served. However, variants of certain tags
+        (e.g. <br> vs <br/>) are syntactically equivalent in HTML, and
+        may be interchanged when parsed and reserialized.
+
+        This function manually changes the formatting returned by our
+        parser to more closely match that given by plans.
+        """
+        # Our parser will correct <hr> and <br> to self closing tags
+        plan = plan.replace('<br/>', '<br>')
+        plan = plan.replace('<hr/>', '<hr>')
+        # put attributes in the right order because I have OCD
+        plan = re.sub(r'<a class="([^\s]*)" href="([^\s]*)">',
+                      r'<a href="\2" class="\1">', plan)
+        # to avoid playing whack-a-mole, we should configure the
+        # parser to not do this, or else treat contents of
+        # <div class="plan_text"> tags as plain text
+        # (not sure if this is possible)
+        return plan
+
     def plans_login(self, username='', password=''):
         """
         Log into plans.
@@ -267,18 +291,7 @@ class PlansConnection(object):
             value = str(content[0]) if len(content) > 0 else None
             header_dict[key] = value
         plan = ''.join(str(el) for el in text.contents[1:])
-        # we want to return the plan formatted *exactly* how it is
-        # formatted when served, but our parser will correct <hr> and
-        # <br> to self closing tags. This manually corrects them back.
-        plan = plan.replace('<br/>', '<br>')
-        plan = plan.replace('<hr/>', '<hr>')
-        # put attributes in the right order because I have OCD
-        plan = re.sub(r'<a class="([^\s]*)" href="([^\s]*)">',
-                      r'<a href="\2" class="\1">', plan)
-        # to avoid playing whack-a-mole, we should configure the
-        # parser to not do this, or else treat contents of
-        # <div class="plan_text"> tags as plain text
-        # (not sure if this is possible)
+        plan = self._canonicalize_plantext(plan)
         return header_dict, plan
 
     def search_plans(self, term, planlove=False):
