@@ -290,9 +290,11 @@ class PlansConnection(object):
                 ).contents
             value = str(content[0]) if len(content) > 0 else None
             header_dict[key] = value
-        # convert plan to string, skipping leading newline
-        plan = ''.join(str(el) for el in text.contents[1:])
-        plan = self._canonicalize_plantext(plan)
+        text.hidden = True  # prevents BS from wrapping contents in
+                            # <div> upon conversion to unicode string
+        plan = text.decode()  # soup to unicode
+        assert plan[0] == '\n'  # drop leading newline
+        plan = self._canonicalize_plantext(plan[1:])
         return header_dict, plan
 
     def search_plans(self, term, planlove=False):
@@ -333,7 +335,7 @@ class PlansConnection(object):
                 tag = li.find('span')
                 tag.hidden = True  # prevents BS from wrapping contents in
                                    # <span> upon conversion to unicode string
-                snip = str(tag)
+                snip = tag.decode()  # soup to unicode
                 snip = self._canonicalize_plantext(snip)
                 snippets.append(snip)
             resultlist.append((unicode(user), int(count), snippets))
