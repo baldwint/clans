@@ -332,6 +332,13 @@ class TestPlanspeak(PlanChangingTestCase):
         self.assertEqual(orig, text)
         self.assertEqual(expect, html)
 
+    def test_quote(self):
+        orig = 'double"quote'
+        expect = psub('double&quot;quote')
+        text, html = self.planify(orig)
+        self.assertEqual(orig, text)
+        self.assertEqual(expect, html)
+
     def test_planlove(self):
         orig = "May the [gorp] be with you."
         expect = ('May the [<a href="read.php?searchname=gorp"'
@@ -451,6 +458,19 @@ class TestSearch(PlanChangingTestCase):
         term = u"uniqueSearchTerm"
         text = u"uniqueSearchTerm with angle>bracket"
         expect = u"<b>uniqueSearchTerm</b> with angle&gt;bracket"
+        self.pc.set_edit_text(text, self.hashnum)
+        result = self.pc.search_plans(term)
+        plans_with_results = [tup[0] for tup in result]
+        self.assertTrue(self.un in plans_with_results)
+        for un, n, snippets in result:
+            if un == self.un:
+                snippets_as_str = u''.join(snippets)
+                self.assertIn(expect, snippets_as_str)
+
+    def test_search_quote(self):
+        term = u"uniqueSearchTerm"
+        text = u"uniqueSearchTerm with double\"quote"
+        expect = u"<b>uniqueSearchTerm</b> with double&quot;quote"
         self.pc.set_edit_text(text, self.hashnum)
         result = self.pc.search_plans(term)
         plans_with_results = [tup[0] for tup in result]

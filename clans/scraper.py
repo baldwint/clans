@@ -139,6 +139,32 @@ class PlansConnection(object):
         # (not sure if this is possible)
         return plan
 
+    @staticmethod
+    def _html_esc(string):
+        """
+        Replaces certain characters with html escape sequences.
+
+        Meant to be passed to the BS4 'decode' method as kwarg 'formatter'.
+
+        By default, BS4 only replaces angle brackets and ampersands with
+        the html escape sequence, but text served by plans also replaces
+        double quotes. This function as BS4's decoding formatter
+        reproduces that behavior.
+
+        """
+        repls = {
+            '<': 'lt',
+            '>': 'gt',
+            '&': 'amp',
+            '"': 'quot',
+            }
+
+        def repl(matchobj):
+            return "&%s;" % repls[matchobj.group(0)]
+
+        regex = "([%s])" % ''.join(repls.keys())
+        return re.sub(regex, repl, string)
+
     def plans_login(self, username='', password=''):
         """
         Log into plans.
@@ -292,7 +318,7 @@ class PlansConnection(object):
             header_dict[key] = value
         text.hidden = True  # prevents BS from wrapping contents in
                             # <div> upon conversion to unicode string
-        plan = text.decode()  # soup to unicode
+        plan = text.decode(formatter=self._html_esc)  # soup to unicode
         assert plan[0] == '\n'  # drop leading newline
         plan = self._canonicalize_plantext(plan[1:])
         return header_dict, plan
@@ -335,7 +361,7 @@ class PlansConnection(object):
                 tag = li.find('span')
                 tag.hidden = True  # prevents BS from wrapping contents in
                                    # <span> upon conversion to unicode string
-                snip = tag.decode()  # soup to unicode
+                snip = tag.decode(formatter=self._html_esc)  # soup to unicode
                 snip = self._canonicalize_plantext(snip)
                 snippets.append(snip)
             resultlist.append((unicode(user), int(count), snippets))
