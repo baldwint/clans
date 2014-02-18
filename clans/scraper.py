@@ -290,6 +290,7 @@ class PlansConnection(object):
                 ).contents
             value = str(content[0]) if len(content) > 0 else None
             header_dict[key] = value
+        # convert plan to string, skipping leading newline
         plan = ''.join(str(el) for el in text.contents[1:])
         plan = self._canonicalize_plantext(plan)
         return header_dict, plan
@@ -329,7 +330,10 @@ class PlansConnection(object):
             snippetlist = group.findAll('li')
             snippets = []
             for li in snippetlist:
-                snip = ''.join(unicode(el) for el in li.find('span').contents)
+                tag = li.find('span')
+                tag.hidden = True  # prevents BS from wrapping contents in
+                                   # <span> upon conversion to unicode string
+                snip = str(tag)
                 snip = self._canonicalize_plantext(snip)
                 snippets.append(snip)
             resultlist.append((unicode(user), int(count), snippets))
