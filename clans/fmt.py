@@ -11,7 +11,6 @@ if sys.version_info >= (3,3):
     from itertools import zip_longest
 elif sys.version_info < (3,):
     from itertools import izip_longest as zip_longest
-    pass
 
 import re
 import colorama as cr
@@ -49,7 +48,7 @@ class RawFormatter(object):
             item = self.filter_html(item)
             if bullets:
                 item = (u" - {0}").format(item)
-            print(item) #.encode('utf8'))
+            print(item)
 
     def print_search_results(self, results):
         """
@@ -62,13 +61,13 @@ class RawFormatter(object):
         for un, count, snips in results:
             username = self.format_planlove(un)
             print((u"{0}: {1}\n"
-                   ).format(username, count)) #.encode('utf8'))
+                   ).format(username, count))
             self.print_list(snips, bullets=True)
             print(u"")
 
     def print_autoread(self, results):
         for level in sorted(results.keys()):
-            print(u"{level}:".format(level=level)) #.encode('utf8'))
+            print(u"{level}:".format(level=level))
             self.print_list(results[level])
             print(u"")
 

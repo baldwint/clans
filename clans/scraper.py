@@ -20,7 +20,6 @@ elif sys.version_info < (3,):
     import urllib2 as request
     from HTMLParser import HTMLParser
     str = unicode
-    pass
 
 
 import json

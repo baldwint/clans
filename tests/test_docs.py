@@ -4,16 +4,14 @@ A test to make sure the documentation isn't condescending as all hell
 
 """
 
+import io
+import os
 import sys
+
 if sys.version_info < (2, 7):
     import unittest2 as unittest
 else:
     import unittest
-
-if sys.version_info < (3,):
-    from io import open
-
-import os
 
 
 class TestCondescension(unittest.TestCase):
@@ -30,8 +28,8 @@ class TestCondescension(unittest.TestCase):
             _, ext = os.path.splitext(fn)
             if ext in fts:
                 path = os.path.join(docdir, fn)
-                with open(path, 'r', encoding='utf8') as fl:
-                    texts[fn] = fl.read() #.decode('utf8')
+                with io.open(path, 'r', encoding='utf8') as fl:
+                    texts[fn] = fl.read()
 
         # loop over and make lower case
         for k, v in texts.items():

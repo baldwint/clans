@@ -11,7 +11,6 @@ if sys.version_info >= (3,3):
 elif sys.version_info < (3,):
     str = unicode
     from cookielib import LWPCookieJar
-    pass
 elif sys.version_info >= (3,):
     sys.stderr.write('Clans requires Python 3.3+')
     sys.exit(1)
@@ -250,7 +249,6 @@ if sys.version_info >= (3,3):
     from configparser import ConfigParser
 elif sys.version_info < (3,):
     from ConfigParser import ConfigParser
-    pass
 
 import appdirs
 import importlib
