@@ -127,6 +127,56 @@ class PlansConnection(object):
             assert type(val) == str
         return message
 
+    def _canonicalize_plantext(self, plan):
+        """
+        Modify reserialized plan text to match what was served.
+
+        For consistency, we want to return plan text *exactly* how it
+        is formatted when served. However, variants of certain tags
+        (e.g. <br> vs <br/>) are syntactically equivalent in HTML, and
+        may be interchanged when parsed and reserialized.
+
+        This function manually changes the formatting returned by our
+        parser to more closely match that given by plans.
+        """
+        # Our parser will correct <hr> and <br> to self closing tags
+        plan = plan.replace('<br/>', '<br>')
+        plan = plan.replace('<hr/>', '<hr>')
+        # put attributes in the right order because I have OCD
+        plan = re.sub(r'<a class="([^\s]*)" href="([^\s]*)">',
+                      r'<a href="\2" class="\1">', plan)
+        # to avoid playing whack-a-mole, we should configure the
+        # parser to not do this, or else treat contents of
+        # <div class="plan_text"> tags as plain text
+        # (not sure if this is possible)
+        return plan
+
+    @staticmethod
+    def _html_esc(string):
+        """
+        Replaces certain characters with html escape sequences.
+
+        Meant to be passed to the BS4 'decode' method as kwarg 'formatter'.
+
+        By default, BS4 only replaces angle brackets and ampersands with
+        the html escape sequence, but text served by plans also replaces
+        double quotes. This function as BS4's decoding formatter
+        reproduces that behavior.
+
+        """
+        repls = {
+            '<': 'lt',
+            '>': 'gt',
+            '&': 'amp',
+            '"': 'quot',
+            }
+
+        def repl(matchobj):
+            return "&%s;" % repls[matchobj.group(0)]
+
+        regex = "([%s])" % ''.join(repls.keys())
+        return re.sub(regex, repl, string)
+
     def plans_login(self, username='', password=''):
         """
         Log into plans.
@@ -278,19 +328,11 @@ class PlansConnection(object):
                 ).contents
             value = str(content[0]) if len(content) > 0 else None
             header_dict[key] = value
-        plan = ''.join(str(el) for el in text.contents[1:])
-        # we want to return the plan formatted *exactly* how it is
-        # formatted when served, but our parser will correct <hr> and
-        # <br> to self closing tags. This manually corrects them back.
-        plan = plan.replace('<br/>', '<br>')
-        plan = plan.replace('<hr/>', '<hr>')
-        # put attributes in the right order because I have OCD
-        plan = re.sub(r'<a class="([^\s]*)" href="([^\s]*)">',
-                      r'<a href="\2" class="\1">', plan)
-        # to avoid playing whack-a-mole, we should configure the
-        # parser to not do this, or else treat contents of
-        # <div class="plan_text"> tags as plain text
-        # (not sure if this is possible)
+        text.hidden = True  # prevents BS from wrapping contents in
+                            # <div> upon conversion to unicode string
+        plan = text.decode(formatter=self._html_esc)  # soup to unicode
+        assert plan[0] == '\n'  # drop leading newline
+        plan = self._canonicalize_plantext(plan[1:])
         return header_dict, plan
 
     def search_plans(self, term, planlove=False):
@@ -328,7 +370,11 @@ class PlansConnection(object):
             snippetlist = group.findAll('li')
             snippets = []
             for li in snippetlist:
-                snip = ''.join(str(el) for el in li.find('span').contents)
+                tag = li.find('span')
+                tag.hidden = True  # prevents BS from wrapping contents in
+                                   # <span> upon conversion to unicode string
+                snip = tag.decode(formatter=self._html_esc)  # soup to unicode
+                snip = self._canonicalize_plantext(snip)
                 snippets.append(snip)
             resultlist.append((str(user), int(count), snippets))
         return resultlist
