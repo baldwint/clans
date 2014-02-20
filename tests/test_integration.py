@@ -3,8 +3,13 @@ import tempfile
 import shutil
 import io
 import os
+import sys
 from contextlib import contextmanager
-import subprocess
+
+if sys.version_info >= (2,7):
+    import subprocess
+else:
+    import subprocess32 as subprocess
 
 # VERY important in this module to always pass the env kwarg
 # to subprocesses. Somehow there are race conditions associated with
