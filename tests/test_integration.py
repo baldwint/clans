@@ -83,6 +83,18 @@ def test_extension_loading():
             stderr=subprocess.STDOUT, env=env)
         assert '--backup' in stdout
 
+def test_newlove_breakage():
+    # there was a bug where the newlove ext would break regular search
+    with temp_clansdir(TEST_CFG % UN1, PW1) as cd:
+        env = make_env(cd)
+        rc = subprocess.call(['clans', 'search', 'term'], env=env)
+        assert rc == 0
+    extend_cfg = TEST_CFG + "[extensions]\nnewlove="
+    with temp_clansdir(extend_cfg % UN1, PW1) as cd:
+        env = make_env(cd)
+        rc = subprocess.call(['clans', 'search', 'term'], env=env)
+        assert rc == 0
+
 @pytest.mark.parametrize("content", [
     "foobar",
     "barfoo\r\n"*20,  #TODO: what about \n?

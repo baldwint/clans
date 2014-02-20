@@ -13,7 +13,7 @@ from clans import ui
 def cs():
     from clans.ui import ClansSession
     cs = mock.Mock(spec=ClansSession)
-    cs.args = mock.Mock()
+    cs.args = dict()
     return cs
 
 
@@ -46,8 +46,8 @@ def test_autoread(cs, pc, fmt):
     ])
 def test_search(cs, pc, fmt, term, love):
     l = list()
-    cs.args.term = term
-    cs.args.love = love
+    cs.args['term'] = term
+    cs.args['love'] = love
     pc.search_plans.return_value = l
 
     ui.search(cs, pc, fmt)
@@ -72,7 +72,8 @@ def test_love(cs, pc, fmt):
 def test_watch(cs, pc, fmt):
     l = list()
     pc.planwatch.return_value = l
+    cs.args['hours'] = 12
 
     ui.watch(cs, pc, fmt)
-    #pc.planwatch.assert_called_with(hours=12)
+    pc.planwatch.assert_called_with(hours=12)
     fmt.print_list.assert_called_with(l)
