@@ -3,8 +3,13 @@ import tempfile
 import shutil
 import io
 import os
+import sys
 from contextlib import contextmanager
-import subprocess
+
+if sys.version_info >= (2,7):
+    import subprocess
+else:
+    import subprocess32 as subprocess
 
 # VERY important in this module to always pass the env kwarg
 # to subprocesses. Somehow there are race conditions associated with
@@ -116,8 +121,50 @@ def test_backup_restore(content):
             '--backup', bakfile, '--skip-update'], env=env)
         # check that it matches our contents
         with io.open(bakfile, 'r', encoding='utf8', newline='') as bak:
-            assert bak.read() == content
+            backup = bak.read()
+            assert backup == content
+            # diff against stdout method
+            stdout = subprocess.check_output(['clans', 'edit',
+                '--backup', '--skip-update'], env=env)
+            # when printing to stdout instead of to file, python's
+            # print statement inserts an extra newline, do we want that?
+            assert stdout == backup + '\n'
         # verify the restore: if it matches, clans won't update
         stdout = subprocess.check_output(['clans', 'edit',
             '--file', bakfile], stderr=subprocess.STDOUT, env=env)
-        assert 'plan unchanged, aborting update' in str(stdout)
+        assert 'plan unchanged, aborting update' in stdout
+
+def test_editing():
+    content = 'bar foo baz\r\n'
+    expect = 'bar FOO baz\r\n'
+    editor = 'vim -c %%s/foo/FOO/g -c wq'
+    # subtle points: -c arguments to vim should NOT be quoted, as they
+    # would be in a shell. Also, vim will insist that files end in
+    # newlines if they don't already, so test values should accomodate
+    # this ahead of time if our comparisons are going to match.
+    # Finally, I need to use the double-% in the vim command so that
+    # python doesn't think it's a fomat string.
+    extend_cfg = (TEST_CFG +
+        "[extensions]\nbackup=\n[clans]\neditor=" + editor)
+    with temp_clansdir(extend_cfg % UN1, PW1) as cd:
+        env = make_env(cd)
+        # set plan contents
+        with tempfile.NamedTemporaryFile() as tf:
+            tf.write(content)
+            tf.flush()
+            stdout = subprocess.check_output(['clans', 'edit',
+                '--file', tf.name], stderr=subprocess.STDOUT, env=env)
+        # do edit
+        #with tempfile.NamedTemporaryFile() as tf:
+        #    stdout = subprocess.check_output(['clans', 'edit'],
+        #        stderr=subprocess.STDOUT, env=env)
+        #    assert 'Plan changed successfully' in stdout
+        # do edit, with backup extension
+        with tempfile.NamedTemporaryFile() as tf:
+            stdout = subprocess.check_output(['clans', 'edit',
+                '--save', tf.name], stderr=subprocess.STDOUT, env=env)
+            assert 'Plan changed successfully' in stdout
+            # edit should have been saved by the backup extension
+            tf.flush()
+            tf.seek(0)
+            assert expect == tf.read()

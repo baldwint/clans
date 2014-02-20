@@ -19,6 +19,7 @@ elif sys.version_info >= (2, 7):
 elif sys.version_info >= (2, 6):
     reqs.extend(['argparse', 'ordereddict', 'importlib'])
     extras['tests'].append('unittest2')
+    extras['tests'].append('subprocess32')
 else:
     sys.stderr.write("Clans requires Python 2.6 or 2.7\n")
     sys.exit(1)
