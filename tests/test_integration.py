@@ -74,14 +74,14 @@ def test_extension_loading():
         env = make_env(cd)
         stdout = subprocess.check_output('clans edit --help'.split(),
             stderr=subprocess.STDOUT, env=env)
-        assert '--backup' not in stdout
+        assert '--backup' not in str(stdout)
     # if we load the extension, it should modify the help list
     extend_cfg = TEST_CFG + "[extensions]\nbackup="
     with temp_clansdir(extend_cfg % UN1, PW1) as cd:
         env = make_env(cd)
         stdout = subprocess.check_output('clans edit --help'.split(),
             stderr=subprocess.STDOUT, env=env)
-        assert '--backup' in stdout
+        assert '--backup' in str(stdout)
 
 def test_newlove_breakage():
     # there was a bug where the newlove ext would break regular search
@@ -104,20 +104,20 @@ def test_backup_restore(content):
     with temp_clansdir(extend_cfg % UN1, PW1) as cd:
         env = make_env(cd)
         # set plan contents
-        with tempfile.NamedTemporaryFile() as tf:
+        with tempfile.NamedTemporaryFile('w+') as tf:
             tf.write(content)
             tf.flush()
             stdout = subprocess.check_output(['clans', 'edit',
                 '--file', tf.name], stderr=subprocess.STDOUT, env=env)
-            assert 'Plan changed successfully' in stdout
+            assert 'Plan changed successfully' in str(stdout)
         # back plan up to file
         bakfile = os.path.join(cd, 'planbak.txt')
         rc = subprocess.call(['clans', 'edit',
             '--backup', bakfile, '--skip-update'], env=env)
         # check that it matches our contents
-        with open(bakfile, 'r') as bak:
+        with io.open(bakfile, 'r', encoding='utf8', newline='') as bak:
             assert bak.read() == content
         # verify the restore: if it matches, clans won't update
         stdout = subprocess.check_output(['clans', 'edit',
             '--file', bakfile], stderr=subprocess.STDOUT, env=env)
-        assert 'plan unchanged, aborting update' in stdout
+        assert 'plan unchanged, aborting update' in str(stdout)

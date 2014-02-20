@@ -7,6 +7,7 @@ plan before and after editing.
 """
 
 import sys
+import io
 storage = {}
 
 
@@ -37,19 +38,19 @@ def post_load_commands(cs):
 def post_get_edit_text(cs, plan_text):
     # store a copy of the edited plan.
     storage['orig_edit_text'] = plan_text
+    backup_file = cs.args['backup_file']
 
-    if cs.args['backup_file'] is False:
+    if backup_file is False:
         pass
-    elif cs.args['backup_file'] is None:
+    elif backup_file is None:
         # print existing plan to stdout and exit
         print >> sys.stdout, plan_text.encode(sys.stdout.encoding or 'utf8')
         sys.exit()
-    elif cs.args['backup_file']:
+    elif backup_file:
         # save existing plan to file
         # NB, there will be no newline at the end of the file
-        fp = open(cs.args['backup_file'], 'w')
-        fp.write(plan_text.encode('utf8'))
-        fp.close()
+        with io.open(backup_file, 'w', encoding='utf8', newline='') as fp:
+            fp.write(plan_text)
 
     if cs.args['skip_update']:
         # this aborts the rest of the edit command
