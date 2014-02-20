@@ -151,7 +151,8 @@ def edit(cs, pc=None):
 
     if cs.args['source_file']:
         # read input from file
-        with io.open(cs.args['source_file'], 'r', encoding='utf8') as source:
+        with io.open(cs.args['source_file'], 'r',
+                     encoding='utf8', newline='') as source:
             edited = source.read()
     else:
         # open for external editing
