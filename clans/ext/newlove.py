@@ -216,7 +216,7 @@ def pre_search(cs, term, planlove=False):
         # set location of log file (in app dir)
         lovelog = '{term}.{suffix}'.format(term=term, suffix=suffix)
         lovelog = os.path.join(cs.profile_dir, lovelog)
-    elif cs.args.time or cs.args.new:
+    elif cs.args.get('time') or cs.args.get('new'):
         # not tracking, but --time or --new was passed
         raise NewloveError("Not configured to track '%s'" % term)
 
@@ -240,11 +240,11 @@ def post_search(cs, results):
 
     # if newlove flags are thrown, modify the displayed results
     modify_results(results, newlove,
-                   order_by_time=cs.args.time,
-                   only_show_new=cs.args.new)
+                   order_by_time=cs.args['time'],
+                   only_show_new=cs.args['new'])
 
     # mark all planlove as read
-    if not cs.args.keepunread:
+    if not cs.args['keepunread']:
         for dic in newlove.values():
             for lovestate in dic.values():
                 if lovestate['unread']:

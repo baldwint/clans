@@ -38,20 +38,20 @@ def post_get_edit_text(cs, plan_text):
     # store a copy of the edited plan.
     storage['orig_edit_text'] = plan_text
 
-    if cs.args.backup_file is False:
+    if cs.args['backup_file'] is False:
         pass
-    elif cs.args.backup_file is None:
+    elif cs.args['backup_file'] is None:
         # print existing plan to stdout and exit
         print >> sys.stdout, plan_text.encode(sys.stdout.encoding or 'utf8')
         sys.exit()
-    elif cs.args.backup_file:
+    elif cs.args['backup_file']:
         # save existing plan to file
         # NB, there will be no newline at the end of the file
-        fp = open(cs.args.backup_file, 'w')
+        fp = open(cs.args['backup_file'], 'w')
         fp.write(plan_text.encode('utf8'))
         fp.close()
 
-    if cs.args.skip_update:
+    if cs.args['skip_update']:
         # this aborts the rest of the edit command
         sys.exit()
 
@@ -60,8 +60,8 @@ def pre_set_edit_text(cs, edited):
     # check to see if plan was edited.
     edit_was_made = edited != storage['orig_edit_text']
 
-    if cs.args.save_edit and edit_was_made:
+    if cs.args['save_edit'] and edit_was_made:
         # save edited file
-        fp = open(cs.args.save_edit, 'w')
+        fp = open(cs.args['save_edit'], 'w')
         fp.write(edited.encode('utf8'))
         fp.close()

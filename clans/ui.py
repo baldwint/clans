@@ -149,9 +149,9 @@ def edit(cs, pc=None):
     plan_text, md5 = pc.get_edit_text(plus_hash=True)
     cs.hook('post_get_edit_text', plan_text)
 
-    if cs.args.source_file:
+    if cs.args['source_file']:
         # read input from file
-        with io.open(cs.args.source_file, 'r', encoding='utf8') as source:
+        with io.open(cs.args['source_file'], 'r', encoding='utf8') as source:
             edited = source.read()
     else:
         # open for external editing
@@ -185,7 +185,7 @@ def read(cs, pc=None, fmt=None):
     fmt = fmt or cs.make_formatter()
 
     try:
-        header, plan = pc.read_plan(cs.args.plan)
+        header, plan = pc.read_plan(cs.args['plan'])
     except PlansError as e:
         print(e, file=sys.stderr)
         sys.exit(1)
@@ -219,8 +219,8 @@ def search(cs, pc=None, fmt=None):
     pc = pc or cs.make_plans_connection()
     fmt = fmt or cs.make_formatter()
 
-    cs.hook('pre_search', cs.args.term, planlove=cs.args.love)
-    results = pc.search_plans(cs.args.term, planlove=cs.args.love)
+    cs.hook('pre_search', cs.args['term'], planlove=cs.args['love'])
+    results = pc.search_plans(cs.args['term'], planlove=cs.args['love'])
     cs.hook('post_search', results)
     fmt.print_search_results(results)
 
@@ -230,13 +230,13 @@ def watch(cs, pc=None, fmt=None):
     pc = pc or cs.make_plans_connection()
     fmt = fmt or cs.make_formatter()
 
-    results = pc.planwatch(cs.args.hours)
+    results = pc.planwatch(hours=cs.args['hours'])
     fmt.print_list([un for un,t in results])
 
 
 def config(cs):
     """ config command """
-    if cs.args.profile_dir:
+    if cs.args['profile_dir']:
         print(cs.profile_dir)
     else:
         subprocess.call([cs.config.get('clans', 'editor'), cs.config_loc])
@@ -290,14 +290,16 @@ class ClansSession(object):
         """
         # get command line arguments
         self.args = self.commands.main.parse_args(argv)
+        self.args = vars(self.args)
 
         # let command line args override equivalent config file settings
-        self.username = (self.args.username or
+        self.username = (self.args['username'] or
                          self.config.get('login', 'username'))
 
         try:
             # pass execution to the subcommand
-            self.args.func(self)
+            func = self.args['func']
+            func(self)
         finally:
             # do this part always, even if subcommand fails
             self.finish()
@@ -495,7 +497,7 @@ class ClansSession(object):
             pass           # we're still logged in
         else:
             # we're not logged in, prompt for password if necessary
-            password = (self.args.password or
+            password = (self.args['password'] or
                         getpass("[%s]'s password: " % self.username))
             success = pc.plans_login(self.username, password)
             if not success:
@@ -510,7 +512,7 @@ class ClansSession(object):
         Initialize and return the appropriate output formatter.
 
         """
-        Fmt = self.formatters[self.args.fmt]
+        Fmt = self.formatters[self.args['fmt']]
         fmt = Fmt()
         return fmt
 
@@ -523,7 +525,7 @@ class ClansSession(object):
         """
         if not hasattr(self, 'cookie'):
             return  # no plans connection was made
-        elif self.args.logout:
+        elif self.args['logout']:
             os.unlink(self.cookie.filename)
         else:
             # save cookie
