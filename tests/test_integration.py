@@ -83,17 +83,28 @@ def test_extension_loading():
             stderr=subprocess.STDOUT, env=env)
         assert '--backup' in stdout
 
-def test_backup_restore():
-    #TODO: this just uses whatever value is pre-filled on the test
-    #server, should probably parameterize
+@pytest.mark.parametrize("content", [
+    "foobar",
+    "barfoo\r\n"*20,  #TODO: what about \n?
+])
+def test_backup_restore(content):
     extend_cfg = TEST_CFG + "[extensions]\nbackup="
     with temp_clansdir(extend_cfg % UN1, PW1) as cd:
         env = make_env(cd)
+        # set plan contents
+        with tempfile.NamedTemporaryFile() as tf:
+            tf.write(content)
+            tf.flush()
+            stdout = subprocess.check_output(['clans', 'edit',
+                '--file', tf.name], stderr=subprocess.STDOUT, env=env)
+            assert 'Plan changed successfully' in stdout
         # back plan up to file
         bakfile = os.path.join(cd, 'planbak.txt')
         rc = subprocess.call(['clans', 'edit',
             '--backup', bakfile, '--skip-update'], env=env)
-        assert 'planbak.txt' in os.listdir(cd)
+        # check that it matches our contents
+        with open(bakfile, 'r') as bak:
+            assert bak.read() == content
         # verify the restore: if it matches, clans won't update
         stdout = subprocess.check_output(['clans', 'edit',
             '--file', bakfile], stderr=subprocess.STDOUT, env=env)
