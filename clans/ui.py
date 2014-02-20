@@ -49,7 +49,9 @@ def external_editor(text, editor=None, **kwargs):
             f.write(text.encode('utf8'))
 
         # open in editor and wait for user to quit
-        subprocess.call([editor, name])
+        # editor command could have space-separated flags
+        cmd = editor.split() + [name,]
+        subprocess.call(cmd)
 
         # retrieve edited text
         with open(name) as f:
@@ -229,7 +231,9 @@ def config(cs):
     if cs.args['profile_dir']:
         print(cs.profile_dir)
     else:
-        subprocess.call([cs.config.get('clans', 'editor'), cs.config_loc])
+        editor = cs.config.get('clans', 'editor')
+        cmd = editor.split() + [cs.config_loc,]
+        subprocess.call(cmd)
 
 # -------------
 # CLANS SESSION

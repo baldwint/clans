@@ -133,3 +133,38 @@ def test_backup_restore(content):
         stdout = subprocess.check_output(['clans', 'edit',
             '--file', bakfile], stderr=subprocess.STDOUT, env=env)
         assert 'plan unchanged, aborting update' in stdout
+
+def test_editing():
+    content = 'bar foo baz\r\n'
+    expect = 'bar FOO baz\r\n'
+    editor = 'vim -c %%s/foo/FOO/g -c wq'
+    # subtle points: -c arguments to vim should NOT be quoted, as they
+    # would be in a shell. Also, vim will insist that files end in
+    # newlines if they don't already, so test values should accomodate
+    # this ahead of time if our comparisons are going to match.
+    # Finally, I need to use the double-% in the vim command so that
+    # python doesn't think it's a fomat string.
+    extend_cfg = (TEST_CFG +
+        "[extensions]\nbackup=\n[clans]\neditor=" + editor)
+    with temp_clansdir(extend_cfg % UN1, PW1) as cd:
+        env = make_env(cd)
+        # set plan contents
+        with tempfile.NamedTemporaryFile() as tf:
+            tf.write(content)
+            tf.flush()
+            stdout = subprocess.check_output(['clans', 'edit',
+                '--file', tf.name], stderr=subprocess.STDOUT, env=env)
+        # do edit
+        #with tempfile.NamedTemporaryFile() as tf:
+        #    stdout = subprocess.check_output(['clans', 'edit'],
+        #        stderr=subprocess.STDOUT, env=env)
+        #    assert 'Plan changed successfully' in stdout
+        # do edit, with backup extension
+        with tempfile.NamedTemporaryFile() as tf:
+            stdout = subprocess.check_output(['clans', 'edit',
+                '--save', tf.name], stderr=subprocess.STDOUT, env=env)
+            assert 'Plan changed successfully' in stdout
+            # edit should have been saved by the backup extension
+            tf.flush()
+            tf.seek(0)
+            assert expect == tf.read()
