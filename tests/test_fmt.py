@@ -12,17 +12,7 @@ else:
 
 import clans.fmt
 import sys
-
-# NOTE: several of the tested functions write directly to stdout.
-# These are tested here by calling sys.stdout.getvalue() to obtain
-# what was printed. The 'real' stdout does not have this method, but
-# stringIO objects do. This means that certain tests will only pass if
-# the test runner is configured to run in a buffered mode, e.g.
-#
-# $ py.test --capture sys
-#
-# By default, py.test captures at the file descriptor level, which is
-# below the level at which these tests need stdout to be faked at.
+from StringIO import StringIO
 
 TEST_DATA = {
     'test_format_plan': {
@@ -63,9 +53,19 @@ TEST_DATA = {
     }
 
 
-class TestRaw(unittest.TestCase):
+class FakeStdout(unittest.TestCase):
 
     def setUp(self):
+        self.real_stdout = sys.stdout
+        sys.stdout = StringIO()
+
+    def tearDown(self):
+        sys.stdout = self.real_stdout
+
+class TestRaw(FakeStdout):
+
+    def setUp(self):
+        FakeStdout.setUp(self)
         self.fmt = clans.fmt.RawFormatter()
 
     # plan format test: a header, two newlines, then the plan.
@@ -155,6 +155,7 @@ meh
 class TestText(TestRaw):
 
     def setUp(self):
+        FakeStdout.setUp(self)
         self.fmt = clans.fmt.TextFormatter()
 
     # filter_html tests
@@ -249,6 +250,7 @@ one    two    three  four
 class TestColor(TestText):
 
     def setUp(self):
+        FakeStdout.setUp(self)
         self.fmt = clans.fmt.ColorFormatter()
 
     # plan format test
