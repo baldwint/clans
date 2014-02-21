@@ -6,6 +6,7 @@ plan before and after editing.
 
 """
 
+from __future__ import print_function
 import sys
 import io
 storage = {}
@@ -44,7 +45,10 @@ def post_get_edit_text(cs, plan_text):
         pass
     elif backup_file is None:
         # print existing plan to stdout and exit
-        print >> sys.stdout, plan_text.encode(sys.stdout.encoding or 'utf8')
+        try:
+            sys.stdout.buffer.write((plan_text + '\n').encode('utf8'))
+        except AttributeError:  # python 2
+            sys.stdout.write(plan_text + '\n')
         sys.exit()
     elif backup_file:
         # save existing plan to file
@@ -60,9 +64,9 @@ def post_get_edit_text(cs, plan_text):
 def pre_set_edit_text(cs, edited):
     # check to see if plan was edited.
     edit_was_made = edited != storage['orig_edit_text']
+    save_edit = cs.args['save_edit']
 
-    if cs.args['save_edit'] and edit_was_made:
+    if save_edit and edit_was_made:
         # save edited file
-        fp = open(cs.args['save_edit'], 'w')
-        fp.write(edited.encode('utf8'))
-        fp.close()
+        with io.open(save_edit, 'w', encoding='utf8', newline='') as fp:
+            fp.write(edited)

@@ -128,28 +128,30 @@ def test_backup_restore(content):
                 '--backup', '--skip-update'], env=env)
             # when printing to stdout instead of to file, python's
             # print statement inserts an extra newline, do we want that?
-            assert stdout == backup + '\n'
+            assert stdout.decode('utf8') == backup + '\n'
         # verify the restore: if it matches, clans won't update
         stdout = subprocess.check_output(['clans', 'edit',
             '--file', bakfile], stderr=subprocess.STDOUT, env=env)
-        assert 'plan unchanged, aborting update' in stdout
+        assert 'plan unchanged, aborting update' in stdout.decode('utf8')
 
 def test_editing():
     content = 'bar foo baz\r\n'
     expect = 'bar FOO baz\r\n'
-    editor = 'vim -c %%s/foo/FOO/g -c wq'
+    editor = 'vim -c s/foo/FOO/g -c wq'
     # subtle points: -c arguments to vim should NOT be quoted, as they
     # would be in a shell. Also, vim will insist that files end in
     # newlines if they don't already, so test values should accomodate
     # this ahead of time if our comparisons are going to match.
-    # Finally, I need to use the double-% in the vim command so that
-    # python doesn't think it's a fomat string.
-    extend_cfg = (TEST_CFG +
-        "[extensions]\nbackup=\n[clans]\neditor=" + editor)
+    # Finally, if the percent sign character appears anywhere in our
+    # editor definition, all hell will break loose since both python
+    # and ConfigParser can interpret that as part of a formatting
+    # mini-language.
+    extend_cfg = (TEST_CFG + "[extensions]\nbackup=")
     with temp_clansdir(extend_cfg % UN1, PW1) as cd:
         env = make_env(cd)
+        env['EDITOR'] = editor
         # set plan contents
-        with tempfile.NamedTemporaryFile() as tf:
+        with tempfile.NamedTemporaryFile('w+') as tf:
             tf.write(content)
             tf.flush()
             stdout = subprocess.check_output(['clans', 'edit',
@@ -160,11 +162,11 @@ def test_editing():
         #        stderr=subprocess.STDOUT, env=env)
         #    assert 'Plan changed successfully' in stdout
         # do edit, with backup extension
-        with tempfile.NamedTemporaryFile() as tf:
+        with tempfile.NamedTemporaryFile('w+b') as tf:
             stdout = subprocess.check_output(['clans', 'edit',
                 '--save', tf.name], stderr=subprocess.STDOUT, env=env)
-            assert 'Plan changed successfully' in stdout
+            assert 'Plan changed successfully' in stdout.decode('utf8')
             # edit should have been saved by the backup extension
             tf.flush()
             tf.seek(0)
-            assert expect == tf.read()
+            assert expect == tf.read().decode('utf8')
