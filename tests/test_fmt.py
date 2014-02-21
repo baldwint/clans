@@ -12,7 +12,7 @@ else:
 
 import clans.fmt
 
-from StringIO import StringIO
+from io import StringIO
 
 TEST_DATA = {
     'test_format_plan': {

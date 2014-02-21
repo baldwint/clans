@@ -11,6 +11,7 @@ if sys.version_info >= (3,3):
     from itertools import zip_longest
 elif sys.version_info < (3,):
     from itertools import izip_longest as zip_longest
+    str = unicode
 
 import re
 import colorama as cr
@@ -48,7 +49,7 @@ class RawFormatter(object):
             item = self.filter_html(item)
             if bullets:
                 item = (u" - {0}").format(item)
-            print(item)
+            print(str(item))
 
     def print_search_results(self, results):
         """
