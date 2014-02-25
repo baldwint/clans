@@ -152,6 +152,97 @@ meh
         self.assertEqual(expect, output)
 
 
+class TestJSON(FakeStdout):
+
+    def setUp(self):
+        FakeStdout.setUp(self)
+        self.fmt = clans.fmt.JSONFormatter()
+
+    def test_format_plan(self):
+        data = TEST_DATA['test_format_plan']
+        text = self.fmt.format_plan(**data)
+        expect = """\
+{
+  "username": "username", 
+  "lastupdated": "Mon August 5th 2013, 1:22 PM", 
+  "lastlogin": "Wed August 7th 2013, 3:42 AM", 
+  "planname": "clever catchphrase", 
+  "plan": "this is my plan\\n"
+}"""
+        self.assertEqual(expect, text)
+
+    # other tests
+
+    def test_print_list(self):
+        lst = TEST_DATA['test_print_list']
+        self.fmt.print_list(lst)
+        output = sys.stdout.getvalue()
+        expect = u"""\
+[
+  "one", 
+  "two", 
+  "three", 
+  "four"
+]
+"""
+        self.assertEqual(expect, output)
+
+    def test_print_search_results(self):
+        results = TEST_DATA['test_print_search_results']
+        self.fmt.print_search_results(results)
+        output = sys.stdout.getvalue()
+        expect = u"""\
+[
+  [
+    "plan1", 
+    1, 
+    [
+      "snip one <b>term</b> context"
+    ]
+  ], 
+  [
+    "plan2", 
+    2, 
+    [
+      "snip one <b>term</b> context", 
+      "snip two <b>term</b> context"
+    ]
+  ], 
+  [
+    "plan3", 
+    2, 
+    [
+      "snip <b>term</b> twice <b>term</b> twice"
+    ]
+  ]
+]
+"""
+        self.assertEqual(expect, output)
+
+    def test_print_autoread(self):
+        autoread = TEST_DATA['test_print_autoread']
+        self.fmt.print_autoread(autoread)
+        output = sys.stdout.getvalue()
+        expect = u"""\
+{
+  "Level 1": [
+    "bff", 
+    "interesting", 
+    "funny", 
+    "gorp"
+  ], 
+  "Level 2": [
+    "roommate", 
+    "rando"
+  ], 
+  "Level 3": [
+    "meh"
+  ]
+}
+"""
+        self.assertEqual(expect, output)
+
+
 class TestText(TestRaw):
 
     def setUp(self):

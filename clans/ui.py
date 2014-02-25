@@ -364,6 +364,7 @@ class ClansSession(object):
         """
         formatters = {
             'raw': clans.fmt.RawFormatter,
+            'json': clans.fmt.JSONFormatter,
             'text': clans.fmt.TextFormatter,
             'color': clans.fmt.ColorFormatter,
             }

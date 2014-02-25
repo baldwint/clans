@@ -13,7 +13,13 @@ elif sys.version_info < (3,):
     from itertools import izip_longest as zip_longest
     str = unicode
 
+if sys.version_info >= (2, 7):
+    from collections import OrderedDict
+elif sys.version_info >= (2, 6):
+    from ordereddict import OrderedDict
+
 import re
+import json
 import colorama as cr
 
 #in colorama, add support for underlining
@@ -71,6 +77,36 @@ class RawFormatter(object):
             print(u"{level}:".format(level=level))
             self.print_list(results[level])
             print(u"")
+
+
+class JSONFormatter(RawFormatter):
+
+    def format_plan(self, **kwargs):
+        dic = OrderedDict([
+            ('username', kwargs['username']),
+            ('lastupdated', kwargs['lastupdated']),
+            ('lastlogin', kwargs['lastlogin']),
+            ('planname', kwargs['planname']),
+            ('plan', kwargs['plan']),
+            ])
+        return json.dumps(dic, indent=2)
+
+    def print_list(self, results):
+        j = json.dumps(results, indent=2)
+        print(str(j))
+
+    def print_search_results(self, results):
+        j = json.dumps(results, indent=2)
+        print(str(j))
+
+    def print_autoread(self, results):
+        dic = OrderedDict([
+            ('Level 1', results['Level 1']),
+            ('Level 2', results['Level 2']),
+            ('Level 3', results['Level 3']),
+            ])
+        j = json.dumps(dic, indent=2)
+        print(str(j))
 
 
 class TextFormatter(RawFormatter):
