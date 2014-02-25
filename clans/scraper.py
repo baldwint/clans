@@ -357,6 +357,8 @@ class PlansConnection(object):
         response = self._get_page('search.php', get=get)
         soup = bs4.BeautifulSoup(response.read().decode('utf8'), 'html5lib')
         results = soup.find('ul', {'id': 'search_results'})
+        if results is None:
+            return []  # no results
         # results are grouped by the plan
         # on which the result was found
         user_groups = results.findAll(

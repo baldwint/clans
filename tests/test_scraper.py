@@ -484,6 +484,11 @@ class TestSearch(PlanChangingTestCase):
                 snippets_as_str = u''.join(snippets)
                 self.assertIn(expect, snippets_as_str)
 
+    def test_no_results(self):
+        term = u"uniqueSearchTermThatDoesNotExist"
+        result = self.pc.search_plans(term)
+        self.assertEqual(result, [])
+
 
 class TestPlanwatch(PlanChangingTestCase):
     """
