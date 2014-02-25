@@ -44,7 +44,7 @@ class RawFormatter(object):
     def format_planlove(self, un):
         return "[%s]" % un
 
-    def print_list(self, items, bullets=False):
+    def print_list(self, items, bullets=False, **kw):
         """
         prints a list line by line
 
@@ -55,9 +55,9 @@ class RawFormatter(object):
             item = self.filter_html(item)
             if bullets:
                 item = (u" - {0}").format(item)
-            print(str(item))
+            print(str(item), **kw)
 
-    def print_search_results(self, results):
+    def print_search_results(self, results, **kw):
         """
         prints search results to stdout.
 
@@ -68,15 +68,15 @@ class RawFormatter(object):
         for un, count, snips in results:
             username = self.format_planlove(un)
             print((u"{0}: {1}\n"
-                   ).format(username, count))
-            self.print_list(snips, bullets=True)
-            print(u"")
+                   ).format(username, count), **kw)
+            self.print_list(snips, bullets=True, **kw)
+            print(u"", **kw)
 
-    def print_autoread(self, results):
+    def print_autoread(self, results, **kw):
         for level in sorted(results.keys()):
-            print(u"{level}:".format(level=level))
-            self.print_list(results[level])
-            print(u"")
+            print(u"{level}:".format(level=level), **kw)
+            self.print_list(results[level], **kw)
+            print(u"", **kw)
 
 
 class JSONFormatter(RawFormatter):
@@ -91,22 +91,22 @@ class JSONFormatter(RawFormatter):
             ])
         return json.dumps(dic, indent=2)
 
-    def print_list(self, results):
+    def print_list(self, results, **kw):
         j = json.dumps(results, indent=2)
-        print(str(j))
+        print(str(j), **kw)
 
-    def print_search_results(self, results):
+    def print_search_results(self, results, **kw):
         j = json.dumps(results, indent=2)
-        print(str(j))
+        print(str(j), **kw)
 
-    def print_autoread(self, results):
+    def print_autoread(self, results, **kw):
         dic = OrderedDict([
             ('Level 1', results['Level 1']),
             ('Level 2', results['Level 2']),
             ('Level 3', results['Level 3']),
             ])
         j = json.dumps(dic, indent=2)
-        print(str(j))
+        print(str(j), **kw)
 
 
 class TextFormatter(RawFormatter):
@@ -159,7 +159,8 @@ class TextFormatter(RawFormatter):
             return
         args = [iter(lst)] * ncols
         for group in zip_longest(fillvalue='', *args):
-            print("".join(word.ljust(max_len) for word in group).rstrip())
+            print("".join(word.ljust(max_len) for word in group).rstrip(),
+                    **kwargs)
 
 
 class ColorFormatter(TextFormatter):
