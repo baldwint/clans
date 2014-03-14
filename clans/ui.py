@@ -374,11 +374,17 @@ class ClansSession(object):
         """
         Call the method named ``name`` in every loaded extension.
 
+        Returns: a list of return values.
+
         """
-        for ext_name, ext in self.extensions.items():
+        def run_hook(ext, name):
             func = getattr(ext, name, None)
             if func is not None:
-                func(self, *args, **kwargs)
+                return func(self, *args, **kwargs)
+            else:
+                return None
+        results = [run_hook(ext, name) for ext in self.extensions.values()]
+        return results
 
     def _load_commands(self):
         # define command line arguments
