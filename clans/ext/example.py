@@ -11,11 +11,13 @@ The first argument passed is always the :class:`ClansSession` object.
 
 """
 
+from __future__ import print_function
+
 # Extensions get run as a script as soon as they are loaded. To have
 # your extension do something as soon as possible, put it here.
 
 import sys
-print >> sys.stderr, 'Hello World!'
+print('Hello World!', file=sys.stderr)
 
 # a common task is to initialize some mutable types here, so that our
 # extension can save data in one hook and refer to it when a later
