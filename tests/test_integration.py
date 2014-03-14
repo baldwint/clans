@@ -126,9 +126,7 @@ def test_backup_restore(content):
             # diff against stdout method
             stdout = subprocess.check_output(['clans', 'edit',
                 '--backup', '--skip-update'], env=env)
-            # when printing to stdout instead of to file, python's
-            # print statement inserts an extra newline, do we want that?
-            assert stdout.decode('utf8') == backup + '\n'
+            assert stdout.decode('utf8') == backup
         # verify the restore: if it matches, clans won't update
         stdout = subprocess.check_output(['clans', 'edit',
             '--file', bakfile], stderr=subprocess.STDOUT, env=env)

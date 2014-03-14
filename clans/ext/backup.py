@@ -47,13 +47,12 @@ def post_get_edit_text(cs, plan_text):
     elif backup_file is None:
         # print existing plan to stdout and exit
         try:
-            sys.stdout.buffer.write((plan_text + '\n').encode('utf8'))
+            sys.stdout.buffer.write((plan_text).encode('utf8'))
         except AttributeError:  # python 2
-            sys.stdout.write(plan_text + '\n')
+            sys.stdout.write(plan_text)
         skip_update = True
     elif backup_file:
         # save existing plan to file
-        # NB, there will be no newline at the end of the file
         with io.open(backup_file, 'w', encoding='utf8', newline='') as fp:
             fp.write(plan_text)
 
