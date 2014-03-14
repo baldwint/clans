@@ -66,6 +66,9 @@ def post_get_edit_text(cs, plan_text):
     The edit text is passed as an immutable unicode string as the
     second argument.
 
+    If this hook returns any value other than None, clans will skip
+    interactive editing.
+
     """
     # for kicks, demonstrate storing variables
     storage['foo'] = 'bar'

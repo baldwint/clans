@@ -149,7 +149,11 @@ def edit(cs, pc=None):
     pc = pc or cs.make_plans_connection()
 
     plan_text, md5 = pc.get_edit_text(plus_hash=True)
-    cs.hook('post_get_edit_text', plan_text)
+    ret = cs.hook('post_get_edit_text', plan_text)
+
+    if not all(v is None for v in ret):
+        # if any ext returns a value other than None, skip update
+        return
 
     if cs.args['source_file']:
         # read input from file

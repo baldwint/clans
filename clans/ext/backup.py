@@ -40,6 +40,7 @@ def post_get_edit_text(cs, plan_text):
     # store a copy of the edited plan.
     storage['orig_edit_text'] = plan_text
     backup_file = cs.args['backup_file']
+    skip_update = cs.args['skip_update']
 
     if backup_file is False:
         pass
@@ -49,16 +50,16 @@ def post_get_edit_text(cs, plan_text):
             sys.stdout.buffer.write((plan_text + '\n').encode('utf8'))
         except AttributeError:  # python 2
             sys.stdout.write(plan_text + '\n')
-        sys.exit()
+        skip_update = True
     elif backup_file:
         # save existing plan to file
         # NB, there will be no newline at the end of the file
         with io.open(backup_file, 'w', encoding='utf8', newline='') as fp:
             fp.write(plan_text)
 
-    if cs.args['skip_update']:
+    if skip_update:
         # this aborts the rest of the edit command
-        sys.exit()
+        return False
 
 
 def pre_set_edit_text(cs, edited):
