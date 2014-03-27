@@ -1,3 +1,6 @@
 [submodule "armstrong_sphinx"]
     path = docs/_themes/armstrong_sphinx
     url = git://github.com/armstrong/armstrong_sphinx.git
+[submodule "docs/_themes/sphinx_rtd_theme"]
+	path = docs/_themes/sphinx_rtd_theme
+	url = git://github.com/snide/sphinx_rtd_theme.git
