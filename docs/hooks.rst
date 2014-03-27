@@ -30,6 +30,11 @@ and for these it is unnecessary to specify the full importable path.
 It is worth looking at the included ``clans.ext.example`` extension to
 get an idea of how to write your own.
 
+.. warning ::
+
+    I think I've implemented this in a moderately intelligent way,
+    but the hook API should not be considered stable prior to clans 1.0.
+
 List of Hooks
 -------------
 

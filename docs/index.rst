@@ -52,6 +52,7 @@ Contents
    configuration
    extensions
    hooks
+   scrapi
    cookbook
 
 
