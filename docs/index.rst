@@ -51,6 +51,7 @@ Contents
    usage
    configuration
    extensions
+   hooks
    cookbook
 
 

@@ -1,11 +1,10 @@
+# Example extension for clans, used for documentation.
+# Should implement every available hook as a no-op.
+
 """
-Example extension for clans.
-
-This extension implements every available hook as a no-op.
-
 Each hook accepts one or more (usually mutable) arguments, and
-returns nothing. Typically, arguments can be modified in-place or left
-untouched.
+need not return anything. Typically, arguments can be modified
+in-place or left untouched.
 
 The first argument passed is always the :class:`ClansSession` object.
 
@@ -68,7 +67,7 @@ def post_get_edit_text(cs, plan_text):
     The edit text is passed as an immutable unicode string as the
     second argument.
 
-    If this hook returns any value other than None, clans will skip
+    If this hook returns any value other than ``None``, clans will skip
     interactive editing.
 
     """
@@ -80,7 +79,7 @@ def post_get_edit_text(cs, plan_text):
 def pre_set_edit_text(cs, edited):
     """
     This hook is called during plan editing, after the edit text has
-    been modified, but before being submitted to the server
+    been modified, but before being submitted to the server.
 
     The modified edit text is passed as an immutable unicode string as
     the second argument.
@@ -96,8 +95,8 @@ def pre_search(cs, term, planlove):
     This hook is called before a (quicklove or regular) search, and is
     passed the same arguments as is the search function:
 
-     - the search `term`
-     - `love`, a boolean of whether to restrict search to planlove
+     - the search ``term``
+     - ``planlove``, a boolean of whether to restrict search to planlove.
 
     """
     pass
@@ -109,9 +108,10 @@ def post_search(cs, results):
     passed a list containing the results.
 
     Elements of this list are 3-tuples:
+
      - the name of the plan on which the term was found (str)
      - the number of instances found (int)
-     - a list of snippets
+     - a list of snippets.
 
     Note that the snippet list may not be the same length as the
     number of instances found.
