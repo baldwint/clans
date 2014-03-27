@@ -19,8 +19,10 @@ Newlove
 -------
 
 The ``newlove`` extension tracks the read and unread state of your
-planlove, much like Ian Young's greasemonkey script of the same name.
+planlove, much like Ian Young's `greasemonkey script`_ of the same name.
 This allows you to easily see what's new in your quicklove.
+
+.. _greasemonkey script: http://github.com/iangreenleaf/GrinnellPlans-Newlove
 
 To enable this extension, add to ``clans.cfg``:
 

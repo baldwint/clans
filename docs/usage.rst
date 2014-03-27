@@ -31,18 +31,25 @@ By default, you must specify your username with ``-u`` for every
 
 .. code-block:: console
 
-    $ clans -u baldwint read portland
+    $ clans -u <username> read <planname>
+
+For example, to log in as user [baldwint], and read the [gorp] plan:
+
+.. code-block:: console
+
+    $ clans -u baldwint read gorp
 
 This can be avoided by :ref:`setting a default username <config-username>`
 in clans.cfg.
 
-It is *not* necessary to specify ``--password`` each time.
+Clans stores active authentications like a browser does a cookie, so
+it is *not* necessary to specify ``--password`` each time.
 In fact, it is a good idea to omit this flag as a rule.
 If your password is required, you will be prompted for it.
 
 .. note ::
 
-    ``clans`` stores active authentications, but will only use them if
+    Clans remembers active authentications, but will only use them if
     ``--username`` is specified on the command line, or a default
     username has been set in clans.cfg. This permits having multiple
     concurrent Plans logins.
@@ -53,8 +60,8 @@ authentication token will be deleted immediately after the command completes.
 
 In addition, all commands accept a ``--help`` option.
 
-Reading Plans
--------------
+Reading Plans and Autoread Lists
+--------------------------------
 
 To see what's new on your autoread list:
 
@@ -64,6 +71,12 @@ To see what's new on your autoread list:
 
 This returns a list of plans on your autoread lists that have been
 updated since you last read them.
+
+.. note ::
+
+    Unfortunately clans does not currently know how to manage your
+    autoread lists by adding/removing plans to it. This is coming in a
+    future revision.
 
 To read a plan, use the ``read`` subcommand:
 
@@ -105,8 +118,8 @@ Searching for love of your own username ("quicklove") gets a shortcut:
 
     $ clans love
 
-Editing Plans
--------------
+Editing Your Plan
+-----------------
 
 To edit your own plan:
 
@@ -124,5 +137,31 @@ Clans decides which editor to use based on the following:
 To submit your update, save and close the file. To cancel the update,
 quit from the editor without saving.
 
+As an alternative to interactively editing your plan, you can use the
+``--from-file`` option to use a text file as input:
 
+.. code-block:: console
 
+    $ clans edit --from-file <filename>
+
+This replaces your *entire* plan with the contents of the specified
+text file. It will not prompt for confirmation, so use this option
+with caution!
+
+Planwatch
+---------
+
+To view a list of recently updated plans, use:
+
+.. code-block:: console
+
+    $ clans watch
+
+By default, this displays a list of every plan updated in the last 12
+hours. For a fresher list, you could do
+
+.. code-block:: console
+
+    $ clans watch 2
+
+and only plans updated in the last 2 hours will be displayed.

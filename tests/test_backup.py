@@ -71,7 +71,7 @@ def test_restore(clansdir, capsys):
     restore_text = u"restored plan text"
     with io.open(fd, 'w',  encoding='utf8', newline='') as f:
         f.write(restore_text)
-    cs.run(['edit', '--file', name])
+    cs.run(['edit', '--from-file', name])
     stdout,stderr = capsys.readouterr()
     assert stdout == ''
     assert stderr == 'Plan changed successfully.\n'

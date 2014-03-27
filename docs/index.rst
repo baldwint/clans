@@ -13,11 +13,11 @@ Clans is a command-line client for the GrinnellPlans_ social network.
 .. image:: gorp.png
     :alt: "clans screenshot"
 
-See what's going on in Portland:
+Read the [gorp] plan:
 
 .. code-block:: console
 
-    $ clans read portland
+    $ clans read gorp
 
 Check quick love:
 
@@ -31,14 +31,14 @@ Edit your plan in ``$EDITOR``:
 
     $ clans edit
 
-Not only is clans the most legit way to waste time on the internet,
+Not only does clans offer an alternative interface to Plans,
 but it is also a useful tool for:
 
   - automatically backing up your plan
   - scheduling a plan update for a later time
   - emailing yourself when new planlove arrives
 
-and much much more. No Limits™!
+and much more. No Limits™!
 
 
 Contents

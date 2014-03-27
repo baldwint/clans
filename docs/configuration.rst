@@ -1,14 +1,21 @@
-Configuration file (``clans.cfg``)
-----------------------------------
+Configuration
+-------------
 
-Persistent configuration is set in a file called ``clans.cfg``,
-in the clans profile directory. The location of this directory is
-reported by:
+Clans stores configuration information and other data
+(login cookies, newlove read state, etc.)
+in its *profile directory*.
+The path to this directory is reported by:
 
 .. code-block:: console
 
     $ clans config --dir
 
+By default, this is a folder inside your operating system's designated
+place for application data, but it can also be set using the
+``$CLANS_DIR`` environment variable.
+
+Persistent configuration is set in a file called ``clans.cfg``,
+in the clans profile directory.
 You can go directly to editing the configuration file with:
 
 .. code-block:: console

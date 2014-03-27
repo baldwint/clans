@@ -1,7 +1,9 @@
 Cookbook
 ========
 
-Some common clans workflows.
+In addition to providing an alternate user interface for Plans,
+clans can be used as a utility to achieve functionality not built into
+Plans itself. Here are some examples.
 
 New planlove notifications
 --------------------------

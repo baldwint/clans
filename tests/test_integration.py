@@ -113,7 +113,7 @@ def test_backup_restore(content):
             tf.write(content)
             tf.flush()
             stdout = subprocess.check_output(['clans', 'edit',
-                '--file', tf.name], stderr=subprocess.STDOUT, env=env)
+                '--from-file', tf.name], stderr=subprocess.STDOUT, env=env)
             assert 'Plan changed successfully' in str(stdout)
         # back plan up to file
         bakfile = os.path.join(cd, 'planbak.txt')
@@ -129,7 +129,7 @@ def test_backup_restore(content):
             assert stdout.decode('utf8') == backup
         # verify the restore: if it matches, clans won't update
         stdout = subprocess.check_output(['clans', 'edit',
-            '--file', bakfile], stderr=subprocess.STDOUT, env=env)
+            '--from-file', bakfile], stderr=subprocess.STDOUT, env=env)
         assert 'plan unchanged, aborting update' in stdout.decode('utf8')
 
 def test_editing():
@@ -153,7 +153,7 @@ def test_editing():
             tf.write(content)
             tf.flush()
             stdout = subprocess.check_output(['clans', 'edit',
-                '--file', tf.name], stderr=subprocess.STDOUT, env=env)
+                '--from-file', tf.name], stderr=subprocess.STDOUT, env=env)
         # do edit
         #with tempfile.NamedTemporaryFile() as tf:
         #    stdout = subprocess.check_output(['clans', 'edit'],

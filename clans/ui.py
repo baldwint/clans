@@ -427,18 +427,19 @@ class ClansSession(object):
         commands.add_command(
             'edit', edit, parents=[global_parser],
             description='Opens your plan for editing in a text editor.',
-            help='Edit your plan in $EDITOR.')
+            help='Edit your plan.')
         commands["edit"].add_argument(
-            '-f', '--file', dest='source_file',
+            '--from-file', dest='source_file',
             default=False, metavar='FILE',
             help="Replace plan with the contents of FILE. "
-            "Skips interactive editing.")
+            "Skips interactive editing."
+            " Use with caution!")
 
         # read parser
         commands.add_command(
             'read', read, parents=[global_parser, filter_parser],
             description="Read someone else's plan.",
-            help="Print a plan's contents to stdout.",)
+            help="Read a plan.",)
         commands["read"].add_argument(
             'plan', default=False, metavar='PLAN',
             help="Name of plan to be read.")
@@ -446,8 +447,8 @@ class ClansSession(object):
         # autoread list parser
         commands.add_command(
             'list', autoread, parents=[global_parser, filter_parser],
-            description="Autoread list",
-            help="Check unread plans",)
+            description="Display unread plans on your autoread list.",
+            help="Display autoread list.",)
 
         # quicklove parser
         commands.add_command(
