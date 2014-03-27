@@ -34,5 +34,7 @@ setup(name='clans',
       install_requires=reqs,
       extras_require=extras,
       packages=['clans', 'clans.ext'],
-      scripts=['bin/clans', ],
+      entry_points = {
+          'console_scripts': ['clans=clans.ui:main'],
+      },
       )
