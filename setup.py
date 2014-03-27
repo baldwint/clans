@@ -21,12 +21,12 @@ elif sys.version_info >= (2, 6):
     extras['tests'].append('unittest2')
     extras['tests'].append('subprocess32')
 else:
-    sys.stderr.write("Clans requires Python 2.6 or 2.7\n")
+    sys.stderr.write("Clans requires Python 2.6+ or 3.3+\n")
     sys.exit(1)
 
 
 setup(name='clans',
-      version='dev',
+      version='0.1dev',
       description='A command-line client for the '
                   'GrinnellPlans social network.',
       author='Tom Baldwin',
