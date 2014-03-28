@@ -51,8 +51,7 @@ Contents
    usage
    configuration
    extensions
-   hooks
-   scrapi
+   internals
    cookbook
 
 
