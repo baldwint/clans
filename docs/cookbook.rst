@@ -67,11 +67,82 @@ obsessive than me, you might prefer to run it less frequently::
 
     00 */3 * * * path/to/lovenotify.sh # every 3 hours
     00 */6 * * * path/to/lovenotify.sh # every 6 hours
-    00 08 * * * path/to/lovenotify.sh # every morning at 8
+    48 07 * * * path/to/lovenotify.sh # every morning at 7:48
 
 Please try not to cook the plans server by hitting your planlove every
 minute. On the other hand, don't schedule it less often than once per
 day, since plans will log you out after 2 days of inactivity.
+
+
+Scheduling a plan update
+------------------------
+
+If you have in mind a hilarious April Fool's day joke to post on your
+plan, but will be away from the computer on that day, you can prepare
+it ahead of time and schedule clans to submit it at the proper time.
+
+First copy the contents of your existing plan into a text file.
+This is straightforward to do with the :ref:`backup extension
+<backup-extension>` enabled:
+
+.. code-block:: console
+
+    $ clans edit --skip-update --backup myplan.txt
+
+Now edit and re-save this file so that it includes the desired update.
+The command we should give to our task scheduler to run on the morning
+of April 1 is:
+
+.. code-block:: console
+
+    $ clans edit --from-file myplan.txt
+
+We could use ``cron`` to schedule this, as we did in the previous
+example, or some equivalent thereof. I did this on a Mac, using
+``launchd``, and the following LaunchAgent:
+
+.. code-block:: xml
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+        <key>Label</key>
+        <string>clans.edit</string>
+        <key>ProgramArguments</key>
+        <array>
+            <string>/Users/tkb/bin/clans</string>
+            <string>edit</string>
+            <string>--from-file</string>
+            <string>/Users/tkb/myplan.txt</string>
+        </array>
+        <key>StartCalendarInterval</key>
+        <dict>
+            <key>Day</key>
+            <integer>1</integer>
+            <key>Hour</key>
+            <integer>7</integer>
+            <key>Minute</key>
+            <integer>48</integer>
+        </dict>
+    </dict>
+    </plist>
+
+This schedules the job to run at 7:48 AM on the 1st of the month.
+Note that:
+
+ - I used the ``/full/path/to/clans`` and
+   ``/full/path/to/myplan.txt``, so the agent can run outside the
+   environment defined by my shell.
+ - Any change I make to the plan before the job runs will be
+   overwritten when it eventually does.
+ - This job will actually run on the 1st of `every` month, so I'll
+   need to remember to disable it before the 1st of May.
+
+Loading LaunchAgents by hand is super-cumbersome, so I usually use the
+Lingon_ app to schedule them.
+
+.. _Lingon: http://www.peterborgapps.com/lingon/
 
 
 Using clans on multitple computers

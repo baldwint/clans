@@ -82,6 +82,8 @@ To track everyone's planlove, leave ``log_love`` blank:
 Non-planlove searches can be tracked by specifying ``log_search`` in
 the same way.
 
+.. _backup-extension:
+
 Backup
 ------
 
