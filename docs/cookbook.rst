@@ -74,6 +74,57 @@ minute. On the other hand, don't schedule it less often than once per
 day, since plans will log you out after 2 days of inactivity.
 
 
+Automated plan backups
+----------------------
+
+With the :ref:`backup extension <backup-extension>`, clans can be
+configured to save a local copy of the plan every time we invoke
+``clans edit``. But it would be nice for this to also back up edits
+done on the web site, and it would be extra helpful to keep a
+versioned history of every edit we have ever made. We can achieve this
+by scheduling another job on the same server we used to run the
+newlove notifications.
+
+First, I add ``backup=`` to the ``[login]`` section of ``clans.cfg``
+to enable the extension. Next, I create a folder ``plans_backups``
+in my home directory, which will contain my first plans backup:
+
+.. code-block:: console
+
+    $ mkdir plans_backups
+    $ cd plans_backups
+    $ clans edit --skip-update --b baldwint.txt
+
+Now I put the directory under version control. I use git, which is
+total overkill, but is familiar to me:
+
+.. code-block:: console
+
+    $ git init
+    $ git add baldwint.txt
+    $ git commit -m "initial commit"
+
+Finally I schedule a cron job to periodically run the following script:
+
+.. code-block:: bash
+
+    #!/bin/bash
+
+    CLANS='/full/path/to/clans'
+
+    REPO="full/path/to/plans_backups"
+    BAKFILE="$REPO/baldwint.txt"
+
+    $CLANS edit --skip-update -b $BAKFILE
+
+    (cd $REPO && git commit -am "Automated commit `date`" >> /dev/null)
+
+This backs up and commits a version of my plan every time it is run.
+Usually, the plan will not have changed since the last time the script
+was run, in which case the call to ``git commit`` will fail. That's
+expected, so I silence its output by piping to ``/dev/null``.
+
+
 Scheduling a plan update
 ------------------------
 
@@ -98,7 +149,7 @@ of April 1 is:
     $ clans edit --from-file myplan.txt
 
 We could use ``cron`` to schedule this, as we did in the previous
-example, or some equivalent thereof. I did this on a Mac, using
+examples, or some equivalent thereof. I did this on a Mac, using
 ``launchd``, and the following LaunchAgent:
 
 .. code-block:: xml
