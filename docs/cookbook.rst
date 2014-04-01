@@ -85,7 +85,7 @@ versioned history of every edit we have ever made. We can achieve this
 by scheduling another job on the same server we used to run the
 newlove notifications.
 
-First, I add ``backup=`` to the ``[login]`` section of ``clans.cfg``
+First, I add ``backup=`` to the ``[extensions]`` section of ``clans.cfg``
 to enable the extension. Next, I create a folder ``plans_backups``
 in my home directory, which will contain my first plans backup:
 
