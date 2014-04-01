@@ -35,13 +35,30 @@ if mo:
 else:
     raise RuntimeError("Unable to find version string in %s." % VERSIONFILE)
 
+with open('README.rst') as f:
+    readme = f.read()
+
 setup(name='clans',
       version=verstr,
       description='A command-line client for the '
                   'GrinnellPlans social network.',
+      long_description=readme,
+      url='https://github.com/baldwint/clans',
       author='Tom Baldwin',
       author_email='tbaldwin@uoregon.edu',
       license='MIT',
+      classifiers=(
+          'Development Status :: 3 - Alpha',
+          'Environment :: Console',
+          'Intended Audience :: End Users/Desktop',
+          'Topic :: Internet :: Finger',
+          'License :: OSI Approved :: MIT License',
+          'Programming Language :: Python',
+          'Programming Language :: Python :: 2.6',
+          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.3',
+      ),
       install_requires=reqs,
       extras_require=extras,
       packages=['clans', 'clans.ext'],
