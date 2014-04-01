@@ -1,56 +1,89 @@
 Installation
 ============
 
-``clans`` is still in development, and there have been no versioned
-releases. To use it, you will need to check out a copy from the
-development repository using Git_.
+To install clans, you'll need the following:
 
-Installing from source repo
----------------------------
+ - A Unix-like operating system (e.g. Linux or Mac OS X)
+ - Python 2.6+ or 3.3+ (usually preinstalled)
+ - The pip_ installer
 
-To check out and install clans in a single step, use pip_:
+In addition, clans will only work with Plans accounts that are set to
+use the **postmodern** interface.
+
+.. _pip: http://www.pip-installer.org/
+
+Stable version
+--------------
+
+Most people will want to use the latest stable release.
+This installs clans and its dependencies:
 
 .. code-block:: console
 
-    $ pip install --user -e git+/path/to/clans.git#egg=clans
+    $ pip install clans
 
-This installs clans, along with several of its dependencies.
-If you omit ``--user``, you may need to prefix this with ``sudo``.
-This flag is unnecessary if you have some other means of organizing
-python modules in your home directory (e.g., working in a virtualenv_).
+If a newer version is available later, update to it with:
 
-As an optional step, install Sphinx_ so that you can build the
+.. code-block:: console
+
+    $ pip install --upgrade clans
+
+To uninstall:
+
+.. code-block:: console
+
+    $ pip uninstall clans
+
+Development version
+-------------------
+
+Clans development is versioned using Git_. To clone the repository and
+install it in a single step:
+
+.. code-block:: console
+
+    $ pip install -e https://github.com/baldwint/clans.git#egg=clans
+
+This installs clans in *editable* mode - it clones the repository into your
+``src`` directory and configures Python to load it from there.
+
+It is a good idea to work inside a virtualenv_ to keep things
+separate from stable versions of clans on the same machine. I use
+the virtualenvwrapper_ tool to do that. Using this, I would first do
+
+.. code-block:: console
+
+    $ mkvirtualenv clans
+
+and then do the installation step. Then the repository would be
+cloned into ``~/.virtualenvs/clans/src/clans``, but the installation
+is only active if I first activate the virtualenv using ``workon clans``.
+
+As an optional step, install extra dependencies for testing and
 documentation:
 
 .. code-block:: console
 
-    $ pip install sphinx
+    $ cd ~/.virtualenvs/clans/src/clans
+    $ pip install -e .[docs,tests]
 
 .. _Git: http://git-scm.com/
 .. _pip: http://www.pip-installer.org/
 .. _virtualenv: http://www.virtualenv.org/
-.. _Sphinx: http://sphinx-doc.org
+.. _virtualenvwrapper: http://virtualenvwrapper.readthedocs.org/
 
-Staying up to date
-------------------
+Getting updates and sharing improvements
+++++++++++++++++++++++++++++++++++++++++
 
-In the installation step, pip created an editable clone of the
-repository in your home directory at ``$HOME/src/clans``. To update to
-the latest version, change to this directory and do:
+To get updates, ``cd`` to the repository and do:
 
 .. code-block:: console
 
     $ git pull
 
-You can make your own changes to clans by editing the python
-source code in this folder. You can keep track of your changes
-by committing to the existing Git repo.
-
-Contributing your changes to clans
-----------------------------------
-
-If you make modifications to clans, you may wish to contribute your
-improvements to the project.
+You can make your own modifications to clans by editing the Python
+source code in the repository. If you like, you can commit your
+changes using Git and contribute them back to the project.
 
 The first step is to publish your modifications. To do this, fork the
 project on GitHub and add it as a remote in your local copy:
