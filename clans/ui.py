@@ -408,6 +408,10 @@ class ClansSession(object):
             '--logout', dest='logout',
             action='store_true', default=False,
             help='Log out before quitting.')
+        global_parser.add_argument(
+            '--version', action='version',
+            version='%(prog)s ' + clans.__version__,
+            help='Show clans version number and exit.')
 
         # filters: options/arguments for those commands that format text
         filter_parser = argparse.ArgumentParser(add_help=False)

@@ -58,7 +58,7 @@ Authentications generally expire on the server side after two days of
 inactivity, unless ``--logout`` is given, in which case the
 authentication token will be deleted immediately after the command completes.
 
-In addition, all commands accept a ``--help`` option.
+In addition, all commands accept ``--help`` and ``--version`` options.
 
 Reading Plans and Autoread Lists
 --------------------------------
