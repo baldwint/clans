@@ -38,11 +38,11 @@ def clansdir(request):
     # now back up the plan, and set it to a known value
     pc = cs.make_plans_connection()
     del cs
-    orig_text, hash = pc.get_edit_text(plus_hash=True)
+    orig_text, hash = pc.get_edit_text()
     pc.set_edit_text(PLAN_TEXT, hash)
     # define cleanup actions
     def cleanup():
-        garbage, hash = pc.get_edit_text(plus_hash=True)
+        garbage, hash = pc.get_edit_text()
         pc.set_edit_text(orig_text, hash)
         shutil.rmtree(clansdir)  # remove temp dir
     request.addfinalizer(cleanup)
@@ -76,5 +76,5 @@ def test_restore(clansdir, capsys):
     assert stdout == ''
     assert stderr == 'Plan changed successfully.\n'
     pc = cs.make_plans_connection()
-    text,hash = pc.get_edit_text(plus_hash=True)
+    text,hash = pc.get_edit_text()
     assert text == restore_text

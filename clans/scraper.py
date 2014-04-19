@@ -199,12 +199,12 @@ class PlansConnection(object):
             self.username = self.parser.username
         return success
 
-    def get_edit_text(self, plus_hash=False):
+    def get_edit_text(self):
         """
         Retrieve contents of the edit plan field.
 
-        Optionally, simultaneously retrieve the md5 hash of
-        the edit text, as computed on the server side.
+        Returns the edit_text of the plan and its md5 hash,
+        as computed on the server side.
 
         """
         # grab edit page
@@ -224,17 +224,14 @@ class PlansConnection(object):
             assert type(plan) == str
             # convert to CRLF line endings
             plan = convert_endings(plan, 'CRLF')
-        if plus_hash:
-            # parse out plan md5
-            md5sum = soup.find('input',
-                    attrs={'name': 'edit_text_md5'}).attrs['value']
-            # also, explicitly compute the hash, for kicks
-            assert md5sum == plans_md5(plan)
-            # verify that username has not changed
-            assert self.username == self.parser.username
-            return plan, md5sum
-        else:
-            return plan
+        # parse out plan md5
+        md5sum = soup.find('input',
+                attrs={'name': 'edit_text_md5'}).attrs['value']
+        # also, explicitly compute the hash, for kicks
+        assert md5sum == plans_md5(plan)
+        # verify that username has not changed
+        assert self.username == self.parser.username
+        return plan, md5sum
 
     def set_edit_text(self, newtext, md5):
         """

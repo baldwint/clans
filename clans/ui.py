@@ -148,7 +148,7 @@ def edit(cs, pc=None):
     """ plan-editing command """
     pc = pc or cs.make_plans_connection()
 
-    plan_text, md5 = pc.get_edit_text(plus_hash=True)
+    plan_text, md5 = pc.get_edit_text()
     ret = cs.hook('post_get_edit_text', plan_text)
 
     if not all(v is None for v in ret):

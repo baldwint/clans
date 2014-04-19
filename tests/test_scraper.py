@@ -86,11 +86,11 @@ class LoggedInTestCase(unittest.TestCase):
 class TestEdit(LoggedInTestCase):
 
     def prepend_and_remove(self, hello):
-        orig, hashsum = self.pc.get_edit_text(plus_hash=True)
+        orig, hashsum = self.pc.get_edit_text()
         result = self.pc.set_edit_text(hello + orig, hashsum)
         self.assertTrue("Plan changed successfully" in str(result))
         # check that plan was actually edited
-        new, new_hashsum = self.pc.get_edit_text(plus_hash=True)
+        new, new_hashsum = self.pc.get_edit_text()
         self.assertEqual(new[:len(hello)], hello)
         # try to change back, with wrong hashsum
         with self.assertRaises(PlansError) as cm:
@@ -114,7 +114,7 @@ class TestEdit(LoggedInTestCase):
 
     def test_md5_existing(self):
         # this just tests md5 on the existing plan data
-        plan, server_hashnum = self.pc.get_edit_text(plus_hash=True)
+        plan, server_hashnum = self.pc.get_edit_text()
         python_hashnum = plans_md5(plan)
         self.assertEqual(server_hashnum, python_hashnum)
 
@@ -131,12 +131,12 @@ class PlanChangingTestCase(LoggedInTestCase):
 
     def setUp(self):
         super(PlanChangingTestCase, self).setUp()
-        self.orig, self.hashnum = self.pc.get_edit_text(plus_hash=True)
+        self.orig, self.hashnum = self.pc.get_edit_text()
         # tests should set hashnum as they go along
         # (but sometimes they fail)
 
     def tearDown(self):
-        whatever, ending_hash = self.pc.get_edit_text(plus_hash=True)
+        whatever, ending_hash = self.pc.get_edit_text()
         result = self.pc.set_edit_text(self.orig, ending_hash)
         self.assertTrue("Plan changed successfully" in str(result))
 
@@ -158,7 +158,7 @@ class TestEditing(PlanChangingTestCase):
             expect = phrase
         result = self.pc.set_edit_text(phrase, self.hashnum)
         self.assertIn("Plan changed successfully", str(result))
-        plan, server_hashnum = self.pc.get_edit_text(plus_hash=True)
+        plan, server_hashnum = self.pc.get_edit_text()
         self.hashnum = server_hashnum  # for later cleanup
         self.assertEqual(expect, plan)
 
@@ -229,7 +229,7 @@ class TestMD5(PlanChangingTestCase):
     #@unittest.expectedFailure
     def md5check(self, phrase):
         self.pc.set_edit_text(phrase, self.hashnum)
-        plan, server_hashnum = self.pc.get_edit_text(plus_hash=True)
+        plan, server_hashnum = self.pc.get_edit_text()
         self.hashnum = server_hashnum  # for later cleanup
         python_hashnum = plans_md5(plan)
         self.assertEqual(server_hashnum, python_hashnum)
@@ -260,7 +260,7 @@ class TestPlanspeak(PlanChangingTestCase):
 
     def planify(self, text, xf=None):
         self.pc.set_edit_text(text, self.hashnum)
-        text_plan, self.hashnum = self.pc.get_edit_text(plus_hash=True)
+        text_plan, self.hashnum = self.pc.get_edit_text()
         plan_header, html_plan = self.pc.read_plan(self.un)
         return text_plan, html_plan
 
@@ -523,7 +523,7 @@ class TestAutofinger(PlanChangingTestCase):
         unread = [un for level in autofinger.values() for un in level]
         self.assertNotIn(self.un, unread)  # read state should be empty
         # now update user 1's plan
-        orig, hashsum = self.pc.get_edit_text(plus_hash=True)
+        orig, hashsum = self.pc.get_edit_text()
         self.pc.set_edit_text("hello world", hashsum)
         # now user 1 should be on user 2's autofinger (level 1)
         autofinger = self.pc2.get_autofinger()
@@ -549,7 +549,7 @@ class TestAutofinger(PlanChangingTestCase):
 #        level_now = self.pc2.get_autofinger_level(self.un)
 #        self.assertIsNone(level_now)
 #        # now updates will not show up on any level
-#        orig, hashsum = self.pc.get_edit_text(plus_hash=True)
+#        orig, hashsum = self.pc.get_edit_text()
 #        result = self.pc.set_edit_text("no love", hashsum)
 #        autofinger = self.pc2.get_autofinger()
 #        unread = [un for level in autofinger.values() for un in level]
