@@ -6,18 +6,12 @@ Provides client interface to Plans.
 
 import sys
 if sys.version_info >= (3,3):
-    from urllib.parse import urlencode
     from urllib.parse import urlparse, parse_qsl
     from http.cookiejar import LWPCookieJar
-    from urllib.error import URLError
-    import urllib.request as request
     from html.parser import HTMLParser
 elif sys.version_info < (3,):
-    from urllib import urlencode
     from urlparse import urlparse, parse_qsl
     from cookielib import LWPCookieJar
-    from urllib2 import URLError
-    import urllib2 as request
     from HTMLParser import HTMLParser
     str = unicode
 
@@ -25,6 +19,7 @@ elif sys.version_info < (3,):
 import json
 import re
 import bs4
+import requests
 
 from .util import plans_md5, convert_endings
 
@@ -88,8 +83,8 @@ class PlansConnection(object):
             self.cookiejar = LWPCookieJar()
         else:
             self.cookiejar = cookiejar
-        proc = request.HTTPCookieProcessor(self.cookiejar)
-        self.opener = request.build_opener(proc)
+        self.session = requests.Session()
+        self.session.cookies = self.cookiejar
         self.parser = PlansPageParser()
         self.username = None
 
@@ -98,15 +93,13 @@ class PlansConnection(object):
         Retrieve an HTML page from plans.
 
         """
+        method = 'GET' if post is None else 'POST'
         url = '/'.join((self.base_url, name))
-        if get is not None:
-            url = '?'.join((url, urlencode(get)))
-        req = request.Request(url)
-        if post is not None:
-            post = urlencode(post).encode('utf8')
+        req = requests.Request(method, url, params=get, data=post)
+        prepped = self.session.prepare_request(req)
         try:
-            handle = self.opener.open(req, post)
-        except URLError:
+            handle = self.session.send(prepped)
+        except requests.exceptions.ConnectionError:
             err = "Check your internet connection. Plans could also be down."
             raise PlansError(err)
         return handle
@@ -193,9 +186,9 @@ class PlansConnection(object):
                       'submit': 'Login'}
         response = self._get_page('index.php', post=login_info)
         # if login is successful, we'll be redirected to home
-        success = response.geturl()[-9:] == '/home.php'
+        success = response.url[-9:] == '/home.php'
         if success:
-            self.parser.feed(response.read().decode('utf8'))  # parse out username
+            self.parser.feed(response.text)  # parse out username
             self.username = self.parser.username
         return success
 
@@ -209,9 +202,7 @@ class PlansConnection(object):
         """
         # grab edit page
         response = self._get_page('edit.php')
-        # Read into a string, and convert to unicode.
-        # This will fail hard if plans ever serves invalid UTF-8.
-        html = response.read().decode('utf8')
+        html = response.text
         # parse out existing plan
         soup = bs4.BeautifulSoup(html, 'html5lib')
         plan = soup.find('textarea')
@@ -251,7 +242,7 @@ class PlansConnection(object):
                      'edit_text_md5': md5,
                      'submit': 'Change Plan'}
         response = self._get_page('edit.php', post=edit_info)
-        soup = bs4.BeautifulSoup(response.read().decode('utf8'), "html5lib")
+        soup = bs4.BeautifulSoup(response.text, "html5lib")
         alert = soup.find('div', {'class': 'alertmessage'})
         info = soup.find('div', {'class': 'infomessage'})
         if alert is not None:
@@ -278,7 +269,7 @@ class PlansConnection(object):
         # in the old JSON API.
         get = {'task': 'autofingerlist'}
         response = self._get_page('api/1/index.php', get=get)
-        data = json.loads(response.read().decode('utf8'))
+        data = json.loads(response.text)
         # the returned JSON is crufty; clean it up
         autofinger = {}
         for group in data['autofingerList']:
@@ -296,7 +287,7 @@ class PlansConnection(object):
         """
         get = {'searchname': plan}
         response = self._get_page('read.php', get=get)
-        soup = bs4.BeautifulSoup(response.read().decode('utf8'), 'html5lib')
+        soup = bs4.BeautifulSoup(response.text, 'html5lib')
         header = soup.find('div', {'id': 'header'})
         text = soup.find('div', {'class': 'plan_text'})
         if text is None or header is None:
@@ -352,7 +343,7 @@ class PlansConnection(object):
         get = {'mysearch': term,
                'planlove': int(bool(planlove))}
         response = self._get_page('search.php', get=get)
-        soup = bs4.BeautifulSoup(response.read().decode('utf8'), 'html5lib')
+        soup = bs4.BeautifulSoup(response.text, 'html5lib')
         results = soup.find('ul', {'id': 'search_results'})
         if results is None:
             return []  # no results
@@ -386,7 +377,7 @@ class PlansConnection(object):
         """
         post = {'mytime': str(hours)}
         response = self._get_page('planwatch.php', post=post)
-        soup = bs4.BeautifulSoup(response.read().decode('utf8'), 'html5lib')
+        soup = bs4.BeautifulSoup(response.text, 'html5lib')
         results = soup.find('ul', {'id': 'new_plan_list'})
         new_plans = results.findAll('div', {'class': 'newplan'})
         resultlist = []
