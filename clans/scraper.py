@@ -67,7 +67,7 @@ class PlansConnection(object):
     """
 
     def __init__(self, cookiejar=None,
-                 base_url="http://www.grinnellplans.com"):
+                 base_url="https://www.grinnellplans.com"):
         """
         Create a new plans connection.
 
@@ -98,7 +98,8 @@ class PlansConnection(object):
         req = requests.Request(method, url, params=get, data=post)
         prepped = self.session.prepare_request(req)
         try:
-            handle = self.session.send(prepped)
+            handle = self.session.send(prepped,
+                                       verify=url.startswith('https'))
         except requests.exceptions.ConnectionError:
             err = "Check your internet connection. Plans could also be down."
             raise PlansError(err)
