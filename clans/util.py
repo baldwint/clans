@@ -15,3 +15,8 @@ def convert_endings(string, mode):
         return string.replace('\r\n', '\n').replace('\r', '\n')
     elif mode == 'CR':
         return string.replace('\r\n', '\r').replace('\n', '\r')
+
+
+def clean_json(string):
+    """python prior to 3.4 inserted spaces after commas in json"""
+    return re.sub(r', \n', ',\n', string)

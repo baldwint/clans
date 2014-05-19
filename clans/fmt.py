@@ -22,6 +22,8 @@ import re
 import json
 import colorama as cr
 
+from .util import clean_json
+
 #in colorama, add support for underlining
 cr.Style.UNDERLINE = '\x1b[4m'
 
@@ -89,14 +91,17 @@ class JSONFormatter(RawFormatter):
             ('planname', kwargs['planname']),
             ('plan', kwargs['plan']),
             ])
-        return json.dumps(dic, indent=2)
+        j = json.dumps(dic, indent=2)
+        return clean_json(j)
 
     def print_list(self, results, **kw):
         j = json.dumps(results, indent=2)
+        j = clean_json(j)
         print(str(j), **kw)
 
     def print_search_results(self, results, **kw):
         j = json.dumps(results, indent=2)
+        j = clean_json(j)
         print(str(j), **kw)
 
     def print_autoread(self, results, **kw):
@@ -106,6 +111,7 @@ class JSONFormatter(RawFormatter):
             ('Level 3', results['Level 3']),
             ])
         j = json.dumps(dic, indent=2)
+        j = clean_json(j)
         print(str(j), **kw)
 
 

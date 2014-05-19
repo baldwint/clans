@@ -163,10 +163,10 @@ class TestJSON(FakeStdout):
         text = self.fmt.format_plan(**data)
         expect = """\
 {
-  "username": "username", 
-  "lastupdated": "Mon August 5th 2013, 1:22 PM", 
-  "lastlogin": "Wed August 7th 2013, 3:42 AM", 
-  "planname": "clever catchphrase", 
+  "username": "username",
+  "lastupdated": "Mon August 5th 2013, 1:22 PM",
+  "lastlogin": "Wed August 7th 2013, 3:42 AM",
+  "planname": "clever catchphrase",
   "plan": "this is my plan\\n"
 }"""
         self.assertEqual(expect, text)
@@ -179,9 +179,9 @@ class TestJSON(FakeStdout):
         output = sys.stdout.getvalue()
         expect = u"""\
 [
-  "one", 
-  "two", 
-  "three", 
+  "one",
+  "two",
+  "three",
   "four"
 ]
 """
@@ -194,23 +194,23 @@ class TestJSON(FakeStdout):
         expect = u"""\
 [
   [
-    "plan1", 
-    1, 
+    "plan1",
+    1,
     [
       "snip one <b>term</b> context"
     ]
-  ], 
+  ],
   [
-    "plan2", 
-    2, 
+    "plan2",
+    2,
     [
-      "snip one <b>term</b> context", 
+      "snip one <b>term</b> context",
       "snip two <b>term</b> context"
     ]
-  ], 
+  ],
   [
-    "plan3", 
-    2, 
+    "plan3",
+    2,
     [
       "snip <b>term</b> twice <b>term</b> twice"
     ]
@@ -226,15 +226,15 @@ class TestJSON(FakeStdout):
         expect = u"""\
 {
   "Level 1": [
-    "bff", 
-    "interesting", 
-    "funny", 
+    "bff",
+    "interesting",
+    "funny",
     "gorp"
-  ], 
+  ],
   "Level 2": [
-    "roommate", 
+    "roommate",
     "rando"
-  ], 
+  ],
   "Level 3": [
     "meh"
   ]

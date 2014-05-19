@@ -11,6 +11,8 @@ import os.path
 import sys
 import io
 
+from clans.util import clean_json
+
 if sys.version_info < (3,):
     str = unicode
 
@@ -77,8 +79,10 @@ def _load_log(fl):
 
 
 def _save_log(newlove, fl):
-    fl.write(str(json.dumps(newlove, cls=DatetimeEncoder,
-                            indent=2, sort_keys=True)))
+    fl.write(str(clean_json(json.dumps(newlove,
+                                       cls=DatetimeEncoder,
+                                       indent=2,
+                                       sort_keys=True))))
 
 
 def _rebuild_log(log, results, timestamp=None):
