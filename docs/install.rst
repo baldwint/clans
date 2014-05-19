@@ -42,7 +42,7 @@ install it in a single step:
 
 .. code-block:: console
 
-    $ pip install -e https://github.com/baldwint/clans.git#egg=clans
+    $ pip install -e git+https://github.com/baldwint/clans.git#egg=clans
 
 This installs clans in *editable* mode - it clones the repository into your
 ``src`` directory and configures Python to load it from there.
