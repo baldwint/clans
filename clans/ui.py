@@ -318,7 +318,7 @@ class ClansSession(object):
         config = ConfigParser()
         config.add_section('login')
         config.set('login', 'username', '')
-        config.set('login', 'url', 'http://www.grinnellplans.com')
+        config.set('login', 'url', 'https://www.grinnellplans.com')
         config.add_section('clans')
         # text editor: either specified in config file, or $EDITOR, or pico
         config.set('clans', 'editor', os.environ.get('EDITOR', 'pico'))
