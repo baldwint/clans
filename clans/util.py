@@ -20,3 +20,8 @@ def convert_endings(string, mode):
 def clean_json(string):
     """python prior to 3.4 inserted spaces after commas in json"""
     return re.sub(r', \n', ',\n', string)
+
+
+def remove_ordinals(string):
+    """Remove Anglocentric ordinal suffixes from numbers"""
+    return re.sub(r'(\d+)(st|nd|rd|th)', r'\1', string)

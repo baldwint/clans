@@ -38,3 +38,12 @@ def test_convert_endings(lf, cr, crlf):
     assert crlf == util.convert_endings(cr, 'CRLF')
     assert crlf == util.convert_endings(lf, 'CRLF')
     assert crlf == util.convert_endings(crlf, 'CRLF')
+
+
+@pytest.mark.parametrize('orig,cleaned', [
+    ('4th', '4'),
+    ('January 12th', 'January 12'),
+    ('Nov 2nd 2014', 'Nov 2 2014'),
+])
+def test_remove_ordinals(orig, cleaned):
+    assert util.remove_ordinals(orig) == cleaned
