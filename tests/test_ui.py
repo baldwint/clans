@@ -85,7 +85,7 @@ class TestSession(WithClansdir):
 
         # test that sensible defaults were established
         default_url = cs.config.get('login', 'url')
-        self.assertEqual(default_url, 'http://www.grinnellplans.com')
+        self.assertEqual(default_url, 'https://www.grinnellplans.com')
 
     def test_configured_session(self):
         # write to the config file
