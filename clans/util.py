@@ -1,5 +1,7 @@
 from hashlib import md5
 import re
+from datetime import datetime
+import pytz
 
 
 def plans_md5(plan):
@@ -25,3 +27,23 @@ def clean_json(string):
 def remove_ordinals(string):
     """Remove Anglocentric ordinal suffixes from numbers"""
     return re.sub(r'(\d+)(st|nd|rd|th)', r'\1', string)
+
+
+def parse_plans_date(string):
+    """Convert date string to a python datetime.
+
+    In plan headers, dates are displayed in a human-readable format,
+    in Grinnell's local time zone. This reverses that format, and
+    converts the result to UTC.
+
+    Returns a naive datetime object - that is, it has no attached
+    timezone information. Treat it as UTC.
+
+    """
+    # first, parse the string format. This yields a naive datetime
+    dt = datetime.strptime(remove_ordinals(string),
+                           '%a %B %d %Y, %I:%M %p')
+    # now add the timezone information
+    dt = pytz.timezone('US/Central').localize(dt)
+    # convert to UTC and make it naive again
+    return dt.astimezone(pytz.utc).replace(tzinfo=None)

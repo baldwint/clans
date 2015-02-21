@@ -21,7 +21,7 @@ import re
 import bs4
 import requests
 
-from .util import plans_md5, convert_endings
+from .util import plans_md5, convert_endings, parse_plans_date
 
 class PlansError(Exception):
     """Exception raised when there is an error talking to plans."""
@@ -314,7 +314,11 @@ class PlansConnection(object):
                 ).find(
                 'span', {'class': 'long'}
                 ).contents
-            value = str(content[0]) if len(content) > 0 else None
+            if len(content) > 0:
+                value = str(content[0])
+                value = parse_plans_date(value)
+            else:
+                value = None
             header_dict[key] = value
         text.hidden = True  # prevents BS from wrapping contents in
                             # <div> upon conversion to unicode string

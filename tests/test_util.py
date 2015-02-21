@@ -1,5 +1,6 @@
 import pytest
 from clans import util
+from datetime import datetime
 
 
 @pytest.mark.parametrize('data,hash', [
@@ -47,3 +48,14 @@ def test_convert_endings(lf, cr, crlf):
 ])
 def test_remove_ordinals(orig, cleaned):
     assert util.remove_ordinals(orig) == cleaned
+
+
+@pytest.mark.parametrize('string,result', [
+    # Central time is -6 in the winter and -5 in the summer
+    ('Wed January 28th 2015, 5:46 PM',
+        datetime(2015, 1, 28, 23, 46)),
+    ('Thu April 12th 2012, 3:06 PM',
+        datetime(2012, 4, 12, 20, 6)),
+])
+def test_parse_plans_date(string, result):
+    assert util.parse_plans_date(string) == result
