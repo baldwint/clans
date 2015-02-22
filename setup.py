@@ -5,7 +5,7 @@ import sys
 
 # build dependency list
 reqs = ['appdirs', 'beautifulsoup4', 'html5lib', 'colorama',
-        'requests', 'pytz']
+        'requests', 'pytz', 'python-dateutil']
 extras = {'tests': ['pymysql', 'coverage',
                     'pytest', 'pytest-cov', 'tox'],
           'docs':  ['sphinx', ]}

@@ -505,7 +505,6 @@ class TestPlanwatch(PlanChangingTestCase):
         uns = [un for un,timestamp in result]
         self.assertTrue(self.un in uns)
 
-    @unittest.expectedFailure
     def test_planwatch_timestamp(self):
         text = "doesn't matter"
         gunshot = datetime.utcnow()

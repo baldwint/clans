@@ -1,6 +1,6 @@
 from hashlib import md5
 import re
-from datetime import datetime
+import dateutil.parser
 import pytz
 
 
@@ -29,8 +29,7 @@ def remove_ordinals(string):
     return re.sub(r'(\d+)(st|nd|rd|th)', r'\1', string)
 
 
-def parse_plans_date(string, format='%a %B %d %Y, %I:%M %p',
-                     tz_name='US/Central'):
+def parse_plans_date(string, tz_name='US/Central'):
     """Convert date string to a python datetime.
 
     In plan headers, dates are displayed in a human-readable format,
@@ -42,7 +41,7 @@ def parse_plans_date(string, format='%a %B %d %Y, %I:%M %p',
 
     """
     # first, parse the string format. This yields a naive datetime
-    dt = datetime.strptime(remove_ordinals(string), format)
+    dt = dateutil.parser.parse(string)
     # now add the timezone information
     dt = pytz.timezone(tz_name).localize(dt)
     # convert to UTC and make it naive again
