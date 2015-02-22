@@ -67,7 +67,8 @@ class PlansConnection(object):
     """
 
     def __init__(self, cookiejar=None,
-                 base_url="https://www.grinnellplans.com"):
+                 base_url="https://www.grinnellplans.com",
+                 server_tz='US/Central'):
         """
         Create a new plans connection.
 
@@ -76,9 +77,12 @@ class PlansConnection(object):
         cookiejar -- an existing cookielib.CookieJar to store
                      credentials in.
         base_url --  URL at which to access plans, no trailing slash.
+        server_tz --  Name of the timezone used by the server.
+                      This class will convert dates to UTC.
 
         """
         self.base_url = base_url
+        self.server_tz = server_tz
         if cookiejar is None:
             self.cookiejar = LWPCookieJar()
         else:
@@ -316,7 +320,7 @@ class PlansConnection(object):
                 ).contents
             if len(content) > 0:
                 value = str(content[0])
-                value = parse_plans_date(value)
+                value = parse_plans_date(value, tz_name=self.server_tz)
             else:
                 value = None
             header_dict[key] = value

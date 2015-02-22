@@ -23,7 +23,8 @@ from clans.scraper import PlansConnection
 from clans.scraper import PlansError
 from clans.util import plans_md5
 
-TEST_URL = 'http://localhost/~tkb/phplans'
+TEST_SERVER = {'base_url':  'http://localhost/~tkb/phplans',
+               'server_tz': 'US/Pacific'}
 # when using a local PHP-Plans development server to test clans,
 # it is VITAL to set the 'display_errors' initialization parameter to
 # FALSE in Plans.php. Otherwise, PHP debug messages will be tacked on
@@ -50,7 +51,7 @@ TEST_DB = {'host':   'localhost',
 class TestAuth(unittest.TestCase):
 
     def test_login(self):
-        self.pc = PlansConnection(base_url=TEST_URL)
+        self.pc = PlansConnection(**TEST_SERVER)
         # we should not be admitted if we give the wrong password
         self.assertFalse(self.pc.plans_login(USERNAME, 'wrong_password'))
         self.assertNotEqual(USERNAME, self.pc.username)
@@ -67,12 +68,12 @@ class TestAuth(unittest.TestCase):
     def test_cookie(self):
         oreo = LWPCookieJar()
         # log in to create a good cookie
-        pc = PlansConnection(oreo, base_url=TEST_URL)
+        pc = PlansConnection(oreo, **TEST_SERVER)
         pc.plans_login(USERNAME, PASSWORD)
         # end session
         del pc
         # but we should remain logged in if we provide the cookie
-        pc = PlansConnection(oreo, base_url=TEST_URL)
+        pc = PlansConnection(oreo, **TEST_SERVER)
         self.assertTrue(pc.plans_login(USERNAME, ''))
 
 
@@ -80,7 +81,7 @@ class LoggedInTestCase(unittest.TestCase):
 
     def setUp(self):
         self.un = USERNAME
-        self.pc = PlansConnection(base_url=TEST_URL)
+        self.pc = PlansConnection(**TEST_SERVER)
         self.pc.plans_login(self.un, PASSWORD)
 
 
@@ -511,16 +512,18 @@ class TestTimestamp(PlanChangingTestCase):
 
     """
 
-    @unittest.expectedFailure
     def test_timestamp(self):
         text = "doesn't matter"
         gunshot = datetime.utcnow()
         self.pc.set_edit_text(text, self.hashnum)
         header,_ = self.pc.read_plan(self.un)
         delta = header['lastupdated'] - gunshot
-        # that update shouldn't have taken more than 10 seconds
-        self.assertLessEqual(abs(delta.total_seconds()), 10,
-                "Timestamps mismatched, what is server's timezone?")
+        # displayed dates often round to the minute, so the diff
+        # should be less than 60 seconds. Use 100 for good measure
+        elapsed = (delta.seconds + delta.days * 24 * 3600)
+        self.assertLessEqual(
+            abs(elapsed), 100,
+            "Timestamps mismatched, what is server's timezone?")
 
 
 class TestAutofinger(PlanChangingTestCase):
@@ -533,7 +536,7 @@ class TestAutofinger(PlanChangingTestCase):
         super(TestAutofinger, self).setUp()
         # we need a second user (don't edit this one's plan)
         self.un2 = USERNAME_2
-        self.pc2 = PlansConnection(base_url=TEST_URL)
+        self.pc2 = PlansConnection(**TEST_SERVER)
         self.pc2.plans_login(self.un2, PASSWORD_2)
 
     def test_get_autofinger(self):

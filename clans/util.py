@@ -29,7 +29,7 @@ def remove_ordinals(string):
     return re.sub(r'(\d+)(st|nd|rd|th)', r'\1', string)
 
 
-def parse_plans_date(string):
+def parse_plans_date(string, tz_name='US/Central'):
     """Convert date string to a python datetime.
 
     In plan headers, dates are displayed in a human-readable format,
@@ -44,6 +44,6 @@ def parse_plans_date(string):
     dt = datetime.strptime(remove_ordinals(string),
                            '%a %B %d %Y, %I:%M %p')
     # now add the timezone information
-    dt = pytz.timezone('US/Central').localize(dt)
+    dt = pytz.timezone(tz_name).localize(dt)
     # convert to UTC and make it naive again
     return dt.astimezone(pytz.utc).replace(tzinfo=None)
