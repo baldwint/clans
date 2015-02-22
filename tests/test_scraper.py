@@ -505,6 +505,22 @@ class TestPlanwatch(PlanChangingTestCase):
         uns = [un for un,timestamp in result]
         self.assertTrue(self.un in uns)
 
+    @unittest.expectedFailure
+    def test_planwatch_timestamp(self):
+        text = "doesn't matter"
+        gunshot = datetime.utcnow()
+        self.pc.set_edit_text(text, self.hashnum)
+        result = self.pc.planwatch(hours=2)
+        result = dict(result)
+        self.assertTrue(self.un in result.keys())
+        delta = result[self.un] - gunshot
+        # displayed dates often round to the minute, so the diff
+        # should be less than 60 seconds. Use 100 for good measure
+        elapsed = (delta.seconds + delta.days * 24 * 3600)
+        self.assertLessEqual(
+            abs(elapsed), 100,
+            "Timestamps mismatched, what is server's timezone?")
+
 
 class TestTimestamp(PlanChangingTestCase):
     """

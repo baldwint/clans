@@ -320,7 +320,9 @@ class PlansConnection(object):
                 ).contents
             if len(content) > 0:
                 value = str(content[0])
-                value = parse_plans_date(value, tz_name=self.server_tz)
+                value = parse_plans_date(value,
+                                         '%a %B %d %Y, %I:%M %p',
+                                         tz_name=self.server_tz)
             else:
                 value = None
             header_dict[key] = value
@@ -393,5 +395,8 @@ class PlansConnection(object):
         for div in new_plans:
             user = div.find('a', {'class': 'planlove'}).contents[0]
             time = div.find('span').contents[0]
+            time = parse_plans_date(time,
+                                    '%I:%M %p, %a %B %d ',
+                                    tz_name=self.server_tz)
             resultlist.append((user, time))
         return resultlist
