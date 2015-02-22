@@ -6,6 +6,7 @@ GrinnellPlans that this module provides a scrAPI for.
 """
 
 import sys
+from datetime import datetime
 if sys.version_info < (2, 7):
     import unittest2 as unittest
 else:
@@ -502,6 +503,24 @@ class TestPlanwatch(PlanChangingTestCase):
         result = self.pc.planwatch(hours=2)
         uns = [un for un,timestamp in result]
         self.assertTrue(self.un in uns)
+
+
+class TestTimestamp(PlanChangingTestCase):
+    """
+    Test datetime parsing of lastupdated.
+
+    """
+
+    @unittest.expectedFailure
+    def test_timestamp(self):
+        text = "doesn't matter"
+        gunshot = datetime.utcnow()
+        self.pc.set_edit_text(text, self.hashnum)
+        header,_ = self.pc.read_plan(self.un)
+        delta = header['lastupdated'] - gunshot
+        # that update shouldn't have taken more than 10 seconds
+        self.assertLessEqual(abs(delta.total_seconds()), 10,
+                "Timestamps mismatched, what is server's timezone?")
 
 
 class TestAutofinger(PlanChangingTestCase):
