@@ -10,8 +10,8 @@ Release History
   your local timezone (or some other one you configure).
 - Added ``timezone`` and ``date_format`` config options
 - ScrAPI now returns Python datetime objects for time-related data,
-  in the UTC time zone. An additional ``timezone`` keyword argument
-  specifies which zone the server assumed to be in.
+  in the UTC time zone. A new ``timezone`` keyword argument specifies
+  which zone the server is assumed to be in when making this conversion.
 - Miscellaneous structural changes
 
 0.2.1 (2015-01-03)
