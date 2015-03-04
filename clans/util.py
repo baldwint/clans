@@ -2,6 +2,13 @@ from hashlib import md5
 import re
 import dateutil.parser
 import pytz
+from datetime import datetime
+
+import json
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 
 def plans_md5(plan):
@@ -17,6 +24,34 @@ def convert_endings(string, mode):
         return string.replace('\r\n', '\n').replace('\r', '\n')
     elif mode == 'CR':
         return string.replace('\r\n', '\r').replace('\n', '\r')
+
+ISO8601_UTC_FMT = '%Y-%m-%dT%H:%M:%SZ'
+"""Format string for ISO 8601 datetimes, as represented in JSON.
+
+The 'Z' for UTC is hardcoded, so only use this with UTC datetimes, or
+naive datetimes that are assumed to be UTC.
+"""
+
+
+def json_output(dic):
+    """Standard JSON output for clans.
+
+    This handles some finer points, like converting datetimes to ISO
+    8601 format, stripping whitespace, etc.
+    """
+    # first, a custom encoder class to handle datetimes
+    class DatetimeEncoder(json.JSONEncoder):
+        """ Handles encoding of datetimes as ISO 8601 format text in JSON """
+        def default(self, obj):
+            if isinstance(obj, datetime):
+                return obj.strftime(ISO8601_UTC_FMT)
+            return json.JSONEncoder.default(self, obj)
+    # if the provided dictionary is ordered, don't sort
+    sort_keys = not isinstance(dic, OrderedDict)
+    string = json.dumps(dic, indent=2,
+                        cls=DatetimeEncoder,
+                        sort_keys=sort_keys)
+    return clean_json(string)
 
 
 def clean_json(string):

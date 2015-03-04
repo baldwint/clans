@@ -11,7 +11,7 @@ import os.path
 import sys
 import io
 
-from clans.util import clean_json
+from clans.util import json_output, ISO8601_UTC_FMT
 
 if sys.version_info < (3,):
     str = unicode
@@ -53,24 +53,12 @@ def post_load_commands(cs):
             help="Preserve read state of any new results.")
 
 
-date_fmt = '%Y-%m-%dT%H:%M:%SZ'
-        # dodgy; writing 'Z' (UTC) doesn't make it true
-
-
 def convert_dates(dic):
     """ If a dict has a key named 'timestamp', convert to datetimes """
     if 'timestamp' in dic:
-        timestamp = datetime.strptime(dic.pop('timestamp'), date_fmt)
+        timestamp = datetime.strptime(dic.pop('timestamp'), ISO8601_UTC_FMT)
         dic['timestamp'] = timestamp
     return dic
-
-
-class DatetimeEncoder(json.JSONEncoder):
-    """ Handles encoding of datetimes as ISO 8601 format text in JSON """
-    def default(self, obj):
-        if isinstance(obj, datetime):
-            return obj.strftime(date_fmt)
-        return json.JSONEncoder.default(self, obj)
 
 
 def _load_log(fl):
@@ -79,10 +67,7 @@ def _load_log(fl):
 
 
 def _save_log(newlove, fl):
-    fl.write(str(clean_json(json.dumps(newlove,
-                                       cls=DatetimeEncoder,
-                                       indent=2,
-                                       sort_keys=True))))
+    fl.write(str(json_output(newlove)))
 
 
 def _rebuild_log(log, results, timestamp=None):
@@ -161,7 +146,7 @@ def modify_results(results, log, order_by_time=False, only_show_new=False):
         for lovestate in flattened:
             if only_show_new and not lovestate['unread']:
                 continue
-            note = lovestate['timestamp'].strftime(date_fmt)
+            note = lovestate['timestamp'].strftime(ISO8601_UTC_FMT)
             results.append((lovestate['lover'], note, [lovestate['text'], ]))
 
     elif only_show_new:

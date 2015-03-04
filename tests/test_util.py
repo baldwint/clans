@@ -2,6 +2,10 @@ import pytest
 from clans import util
 from datetime import datetime
 
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 @pytest.mark.parametrize('data,hash', [
     (u'plain text', u'31bc5c2b8fd4f20cd747347b7504a385'),
@@ -59,3 +63,25 @@ def test_remove_ordinals(orig, cleaned):
 ])
 def test_parse_plans_date(string, result):
     assert util.parse_plans_date(string) == result
+
+
+@pytest.mark.parametrize('dic,result', [
+    # respect the order of ordered dicts
+    (OrderedDict((("bae", "come over"),
+                  ("me", "cant writing unit tests"))),
+    '{\n  "bae": "come over",\n  "me": "cant writing unit tests"\n}'),
+    (OrderedDict((("me", "cant writing unit tests"),
+                  ("bae", "come over"))),
+    '{\n  "me": "cant writing unit tests",\n  "bae": "come over"\n}'),
+    # but regular dicts should be sorted
+    (dict((("me", "cant writing unit tests"),
+           ("bae", "come over"))),
+    '{\n  "bae": "come over",\n  "me": "cant writing unit tests"\n}'),
+    # and datetimes should be ISO-1601'd
+    ({"beg": datetime(2013, 5, 1, 3, 26, 56),
+      "end": datetime(2013, 5, 1, 5, 26, 56)},
+    '{\n  "beg": "2013-05-01T03:26:56Z",\n  "end": "2013-05-01T05:26:56Z"\n}'),
+])
+def test_json_output(dic, result):
+    thing = util.json_output(dic)
+    assert util.json_output(dic) == result
