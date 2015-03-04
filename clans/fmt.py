@@ -48,6 +48,8 @@ class RawFormatter(object):
     def format_plan(self, **kwargs):
         read_fmt = '\n'.join(': '.join(header) for header in HEADERS)
         read_fmt += "\n\n{plan}"
+        kwargs['lastupdated'] = self.format_date(kwargs['lastupdated'])
+        kwargs['lastlogin'] = self.format_date(kwargs['lastlogin'])
         return read_fmt.format(**kwargs)
 
     def format_planlove(self, un):
@@ -200,6 +202,8 @@ class ColorFormatter(TextFormatter):
                          for k, v in HEADERS]
         read_fmt = '\n'.join(': '.join(header) for header in color_headers)
         read_fmt += "\n\n{plan}"
+        kwargs['lastupdated'] = self.format_date(kwargs['lastupdated'])
+        kwargs['lastlogin'] = self.format_date(kwargs['lastlogin'])
         return read_fmt.format(**kwargs)
 
     def format_planlove(self, un):

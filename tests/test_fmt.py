@@ -293,14 +293,13 @@ class TestText(TestRaw):
         text = fmt.format_date(date)
         self.assertIn('January', text)
 
-    @unittest.expectedFailure
     def test_format_plan(self):
         data = TEST_DATA['test_format_plan']
         text = self.fmt.format_plan(**data)
         expect = """\
 Username: username
-Last Updated: Mon August 5 2013, 1:22 PM
-Last Login: Wed August 7 2013, 3:42 AM
+Last Updated: Mon August 5 2013, 8:22 AM
+Last Login: Tue August 6 2013, 10:42 PM
 Name: clever catchphrase
 
 this is my plan
@@ -405,14 +404,13 @@ class TestColor(TestText):
 
     # plan format test
 
-    @unittest.expectedFailure
     def test_format_plan(self):
         data = TEST_DATA['test_format_plan']
         text = self.fmt.format_plan(**data)
         expect = """\
 %sUsername%s: username
-%sLast Updated%s: Mon August 5 2013, 1:22 PM
-%sLast Login%s: Wed August 7 2013, 3:42 AM
+%sLast Updated%s: Mon August 5 2013, 8:22 AM
+%sLast Login%s: Tue August 6 2013, 10:42 PM
 %sName%s: clever catchphrase
 
 this is my plan
