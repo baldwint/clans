@@ -73,7 +73,7 @@ following configuration options may be set:
 :username: sets a default value for the ``--username`` flag, if it is
            not specified.
 :url:      sets the location of the Plans service to use for login.
-           Defaults to ``http://www.grinnellplans.com``.
+           Defaults to ``https://www.grinnellplans.com``.
 
 The ``[clans]`` section controls how the command-line client behaves.
 

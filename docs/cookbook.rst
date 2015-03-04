@@ -239,7 +239,7 @@ Using an alternate Plans server
 -------------------------------
 
 By default, clans communicates with the installation of Plans running
-at http://www.grinnellplans.com/. It can also talk to other
+at https://www.grinnellplans.com/. It can also talk to other
 installations, such as one running on your local development server.
 
 The ``url`` setting in the ``[login]`` section of ``clans.cfg``
