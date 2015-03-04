@@ -21,7 +21,7 @@ elif sys.version_info >= (2, 6):
 import re
 import json
 import colorama as cr
-from babel.dates import format_datetime, get_timezone
+from babel.dates import format_datetime, get_timezone, LOCALTZ
 
 from .util import json_output, ISO8601_UTC_FMT
 
@@ -35,6 +35,9 @@ HEADERS = [('Username', '{username}'),
 
 
 class RawFormatter(object):
+
+    def __init__(self, **kwargs):
+        pass
 
     def filter_html(self, html):
         return html
@@ -120,6 +123,16 @@ class JSONFormatter(RawFormatter):
 
 class TextFormatter(RawFormatter):
 
+    def __init__(self,
+                 date_format='E MMMM d YYYY, h:mm a',
+                 timezone=None,
+                 ):
+        self.date_format = date_format
+        if timezone is not None:
+            self.tzinfo = get_timezone(timezone)
+        else:
+            self.tzinfo = LOCALTZ
+
     REGEX_LOVE = r'<a href="[^\s]*" class="planlove">(.+?)</a>'
     REGEX_LINK = r'<a href="([^\s]*)" class="onplan">(.+?)</a>'
     REGEX_SUB = r'<p class="sub">(.+?)</p>'
@@ -129,9 +142,8 @@ class TextFormatter(RawFormatter):
     a = r'[\1|\2]'
 
     def format_date(self, date):
-        format = 'E MMMM d YYYY, h:mm a'
-        tzinfo = get_timezone('US/Central')
-        return format_datetime(date, format, tzinfo=tzinfo)
+        return format_datetime(date, self.date_format,
+                               tzinfo=self.tzinfo)
 
     def filter_html(self, html):
         """

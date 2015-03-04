@@ -262,7 +262,8 @@ class TestText(TestRaw):
 
     def setUp(self):
         FakeStdout.setUp(self)
-        self.fmt = clans.fmt.TextFormatter()
+        kwargs = {'timezone': 'US/Central'}
+        self.fmt = clans.fmt.TextFormatter(**kwargs)
 
     def test_format_date(self):
         date = TEST_DATA['test_format_date']
@@ -277,6 +278,20 @@ class TestText(TestRaw):
         text = self.fmt.format_date(date)
         expect = 'Thu April 12 2012, 3:06 PM'
         self.assertEqual(expect, text)
+
+    def test_alt_tz(self):
+        date = TEST_DATA['test_format_date']
+        kwargs = {'timezone': 'US/Pacific'}
+        fmt = clans.fmt.TextFormatter(**kwargs)
+        text = fmt.format_date(date)
+        expect = 'Wed January 28 2015, 3:46 PM'
+        self.assertEqual(expect, text)
+
+    def test_no_tz(self):
+        date = TEST_DATA['test_format_date']
+        fmt = clans.fmt.TextFormatter()
+        text = fmt.format_date(date)
+        self.assertIn('January', text)
 
     @unittest.expectedFailure
     def test_format_plan(self):
@@ -385,7 +400,8 @@ class TestColor(TestText):
 
     def setUp(self):
         FakeStdout.setUp(self)
-        self.fmt = clans.fmt.ColorFormatter()
+        kwargs = {'timezone': 'US/Central'}
+        self.fmt = clans.fmt.ColorFormatter(**kwargs)
 
     # plan format test
 
