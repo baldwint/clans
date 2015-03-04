@@ -38,12 +38,14 @@ else:
 
 with open('README.rst') as f:
     readme = f.read()
+with open('HISTORY.rst') as f:
+    history = f.read()
 
 setup(name='clans',
       version=verstr,
       description='A command-line client for the '
                   'GrinnellPlans social network.',
-      long_description=readme,
+      long_description=readme + '\n\n' + history,
       url='https://github.com/baldwint/clans',
       author='Tom Baldwin',
       author_email='tbaldwin@uoregon.edu',
