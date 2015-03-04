@@ -82,4 +82,11 @@ The ``[clans]`` section controls how the command-line client behaves.
 :editor:   sets which editor to use when editing your plan, in case
            you want to use one other than is set by the ``EDITOR``
            environment variable.
+:timezone: timezone to use for displaying dates and times, specified
+           as its name in the Olson tz database. Defaults to your
+           local timezone (for text output) or UTC (for JSON output).
+:date_format: format string for dates and times, specified in the
+              `Unicode style`_. JSON output ignores this option and
+              will always use the ISO 8601 format.
 
+.. _`Unicode style`: http://unicode.org/reports/tr35/tr35-dates.html#Date_Format_Patterns

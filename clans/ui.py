@@ -323,6 +323,8 @@ class ClansSession(object):
         # text editor: either specified in config file, or $EDITOR, or pico
         config.set('clans', 'editor', os.environ.get('EDITOR', 'pico'))
         config.set('clans', 'format', 'raw')
+        config.set('clans', 'timezone', None)
+        config.set('clans', 'date_format', None)
 
         # create profile directory if it doesn't exist
         try:
@@ -534,7 +536,12 @@ class ClansSession(object):
 
         """
         Fmt = self.formatters[self.args['fmt']]
-        fmt = Fmt()
+        kwargs = {}
+        kwargs['timezone'] = self.config.get('clans', 'timezone') or None
+        kwargs['date_format'] = self.config.get('clans', 'date_format') or None
+        # if a key is None, remove it and rely on the default
+        kwargs = {k:v for k,v in kwargs.items() if v is not None}
+        fmt = Fmt(**kwargs)
         return fmt
 
     def finish(self):
