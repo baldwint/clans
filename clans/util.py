@@ -51,11 +51,7 @@ def json_output(dic):
     string = json.dumps(dic, indent=2,
                         cls=DatetimeEncoder,
                         sort_keys=sort_keys)
-    return clean_json(string)
-
-
-def clean_json(string):
-    """python prior to 3.4 inserted spaces after commas in json"""
+    # python prior to 3.4 inserted spaces after commas in json
     return re.sub(r', \n', ',\n', string)
 
 
