@@ -55,11 +55,6 @@ def json_output(dic):
     return re.sub(r', \n', ',\n', string)
 
 
-def remove_ordinals(string):
-    """Remove Anglocentric ordinal suffixes from numbers"""
-    return re.sub(r'(\d+)(st|nd|rd|th)', r'\1', string)
-
-
 def parse_plans_date(string, tz_name='US/Central'):
     """Convert date string to a python datetime.
 

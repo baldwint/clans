@@ -45,15 +45,6 @@ def test_convert_endings(lf, cr, crlf):
     assert crlf == util.convert_endings(crlf, 'CRLF')
 
 
-@pytest.mark.parametrize('orig,cleaned', [
-    ('4th', '4'),
-    ('January 12th', 'January 12'),
-    ('Nov 2nd 2014', 'Nov 2 2014'),
-])
-def test_remove_ordinals(orig, cleaned):
-    assert util.remove_ordinals(orig) == cleaned
-
-
 @pytest.mark.parametrize('string,result', [
     # Central time is -6 in the winter and -5 in the summer
     ('Wed January 28th 2015, 5:46 PM',
