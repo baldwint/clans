@@ -16,6 +16,8 @@ from io import StringIO
 from datetime import datetime
 
 TEST_DATA = {
+    'test_format_date': datetime(2015, 1, 28, 23, 46),
+    'test_format_date_dst': datetime(2012, 4, 12, 20, 6),
     'test_format_plan': {
         'lastupdated': datetime(2013, 8, 5, 13, 22),
         'lastlogin': datetime(2013, 8, 7, 3, 42),
@@ -68,6 +70,12 @@ class TestRaw(FakeStdout):
     def setUp(self):
         FakeStdout.setUp(self)
         self.fmt = clans.fmt.RawFormatter()
+
+    def test_format_date(self):
+        date = TEST_DATA['test_format_date']
+        text = self.fmt.format_date(date)
+        expect = '2015-01-28 23:46:00' # no assumed timezone
+        self.assertEqual(expect, text)
 
     # plan format test: a header, two newlines, then the plan.
 
@@ -159,6 +167,12 @@ class TestJSON(FakeStdout):
         FakeStdout.setUp(self)
         self.fmt = clans.fmt.JSONFormatter()
 
+    def test_format_date(self):
+        date = TEST_DATA['test_format_date']
+        text = self.fmt.format_date(date)
+        expect = '2015-01-28T23:46:00Z' # ISO 8601, assume UTC
+        self.assertEqual(expect, text)
+
     def test_format_plan(self):
         data = TEST_DATA['test_format_plan']
         text = self.fmt.format_plan(**data)
@@ -249,6 +263,20 @@ class TestText(TestRaw):
     def setUp(self):
         FakeStdout.setUp(self)
         self.fmt = clans.fmt.TextFormatter()
+
+    def test_format_date(self):
+        date = TEST_DATA['test_format_date']
+        text = self.fmt.format_date(date)
+        expect = 'Wed January 28 2015, 5:46 PM'
+        # timezone should have been converted to central.
+        # same format as plans web (but w/o ordinal suffix)
+        self.assertEqual(expect, text)
+
+    def test_format_date_dst(self):
+        date = TEST_DATA['test_format_date_dst']
+        text = self.fmt.format_date(date)
+        expect = 'Thu April 12 2012, 3:06 PM'
+        self.assertEqual(expect, text)
 
     @unittest.expectedFailure
     def test_format_plan(self):

@@ -21,8 +21,9 @@ elif sys.version_info >= (2, 6):
 import re
 import json
 import colorama as cr
+from babel.dates import format_datetime, get_timezone
 
-from .util import json_output
+from .util import json_output, ISO8601_UTC_FMT
 
 #in colorama, add support for underlining
 cr.Style.UNDERLINE = '\x1b[4m'
@@ -37,6 +38,9 @@ class RawFormatter(object):
 
     def filter_html(self, html):
         return html
+
+    def format_date(self, date):
+        return str(date)
 
     def format_plan(self, **kwargs):
         read_fmt = '\n'.join(': '.join(header) for header in HEADERS)
@@ -83,6 +87,9 @@ class RawFormatter(object):
 
 class JSONFormatter(RawFormatter):
 
+    def format_date(self, date):
+        return date.strftime(ISO8601_UTC_FMT)
+
     def format_plan(self, **kwargs):
         dic = OrderedDict([
             ('username', kwargs['username']),
@@ -120,6 +127,11 @@ class TextFormatter(RawFormatter):
 
     hr = '\n' + 70*'=' + '\n'
     a = r'[\1|\2]'
+
+    def format_date(self, date):
+        format = 'E MMMM d YYYY, h:mm a'
+        tzinfo = get_timezone('US/Central')
+        return format_datetime(date, format, tzinfo=tzinfo)
 
     def filter_html(self, html):
         """
