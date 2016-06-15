@@ -45,11 +45,11 @@ class PlansPageParser(HTMLParser):
             # is in the bug report link at the bottom of every page.
             attrs = dict(attrs)
             href = urlparse(attrs.get('href'))
-            if (href.netloc == 'code.google.com'
-                    and href.path == '/p/grinnellplans/issues/entry'):
+            if (href.netloc == 'github.com'
+                    and href.path == '/grinnellplans/grinnellplans-php/issues/new'):
                 # if this is the bug submission link
                 query = parse_qsl(href.query)
-                comment = dict(query)['comment']
+                comment = dict(query)['body']
                 # find username in submission content using brackets
                 start, stop = comment.index('['), comment.index(']')
                 self.username = comment[start + 1:stop]

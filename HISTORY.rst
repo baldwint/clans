@@ -12,6 +12,7 @@ Release History
 - ScrAPI now returns Python datetime objects for time-related data,
   in the UTC time zone. A new ``timezone`` keyword argument specifies
   which zone the server is assumed to be in when making this conversion.
+- Fixed a bug that prevented clans from logging in after 2016-06-14
 - Miscellaneous structural changes
 
 0.2.1 (2015-01-03)
